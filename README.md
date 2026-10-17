@@ -1,6 +1,6 @@
 # Security Incident Detection and Response Management System Backend
 
-Sprint I backend for nine API services. The [course brief](../Final%20Project%20Fall%202026-2027-Sprint%201.docx) is authoritative; this repository currently contains planning records only.
+Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative; this repository currently contains planning records only.
 
 | Owner | Services |
 |---|---|

@@ -159,7 +159,7 @@ Source: supplied Sprint I brief. Initial inventory; no service code or execution
 | S-06 | Christophe El Chabab | Shared architecture | service-flow and boundary documentation | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
 | S-07 | Christophe El Chabab | Shared evidence | evidence index and final-report structure | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
 | S-08 | Christophe El Chabab | Shared references | references, accurate AI disclosures and CREATES feedback links | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
-| S-09 | Team | Shared contracts | confirm full names and route prefixes | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | DONE | [README](../README.md), [contracts](api-contracts.md), Joey confirmation 2026-10-17 | - |
+| S-09 | Team | Shared contracts | confirm full names and route prefixes | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | DONE | [README](../README.md), [contracts](api-contracts.md), Joey confirmation 2026-10-17 | 8950a77 |
 | S-10 | Team | Shared contracts | request/response, IDs, timestamps, enums and error/status conventions | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
 | S-11 | Team | Shared contracts | service URLs, least-privilege credentials, timeouts, failure and retry behavior | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
 | S-12 | Team | Shared contracts | audit schema and notification triggers | Team agreement or implementation as applicable | Implemented, checked and documented with real evidence | TODO | - | - |
@@ -197,4 +197,3 @@ Source: supplied Sprint I brief. Initial inventory; no service code or execution
 - Joey: S-01 and S-02 (stack/setup and authentication contract); then U-REQ-01 and U-API-01.
 - Karl: S-04 database topology/relationship proposal and S-05 Postman structure; then T-REQ-01 contract/schema work.
 - Christophe: S-06 service-flow proposal and L-REQ-02 audit event contract, using the confirmed full name.
-
