@@ -1,0 +1,802 @@
+{
+  "info": {
+    "name": "Sprint I \u2014 Joey Saade services",
+    "description": "Real requests for Joey's three services. Run against your own backend and capture actual results.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users and Identity \u2014 Joey Saade",
+      "item": [
+        {
+          "name": "Register employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Joey Saade \u2014 Register employee. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Example Employee\",\n  \"username\": \"example_employee\",\n  \"email\": \"example@example.test\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"IT\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "pm.test('No hash in response', () => pm.expect(pm.response.json()).to.not.have.property('password_hash'));",
+                  "if (pm.response.code === 201) pm.environment.set('userId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Joey Saade \u2014 Login. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{username}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.environment.set('token', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
+            "description": "Joey Saade \u2014 Update profile. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"department\": \"Security\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
+            "description": "Joey Saade \u2014 Delete user. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users",
+            "description": "Joey Saade \u2014 List users. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get user by username",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{username}}",
+            "description": "Joey Saade \u2014 Get user by username. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin role/status update",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}/admin",
+            "description": "Joey Saade \u2014 Admin role/status update. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Security Analyst\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Asset Management \u2014 Joey Saade",
+      "item": [
+        {
+          "name": "Create asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "description": "Joey Saade \u2014 Create asset. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Server One\",\n  \"type\": \"Server\",\n  \"ip_address\": \"10.0.0.1\",\n  \"department\": \"IT\",\n  \"owner_id\": \"{{userId}}\",\n  \"location\": \"Lab\",\n  \"criticality\": \"High\",\n  \"status\": \"Active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('assetId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update asset",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "description": "Joey Saade \u2014 Update asset. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Under Maintenance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete asset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "description": "Joey Saade \u2014 Delete asset. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "description": "Joey Saade \u2014 List assets. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get asset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "description": "Joey Saade \u2014 Get asset. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/search?name=Server",
+            "description": "Joey Saade \u2014 Search assets. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asset history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}/history",
+            "description": "Joey Saade \u2014 Asset history. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notification and Alert Management \u2014 Joey Saade",
+      "item": [
+        {
+          "name": "Create notification as service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Service-Key",
+                "value": "{{serviceKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
+            "description": "Joey Saade \u2014 Create notification as service. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"title\": \"Assigned\",\n  \"message\": \"Incident assigned\",\n  \"type\": \"Incident Assignment\",\n  \"severity\": \"High\",\n  \"event_id\": \"{{eventId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('notificationId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List user notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/user/{{userId}}",
+            "description": "Joey Saade \u2014 List user notifications. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get notification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
+            "description": "Joey Saade \u2014 Get notification. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark notification read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}/read",
+            "description": "Joey Saade \u2014 Mark notification read. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/search?status=Unread",
+            "description": "Joey Saade \u2014 Search notifications. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
+            "description": "Joey Saade \u2014 Delete notification. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Negative checks \u2014 Joey Saade",
+      "item": [
+        {
+          "name": "Reject invalid registration email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Joey Saade \u2014 Reject invalid registration email. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Bad\",\n  \"username\": \"badmail\",\n  \"email\": \"invalid\",\n  \"password\": \"SecurePassword123\",\n  \"department\": \"IT\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject privileged public registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Joey Saade \u2014 Reject privileged public registration. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Bad\",\n  \"username\": \"badadmin\",\n  \"email\": \"badadmin@example.test\",\n  \"password\": \"SecurePassword123\",\n  \"department\": \"IT\",\n  \"role\": \"Security Administrator\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Privilege escalation rejected', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unauthenticated users listing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{userUrl}}/api/Joey-Saade/users",
+            "description": "Joey Saade \u2014 Reject unauthenticated users listing. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authentication required', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid asset IP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "description": "Joey Saade \u2014 Reject invalid asset IP. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Server One\",\n  \"type\": \"Server\",\n  \"ip_address\": \"not-an-ip\",\n  \"department\": \"IT\",\n  \"owner_id\": \"{{userId}}\",\n  \"location\": \"Lab\",\n  \"criticality\": \"High\",\n  \"status\": \"Active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject missing asset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/999999999",
+            "description": "Joey Saade \u2014 Reject missing asset. Replace variables and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing resource', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject notification without auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
+            "description": "Joey Saade \u2014 Reject notification without auth. Replace variables and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"title\": \"Assigned\",\n  \"message\": \"Incident assigned\",\n  \"type\": \"Incident Assignment\",\n  \"severity\": \"High\",\n  \"event_id\": \"{{eventId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authentication required', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
