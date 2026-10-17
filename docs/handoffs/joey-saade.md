@@ -18,4 +18,6 @@ Implemented three FastAPI apps in `joey/users.py`, `joey/assets.py`, and `joey/n
 
 Additional check: `python tests/live_smoke.py` passed after starting all three services as separate processes, making real HTTP registration/login calls, and verifying automatic welcome notification delivery plus the database outbox record. [Actual output](../evidence/joey-live-http-2026-10-17.txt). The test uses a temporary database and records no screenshot.
 
+Commits `5b067bb` (implementation) and `8f8fa69` (documentation/evidence) were pushed to `origin/main` on 2026-10-17 using the configured Joey Git identity. The local working tree was clean before this final handoff update.
+
 Remaining: run the apps and Postman against a real local database, capture screenshots, settle team database topology, integrate Karl's assignment/threat/vulnerability triggers and asset FK deletion behavior, and deliver queued audit events once Christophe's API agrees on the schema. Teammates can now consume Joey's signed bearer token conventions and notification creation route. Next unblocked: capture Joey's live Postman/database evidence and review the shared contract with the team.
