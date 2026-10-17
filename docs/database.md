@@ -1,5 +1,7 @@
 # Database plan
 
-Schema and topology are pending. Minimum entities from the brief: Users; Assets (owner → User); Incidents (reporter and assigned analyst → User, affected Asset); Investigation Notes (Incident, Analyst); Threats; Logs (actor User, with durable historical actor label for deleted users); Vulnerabilities (affected Asset); Notifications (recipient User); Playbooks (creator User); Response Actions (Playbook, assigned User). Owner-written migrations must define PKs, FKs or documented cross-service reference checks, unique indexes, enums/checks, and deletion behavior.
+Joey's initial SQLite schema is [schema.sql](../joey/schema.sql). It defines Users, Assets, Asset History, Notifications and Outbox. It has primary keys; foreign keys from assets to owner and notifications to recipient; unique username/email and event ID; and role/status/type/severity checks. Referenced users cannot be deleted. Asset history survives asset deletion by retaining `original_asset_id`. If Karl's incident/vulnerability tables use asset FKs with RESTRICT, deletion will return 409.
 
-Each owner documents their tables and relationships and captures real structure and record evidence. Karl leads the relationship diagram and migration integration guide after topology is agreed. Do not claim schema or sample data exists yet.
+The remaining brief entities are not implemented: Incidents, Investigation Notes, Threats, Logs, Vulnerabilities, Playbooks and Response Actions. Their owners must provide their own migrations and decide if SQLite remains the team database.
+
+Each owner documents their tables and relationships and captures real structure and record evidence. Karl leads the relationship diagram and migration integration guide after topology is agreed. Joey's tests create temporary records; no submitted database screenshots exist yet.

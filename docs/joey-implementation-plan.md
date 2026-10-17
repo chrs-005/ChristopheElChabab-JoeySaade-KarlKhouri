@@ -1,6 +1,6 @@
 # Joey Saade: implementation and demonstration plan
 
-This plan is a handoff, not implemented code. Joey owns Users and Identity, Asset Management, and Notification and Alert Management. The course brief requires Joey to implement and explain the work, run the system, and capture genuine evidence. Do not mark an API done because this document exists.
+This plan now accompanies runnable Joey code in `joey/`. Joey owns Users and Identity, Asset Management, and Notification and Alert Management. All 18 required routes are implemented, while screenshots and Karl/Christophe dependent integrations remain pending. Do not mark an API DONE from this document alone.
 
 ## Sequence
 
