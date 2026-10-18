@@ -1,0 +1,33 @@
+$ python tests/live_smoke_karl.py  (2026-10-18, Python 3.11)
+Administrator created
+six services started
+  login smoke_admin: HTTP 200
+  register analyst: HTTP 201
+  promote analyst: HTTP 200
+  login smoke_analyst: HTTP 200
+  failed login: HTTP 401
+  create asset: HTTP 201
+audit logging
+  list logs: HTTP 200
+  search failed logins: HTTP 200
+  analyst denied log list: HTTP 403
+  analyst reads own activity: HTTP 200
+playbooks
+  create playbook with two steps: HTTP 201
+  reject out-of-order step: HTTP 422
+  reject starting step 2 first: HTTP 409
+  action 1 -> In Progress: HTTP 200
+  action 1 -> Completed: HTTP 200
+  action 2 -> In Progress: HTTP 200
+  action 2 -> Completed: HTTP 200
+  playbook detail: HTTP 200
+  analyst notifications: HTTP 200
+reports
+  asset report: HTTP 200
+  activity report: HTTP 200
+  activity total 18 reconciles with stored logs (18..19)
+  incident report reports unavailable upstream: HTTP 503
+  summary report: HTTP 200
+  analyst denied reports: HTTP 403
+database: 20 audit log rows, 1 audit events still queued (report events queued after the last delivery)
+live HTTP: audit logging, playbook execution and reports passed; no server tracebacks logged

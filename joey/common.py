@@ -157,7 +157,9 @@ def valid_email(email):
     return bool(re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email))
 
 
-def api_error_handler(app):
+def api_error_handler(app, record_denial=None):
+    # The audit service passes a direct writer so its own denials are not sent back to itself over HTTP.
+    record_denial = record_denial or queue_audit
     from fastapi import Request
     from fastapi.exceptions import RequestValidationError
     from fastapi.responses import JSONResponse
@@ -169,7 +171,7 @@ def api_error_handler(app):
                 header = request.headers.get("authorization", "")
                 actor_id = decode_token(header[7:])["sub"] if header.startswith("Bearer ") else None
                 with db() as conn:
-                    queue_audit(conn, "unauthorized_access", actor_id, related_service=app.title, description=f"Forbidden {request.method} {request.url.path}", severity="Warning")
+                    record_denial(conn, "unauthorized_access", actor_id, related_service=app.title, description=f"Forbidden {request.method} {request.url.path}", severity="Warning")
             except Exception:
                 pass  # Denial must not become a server error when audit storage is unavailable.
         return JSONResponse(status_code=exc.status_code, content={"status": "error", "message": exc.detail})

@@ -1,0 +1,15 @@
+$ python -m pytest tests/test_karl.py -v  (2026-10-18, Python 3.11)
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.3.4, pluggy-1.7.0 -- C:\Users\user\Desktop\435L\ChristopheElChabab-JoeySaade-KarlKhouri\.venv\Scripts\python.exe
+plugins: anyio-4.15.1
+collecting ... collected 7 items
+
+tests/test_karl.py::test_outbox_events_reach_audit_service_with_attribution PASSED [ 14%]
+tests/test_karl.py::test_log_creation_rules_and_deduplication PASSED     [ 28%]
+tests/test_karl.py::test_log_reading_permissions_search_and_deletion PASSED [ 42%]
+tests/test_karl.py::test_logs_are_immutable_and_survive_user_deletion PASSED [ 57%]
+tests/test_karl.py::test_playbook_ordering_transitions_and_history PASSED [ 71%]
+tests/test_karl.py::test_reports_reconcile_with_stored_data_and_fail_honestly PASSED [ 85%]
+tests/test_karl.py::test_reports_use_upstream_records_for_peer_services PASSED [100%]
+
+============================== 7 passed in 3.65s ==============================

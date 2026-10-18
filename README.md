@@ -1,6 +1,6 @@
 # Security Incident Detection and Response Management System Backend
 
-Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. Joey's three services are runnable; the other six remain pending.
+Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. Joey's three services and Karl Khouri's three services are runnable; the other three remain pending.
 
 | Owner | Services |
 |---|---|
@@ -22,11 +22,23 @@ python -m uvicorn joey.notifications:app --port 8003
 
 Run `python -m pytest tests/test_joey.py -q` and `python tests/live_smoke.py`. The smoke script starts all three services on ports 18001–18003 with a temporary database. Import [Joey's Postman collection](postman/joey.collection.json) and [environment template](postman/joey.environment.template.json); fill in credentials locally, then select the environment. Retry queued notifications and audit events with `python -m joey.outbox`. See [Joey API details](docs/joey-api.md) and [architecture](docs/architecture.md).
 
+## Run Karl Khouri's services
+
+Karl Khouri implemented Security Audit Logging, Security Playbook and Response Automation, and Security Reports (the set listed for Joey in the team's proposed ownership plan) under `/api/Karl-Khouri`. They reuse the setup above; also set `AUDIT_SERVICE_AUTH_SECRET` (a third, different secret) and, if needed, the `*_REPORT_SOURCE` URLs from [.env.example](.env.example). Start the users service as well, since it issues the tokens:
+
+```text
+python -m uvicorn karl.audit_logs:app --port 8007
+python -m uvicorn karl.playbooks:app --port 8008
+python -m uvicorn karl.reports:app --port 8009
+```
+
+Run `python -m pytest tests/test_karl.py -q` and `python tests/live_smoke_karl.py` (six real processes on ports 18001–18009 with a temporary database). Import [Karl's Postman collection](postman/karl.collection.json) and [environment template](postman/karl.environment.template.json). See [Karl's API reference](docs/karl-api.md). The team still needs to confirm the ownership change in the table above and the remaining services' owners.
+
 ## Progress and handoffs
 
 - [Canonical task board](docs/TASKS.md)
 - [Joey handoff](docs/handoffs/joey-saade.md), [Karl handoff](docs/handoffs/karl-khoury.md), [Christophe handoff](docs/handoffs/christophe-el-chabab.md)
-- [Joey implementation and evidence plan](docs/joey-implementation-plan.md)
+- [Joey implementation and evidence plan](docs/joey-implementation-plan.md), [Karl API reference](docs/karl-api.md)
 - [Permissions](docs/permissions.md), [database](docs/database.md), [testing and Postman](docs/testing.md), [evidence](docs/evidence/README.md)
 - [Contribution record](docs/CONTRIBUTIONS.md), [submission checklist](docs/submission-checklist.md)
 

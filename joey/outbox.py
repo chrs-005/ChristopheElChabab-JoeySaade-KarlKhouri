@@ -6,6 +6,8 @@ import httpx
 
 from .common import PREFIX, db, now, service_secret
 
+AUDIT_PREFIX = "/api/Karl-Khouri"  # Karl Khouri's Security Audit Logging service
+
 
 def deliver_pending():
     url = os.getenv("NOTIFICATION_SERVICE_URL", "http://127.0.0.1:8003").rstrip("/")
@@ -20,7 +22,7 @@ def deliver_pending():
         if len(key) < 32:
             continue
         try:
-            response = httpx.post(f"{target}{PREFIX if event['destination'] == 'notification' else '/api/Christophe-El-Chabab'}{path}", json=json.loads(event["payload_json"]), headers={"X-Service-Key": key}, timeout=3)
+            response = httpx.post(f"{target}{PREFIX if event['destination'] == 'notification' else AUDIT_PREFIX}{path}", json=json.loads(event["payload_json"]), headers={"X-Service-Key": key}, timeout=3)
             response.raise_for_status()
             failure = None
         except (httpx.HTTPError, RuntimeError) as exc:

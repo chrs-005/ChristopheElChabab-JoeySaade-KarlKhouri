@@ -1,0 +1,987 @@
+{
+  "info": {
+    "name": "Sprint I \u2014 Karl Khouri services",
+    "description": "Security Audit Logging, Security Playbook and Response Automation, and Security Reports by Karl Khouri. Log in first; use an administrator token for most requests and an analyst token to update assigned actions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Setup \u2014 Karl Khouri",
+      "item": [
+        {
+          "name": "Login (users service)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Karl Khouri \u2014 Login (users service). Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{username}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.environment.set('token', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security Audit Logging \u2014 Karl Khouri",
+      "item": [
+        {
+          "name": "Create log as service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Service-Key",
+                "value": "{{auditServiceKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Create log as service. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{eventId}}\",\n  \"actor_user_id\": null,\n  \"actor_label\": \"unknown_user\",\n  \"action\": \"login_failed\",\n  \"description\": \"Failed login attempt\",\n  \"severity\": \"Warning\",\n  \"related_service\": \"users\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stored or deduplicated', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (pm.response.code < 300) pm.environment.set('logId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create manual log as administrator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Create manual log as administrator. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"manual_review\",\n  \"description\": \"Reviewed firewall changes\",\n  \"severity\": \"Information\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Actor comes from token', () => pm.expect(pm.response.json().source).to.eql('user'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 List logs. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/{{logId}}",
+            "description": "Karl Khouri \u2014 Get log. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Found', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?action=login_failed&severity=Warning",
+            "description": "Karl Khouri \u2014 Search logs. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Searched', () => pm.response.to.have.status(200));",
+                  "pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logs for user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/user/{{userId}}",
+            "description": "Karl Khouri \u2014 Logs for user. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete log",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/{{logId}}",
+            "description": "Karl Khouri \u2014 Delete log. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Deleted', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security Playbook and Response Automation \u2014 Karl Khouri",
+      "item": [
+        {
+          "name": "Create playbook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks",
+            "description": "Karl Khouri \u2014 Create playbook. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phishing containment {{$timestamp}}\",\n  \"description\": \"Contain a reported phishing email\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"steps\": [\n    {\n      \"title\": \"Block sender\",\n      \"description\": \"Block the sender domain\",\n      \"assigned_to\": \"{{analystId}}\"\n    },\n    {\n      \"title\": \"Purge messages\",\n      \"description\": \"Remove delivered copies\",\n      \"assigned_to\": \"{{analystId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) { pm.environment.set('playbookId', pm.response.json().id); pm.environment.set('actionId', pm.response.json().actions[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List playbooks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks",
+            "description": "Karl Khouri \u2014 List playbooks. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get playbook",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}",
+            "description": "Karl Khouri \u2014 Get playbook. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Found', () => pm.response.to.have.status(200));",
+                  "pm.test('Steps ordered', () => { const s = pm.response.json().actions.map(a => a.step_order); pm.expect(s).to.eql([...s].sort((a, b) => a - b)); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add response action",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}/actions",
+            "description": "Karl Khouri \u2014 Add response action. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Notify staff\",\n  \"description\": \"Warn affected users\",\n  \"assigned_to\": \"{{analystId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start action",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
+            "description": "Karl Khouri \u2014 Start action. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\",\n  \"note\": \"Started\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Updated', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete action",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
+            "description": "Karl Khouri \u2014 Complete action. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Completed\",\n  \"note\": \"Done\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Updated', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Playbook execution history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}/history",
+            "description": "Karl Khouri \u2014 Playbook execution history. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete playbook",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}",
+            "description": "Karl Khouri \u2014 Delete playbook. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Deleted', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security Reports \u2014 Karl Khouri",
+      "item": [
+        {
+          "name": "Summary report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/summary",
+            "description": "Karl Khouri \u2014 Summary report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incidents report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/incidents",
+            "description": "Karl Khouri \u2014 Incidents report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assets report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/assets",
+            "description": "Karl Khouri \u2014 Assets report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Threats report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/threats",
+            "description": "Karl Khouri \u2014 Threats report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vulnerabilities report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/vulnerabilities",
+            "description": "Karl Khouri \u2014 Vulnerabilities report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activity report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/activity",
+            "description": "Karl Khouri \u2014 Activity report. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Negative checks \u2014 Karl Khouri",
+      "item": [
+        {
+          "name": "Reject forged audit service key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Service-Key",
+                "value": "wrong-key"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Reject forged audit service key. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{eventId}}\",\n  \"actor_user_id\": null,\n  \"actor_label\": \"unknown_user\",\n  \"action\": \"login_failed\",\n  \"description\": \"Failed login attempt\",\n  \"severity\": \"Warning\",\n  \"related_service\": \"users\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject user-chosen log actor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Reject user-chosen log actor. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"manual_review\",\n  \"actor_label\": \"someone_else\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid log date filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?start_date=yesterday",
+            "description": "Karl Khouri \u2014 Reject invalid log date filter. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject logs without token",
+          "request": {
+            "method": "GET",
+            "header": [
+              "pm.test('Authentication required', () => pm.response.to.have.status(401));",
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Reject logs without token. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "[]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject playbook with gap in steps",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks",
+            "description": "Karl Khouri \u2014 Reject playbook with gap in steps. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phishing containment {{$timestamp}}\",\n  \"description\": \"Contain a reported phishing email\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"steps\": [\n    {\n      \"title\": \"Block sender\",\n      \"description\": \"Block the sender domain\",\n      \"assigned_to\": \"{{analystId}}\",\n      \"step_order\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid playbook category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks",
+            "description": "Karl Khouri \u2014 Reject invalid playbook category. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phishing containment {{$timestamp}}\",\n  \"description\": \"Contain a reported phishing email\",\n  \"category\": \"Weather\",\n  \"severity\": \"High\",\n  \"steps\": [\n    {\n      \"title\": \"Block sender\",\n      \"description\": \"Block the sender domain\",\n      \"assigned_to\": \"{{analystId}}\"\n    },\n    {\n      \"title\": \"Purge messages\",\n      \"description\": \"Remove delivered copies\",\n      \"assigned_to\": \"{{analystId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject skipping In Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
+            "description": "Karl Khouri \u2014 Reject skipping In Progress. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Completed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Transition rejected', () => pm.expect(pm.response.code).to.be.oneOf([409]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject missing playbook",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/999999999",
+            "description": "Karl Khouri \u2014 Reject missing playbook. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing resource', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject reports without token",
+          "request": {
+            "method": "GET",
+            "header": [
+              "pm.test('Authentication required', () => pm.response.to.have.status(401));",
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/summary",
+            "description": "Karl Khouri \u2014 Reject reports without token. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "[]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

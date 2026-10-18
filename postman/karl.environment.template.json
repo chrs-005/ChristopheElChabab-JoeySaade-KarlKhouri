@@ -1,0 +1,90 @@
+{
+  "name": "Karl Khouri local template",
+  "values": [
+    {
+      "key": "userUrl",
+      "value": "http://127.0.0.1:8001",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditUrl",
+      "value": "http://127.0.0.1:8007",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "playbookUrl",
+      "value": "http://127.0.0.1:8008",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "reportUrl",
+      "value": "http://127.0.0.1:8009",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "userPassword",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditServiceKey",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "analystId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "logId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "playbookId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "actionId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "eventId",
+      "value": "example-audit-event-1",
+      "enabled": true,
+      "type": "default"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

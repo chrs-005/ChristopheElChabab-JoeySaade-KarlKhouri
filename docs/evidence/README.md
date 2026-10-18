@@ -5,3 +5,5 @@ The [Joey pytest output](joey-pytest-2026-10-17.txt) is actual local execution o
 The [live HTTP output](joey-live-http-2026-10-17.txt) records actual execution of `python tests/live_smoke.py`: three processes handled registration, login and automatic welcome notification delivery through HTTP, with a database outbox check. The temporary database was removed after the check. This does not cover Karl/Christophe integrations or replace requested screenshots.
 
 Pending capture checklist: per-endpoint success and rejection screenshots; authentication and authorization comparison; validation errors; database schema and stored records; service integrations; lifecycle and end-to-end path; Postman collection execution; final report embeds. Add links as files are actually captured.
+
+Karl Khouri, 2026-10-18: [pytest output](karl-pytest-2026-10-18.txt) (7 passed) and [live HTTP output](karl-live-http-2026-10-18.txt) from `python tests/live_smoke_karl.py`, which ran six real processes against a temporary database. Covers L/P/R test tasks; not Postman screenshots or database screenshots.
