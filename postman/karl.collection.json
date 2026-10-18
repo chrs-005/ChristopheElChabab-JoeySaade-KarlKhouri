@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Sprint I \u2014 Karl Khouri services",
-    "description": "Security Audit Logging, Security Playbook and Response Automation, and Security Reports by Karl Khouri. Log in first; use an administrator token for most requests and an analyst token to update assigned actions.",
+    "description": "Security Audit Logging, Security Playbook and Response Automation, and Security Reports by Karl Khouri. Fill username, userPassword (an administrator) and auditServiceKey, start all nine services, then run the folders in order. Setup creates and logs in its own analyst.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -9,7 +9,7 @@
       "name": "Setup \u2014 Karl Khouri",
       "item": [
         {
-          "name": "Login (users service)",
+          "name": "Login administrator",
           "request": {
             "method": "POST",
             "header": [
@@ -19,7 +19,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/login",
-            "description": "Karl Khouri \u2014 Login (users service). Run against your own backend and inspect the actual response.",
+            "description": "Karl Khouri \u2014 Login administrator. Run against your own backend and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username_or_email\": \"{{username}}\",\n  \"password\": \"{{userPassword}}\"\n}",
@@ -38,6 +38,150 @@
                 "exec": [
                   "pm.test('Authenticated', () => pm.response.to.have.status(200));",
                   "if (pm.response.code === 200) pm.environment.set('token', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get administrator profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{username}}",
+            "description": "Karl Khouri \u2014 Get administrator profile. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Found', () => pm.response.to.have.status(200));",
+                  "pm.test('Administrator role', () => pm.expect(pm.response.json().role).to.eql('Security Administrator'));",
+                  "if (pm.response.code === 200) pm.environment.set('userId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register analyst account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Karl Khouri \u2014 Register analyst account. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Karl Khouri Analyst\",\n  \"username\": \"{{analystUsername}}\",\n  \"email\": \"{{analystUsername}}@example.test\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"SOC\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('analystUsername', 'karl_analyst_' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('analystId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Promote to Security Analyst",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{analystId}}/admin",
+            "description": "Karl Khouri \u2014 Promote to Security Analyst. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Security Analyst\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Promoted', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login analyst",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Karl Khouri \u2014 Login analyst. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{analystUsername}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.environment.set('analystToken', pm.response.json().access_token);"
                 ]
               }
             }
@@ -290,7 +434,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Created', () => pm.response.to.have.status(201));",
-                  "if (pm.response.code === 201) { pm.environment.set('playbookId', pm.response.json().id); pm.environment.set('actionId', pm.response.json().actions[0].id); }"
+                  "if (pm.response.code === 201) { const p = pm.response.json(); pm.environment.set('playbookId', p.id); pm.environment.set('actionId', p.actions[0].id); pm.environment.set('action2Id', p.actions[1].id); }"
                 ]
               }
             }
@@ -379,20 +523,21 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Created', () => pm.response.to.have.status(201));"
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Appended as next step', () => pm.expect(pm.response.json().step_order).to.eql(3));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Start action",
+          "name": "Reject skipping In Progress",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{analystToken}}"
               },
               {
                 "key": "Content-Type",
@@ -400,7 +545,83 @@
               }
             ],
             "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
-            "description": "Karl Khouri \u2014 Start action. Run against your own backend and inspect the actual response.",
+            "description": "Karl Khouri \u2014 Reject skipping In Progress. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Completed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Transition rejected', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject starting step 2 before step 1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{action2Id}}/status",
+            "description": "Karl Khouri \u2014 Reject starting step 2 before step 1. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Transition rejected', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start action as assigned analyst",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
+            "description": "Karl Khouri \u2014 Start action as assigned analyst. Run against your own backend and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"In Progress\",\n  \"note\": \"Started\"\n}",
@@ -417,20 +638,21 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Updated', () => pm.response.to.have.status(200));"
+                  "pm.test('Updated', () => pm.response.to.have.status(200));",
+                  "pm.test('Now In Progress', () => pm.expect(pm.response.json().status).to.eql('In Progress'));"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Complete action",
+          "name": "Complete action as assigned analyst",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{analystToken}}"
               },
               {
                 "key": "Content-Type",
@@ -438,7 +660,7 @@
               }
             ],
             "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
-            "description": "Karl Khouri \u2014 Complete action. Run against your own backend and inspect the actual response.",
+            "description": "Karl Khouri \u2014 Complete action as assigned analyst. Run against your own backend and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"Completed\",\n  \"note\": \"Done\"\n}",
@@ -455,7 +677,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Updated', () => pm.response.to.have.status(200));"
+                  "pm.test('Updated', () => pm.response.to.have.status(200));",
+                  "pm.test('Now Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));"
                 ]
               }
             }
@@ -480,7 +703,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                  "pm.test('Listed', () => pm.response.to.have.status(200));",
+                  "pm.test('Three creations and two transitions recorded', () => pm.expect(pm.response.json().length).to.eql(5));"
                 ]
               }
             }
@@ -510,6 +734,31 @@
               }
             }
           ]
+        },
+        {
+          "name": "Confirm deleted playbook",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}",
+            "description": "Karl Khouri \u2014 Confirm deleted playbook. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Gone', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -535,7 +784,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('All sources available', () => { const r = pm.response.json(); pm.expect(r.complete).to.eql(true); pm.expect(r.unavailable).to.eql([]); });"
                 ]
               }
             }
@@ -560,7 +810,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('Total present', () => pm.expect(pm.response.json().total).to.be.a('number'));"
                 ]
               }
             }
@@ -585,7 +836,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('Total present', () => pm.expect(pm.response.json().total).to.be.a('number'));"
                 ]
               }
             }
@@ -610,7 +862,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('Total present', () => pm.expect(pm.response.json().total).to.be.a('number'));"
                 ]
               }
             }
@@ -635,7 +888,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('Total present', () => pm.expect(pm.response.json().total).to.be.a('number'));"
                 ]
               }
             }
@@ -660,7 +914,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Report or explicit upstream failure', () => pm.expect(pm.response.code).to.be.oneOf([200, 502, 503]));"
+                  "pm.test('Report generated', () => pm.response.to.have.status(200));",
+                  "pm.test('Events counted', () => pm.expect(pm.response.json().total_events).to.be.above(0));"
                 ]
               }
             }
@@ -776,24 +1031,9 @@
           "name": "Reject logs without token",
           "request": {
             "method": "GET",
-            "header": [
-              "pm.test('Authentication required', () => pm.response.to.have.status(401));",
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [],
             "url": "{{auditUrl}}/api/Karl-Khouri/logs",
-            "description": "Karl Khouri \u2014 Reject logs without token. Run against your own backend and inspect the actual response.",
-            "body": {
-              "mode": "raw",
-              "raw": "[]",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+            "description": "Karl Khouri \u2014 Reject logs without token. Run against your own backend and inspect the actual response."
           },
           "event": [
             {
@@ -801,7 +1041,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Authentication required', () => pm.response.to.have.status(401));"
                 ]
               }
             }
@@ -884,44 +1124,6 @@
           ]
         },
         {
-          "name": "Reject skipping In Progress",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{actionId}}/status",
-            "description": "Karl Khouri \u2014 Reject skipping In Progress. Run against your own backend and inspect the actual response.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"Completed\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Transition rejected', () => pm.expect(pm.response.code).to.be.oneOf([409]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
           "name": "Reject missing playbook",
           "request": {
             "method": "GET",
@@ -950,24 +1152,9 @@
           "name": "Reject reports without token",
           "request": {
             "method": "GET",
-            "header": [
-              "pm.test('Authentication required', () => pm.response.to.have.status(401));",
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [],
             "url": "{{reportUrl}}/api/Karl-Khouri/reports/summary",
-            "description": "Karl Khouri \u2014 Reject reports without token. Run against your own backend and inspect the actual response.",
-            "body": {
-              "mode": "raw",
-              "raw": "[]",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+            "description": "Karl Khouri \u2014 Reject reports without token. Run against your own backend and inspect the actual response."
           },
           "event": [
             {
@@ -975,7 +1162,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Authentication required', () => pm.response.to.have.status(401));"
                 ]
               }
             }

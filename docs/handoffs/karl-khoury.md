@@ -13,3 +13,11 @@ Checks: `python -m pytest tests -q` → 12 passed (7 Karl, 5 existing). `python 
 Fixed during the live check: concurrent outbox retries of the same event raced on the unique `event_id` and returned 500; `POST /logs` now returns the first stored copy.
 
 Remaining: Postman run and screenshots (L/P/R-EVID-01); incident, threat and vulnerability report reconciliation once those services exist. Blockers: team confirmation of the new ownership split, and which name spelling to use (`Khouri` in routes per Karl; earlier docs say `Khoury`). Teammates can integrate now: send audit events with `X-Service-Key: AUDIT_SERVICE_AUTH_SECRET` to `POST /api/Karl-Khouri/logs`, or queue them in `outbox`; expose list APIs with `created_at`, `status`, `severity` (and `type`, `assigned_to`, `cvss_score` where relevant) for reports.
+
+## 2026-10-18 — Karl Khouri: Postman collection fixes after team readiness check
+
+Changed: confirmed and fixed the three findings in Christophe's readiness check ([details](../testing.md#karl-khouri-collection-follow-up-2026-10-18)). Files: `postman/generate_karl.py`, `postman/karl.collection.json`, `postman/karl.environment.template.json`; new runner `tests/postman_karl.py`; `tests/live_smoke_karl.py` now uses Christophe's `/api/Christophe-ElChabab` prefix. No service code changed.
+
+Checks: Newman against nine real services → 37 requests, 51 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-18.txt)); `python -m pytest tests -q` → 60 passed; `python tests/live_smoke_karl.py` and `python tests/live_smoke_christophe.py` passed.
+
+Remaining: L/P/R-EVID-01 screenshots and database records. Joey's collection findings are his to fix and were not changed here.

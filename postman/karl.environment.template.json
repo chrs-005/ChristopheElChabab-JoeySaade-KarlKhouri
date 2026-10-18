@@ -56,7 +56,19 @@
       "type": "default"
     },
     {
+      "key": "analystUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "analystId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "analystToken",
       "value": "",
       "enabled": true,
       "type": "default"
@@ -75,6 +87,12 @@
     },
     {
       "key": "actionId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "action2Id",
       "value": "",
       "enabled": true,
       "type": "default"

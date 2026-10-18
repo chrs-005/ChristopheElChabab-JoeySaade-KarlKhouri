@@ -21,3 +21,5 @@ The same Christophe live-output file includes actual Newman execution of the exp
 - No teammate Postman/database screenshots were committed at the remote head checked (`2cf2a2e`). Their JSON collections and automated logs exist; those artifacts alone do not prove a Postman GUI run.
 
 All screenshot/report evidence tasks remain pending. Caption Christophe's actual future screenshots `Christophe ElChabab — API title — what it demonstrates`.
+
+Karl Khouri, 2026-10-18 follow-up: [Newman output](karl-postman-newman-2026-10-18.txt) from `python tests/postman_karl.py`, which ran Karl's exported collection against nine real services on a disposable database: 37 requests, 51 assertions, 0 failures. Not a screenshot.

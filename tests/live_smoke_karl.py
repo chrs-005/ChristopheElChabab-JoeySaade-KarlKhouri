@@ -36,9 +36,9 @@ def main():
             "SERVICE_AUTH_SECRET": "smoke-service-secret-with-at-least-32-characters", "AUDIT_SERVICE_AUTH_SECRET": "smoke-audit-secret-with-at-least-32-characters",
             "NOTIFICATION_SERVICE_URL": "http://127.0.0.1:18003", "AUDIT_SERVICE_URL": "http://127.0.0.1:18007",
             "ASSET_REPORT_SOURCE": url("assets", "/assets"), "AUDIT_REPORT_SOURCE": url("audit_logs", "/logs"),
-            "INCIDENT_REPORT_SOURCE": "http://127.0.0.1:18006/api/Christophe-El-Chabab/incidents",
-            "THREAT_REPORT_SOURCE": "http://127.0.0.1:18004/api/Christophe-El-Chabab/threats",
-            "VULNERABILITY_REPORT_SOURCE": "http://127.0.0.1:18005/api/Christophe-El-Chabab/vulnerabilities",
+            "INCIDENT_REPORT_SOURCE": "http://127.0.0.1:18006/api/Christophe-ElChabab/incidents",
+            "THREAT_REPORT_SOURCE": "http://127.0.0.1:18004/api/Christophe-ElChabab/threats",
+            "VULNERABILITY_REPORT_SOURCE": "http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities",
             "BOOTSTRAP_ADMIN_NAME": "Smoke Admin", "BOOTSTRAP_ADMIN_USERNAME": "smoke_admin", "BOOTSTRAP_ADMIN_EMAIL": "admin@example.test",
             "BOOTSTRAP_ADMIN_PASSWORD": PASSWORD, "BOOTSTRAP_ADMIN_DEPARTMENT": "Security",
         })

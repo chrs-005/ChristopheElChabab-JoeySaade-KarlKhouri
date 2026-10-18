@@ -32,7 +32,7 @@ python -m uvicorn karl.playbooks:app --port 8008
 python -m uvicorn karl.reports:app --port 8009
 ```
 
-Run `python -m pytest tests/test_karl.py -q` and `python tests/live_smoke_karl.py` (six real processes on ports 18001–18009 with a temporary database). Import [Karl's Postman collection](postman/karl.collection.json) and [environment template](postman/karl.environment.template.json). See [Karl's API reference](docs/karl-api.md). The ownership table above reflects the implemented split confirmed by Christophe.
+Run `python -m pytest tests/test_karl.py -q` and `python tests/live_smoke_karl.py` (six real processes on ports 18001–18009 with a temporary database). `python tests/postman_karl.py` runs the exported collection with Newman against all nine services (needs Node.js; on Windows set `NODE_OPTIONS=--use-system-ca`). Import [Karl's Postman collection](postman/karl.collection.json) and [environment template](postman/karl.environment.template.json); fill the administrator's `username`, `userPassword` and `auditServiceKey`, start all nine services, and run the folders in order. See [Karl's API reference](docs/karl-api.md). The ownership table above reflects the implemented split confirmed by Christophe.
 
 ## Run Christophe ElChabab's services
 
