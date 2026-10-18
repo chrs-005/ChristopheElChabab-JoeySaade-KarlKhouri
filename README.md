@@ -1,12 +1,12 @@
 # Security Incident Detection and Response Management System Backend
 
-Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. Joey's three services and Karl Khouri's three services are runnable; the other three remain pending.
+Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. All nine services have runnable code. Christophe's real Postman/database screenshots and the common final report remain pending.
 
 | Owner | Services |
 |---|---|
 | Joey Saade | Users and Identity Management; Asset Management; Notification and Alert Management |
-| Karl Khoury | Threat Intelligence; Vulnerability Management; Incident Management |
-| Christophe El Chabab | Security Audit Logging; Security Playbook and Response Automation; Security Reports |
+| Karl Khouri | Security Audit Logging; Security Playbook and Response Automation; Security Reports |
+| Christophe ElChabab | Threat Intelligence; Vulnerability Management; Incident Management |
 
 ## Run Joey's services
 
@@ -32,7 +32,21 @@ python -m uvicorn karl.playbooks:app --port 8008
 python -m uvicorn karl.reports:app --port 8009
 ```
 
-Run `python -m pytest tests/test_karl.py -q` and `python tests/live_smoke_karl.py` (six real processes on ports 18001–18009 with a temporary database). Import [Karl's Postman collection](postman/karl.collection.json) and [environment template](postman/karl.environment.template.json). See [Karl's API reference](docs/karl-api.md). The team still needs to confirm the ownership change in the table above and the remaining services' owners.
+Run `python -m pytest tests/test_karl.py -q` and `python tests/live_smoke_karl.py` (six real processes on ports 18001–18009 with a temporary database). Import [Karl's Postman collection](postman/karl.collection.json) and [environment template](postman/karl.environment.template.json). See [Karl's API reference](docs/karl-api.md). The ownership table above reflects the implemented split confirmed by Christophe.
+
+## Run Christophe ElChabab's services
+
+Use the same virtual environment, secrets and database as the other services. Start users, assets, notifications and audit logging for authentication and event delivery, plus reports when checking integration. Christophe's tables are created on startup from `christophe/schema.sql`.
+
+```text
+python -m uvicorn christophe.threats:app --port 8004
+python -m uvicorn christophe.vulnerabilities:app --port 8005
+python -m uvicorn christophe.incidents:app --port 8006
+```
+
+All 18 required routes use `/api/Christophe-ElChabab`. The three report source defaults and `.env.example` point to that prefix; update an existing private `.env` if it still uses `Christophe-El-Chabab`. No alias endpoints were added.
+
+Run `python -m pytest tests -q` and `python tests/live_smoke_christophe.py`. The latter starts all nine services on ports 18001–18009 with a disposable database and stops them afterward. Import [Christophe's collection](postman/christophe.collection.json) and [environment template](postman/christophe.environment.template.json). Fill administrator credentials and `newUserPassword` locally; run folders in order and capture actual screenshots before Cleanup. See [Christophe API and evidence guide](docs/christophe-api.md) and the [strict review record](docs/christophe-review.md).
 
 ## Progress and handoffs
 

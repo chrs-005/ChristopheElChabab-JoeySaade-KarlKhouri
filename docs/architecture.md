@@ -1,18 +1,19 @@
-# Architecture decisions and open questions
+# Current Sprint I architecture
 
-The brief requires nine independent backend services communicating by APIs, plus database PK/FK relationships. Joey's implementation runs three separate FastAPI processes with a shared SQLite database so local FK constraints work. Each process exposes only its owned routes. This is a provisional local topology; the team must choose a production database and table ownership plan before Karl and Christophe add schemas. SQLite is suitable for the local Sprint I demo, but concurrent multi-process writes may require migration to PostgreSQL.
+The nine services run as independent FastAPI processes. They retain the team's shared local SQLite database for real user, asset and relationship foreign keys. Authentication uses Joey's signed bearer tokens and rechecks account status on each request.
 
-Joey's apps use shared signed bearer tokens, checked against current user status on each request. A separate secret authenticates calls to notification creation. Users writes a welcome event to a transactional outbox; the notification service deduplicates by event ID. Audit events are queued for Christophe's future API and remain pending until its URL and separate credential are configured. Cross-service calls have a three-second timeout. Reports must consume service APIs, not peers' tables. No service gets general administrator credentials for integration.
+| Owner | Service | Port |
+|---|---|---|
+| Joey Saade | Users / Assets / Notifications | 8001 / 8002 / 8003 |
+| Christophe ElChabab | Threats / Vulnerabilities / Incidents | 8004 / 8005 / 8006 |
+| Karl Khouri | Audit logging / Playbooks / Reports | 8007 / 8008 / 8009 |
 
-## Decisions required before implementation
+Christophe's mutations atomically store their data and audit/notification events in the existing transactional outbox. After commit, Christophe’s coalesced delivery worker uses a reusable HTTP client to call Karl’s audit API and Joey’s notification API with their separate service credentials, three-second timeouts and event IDs. Failed deliveries remain queued; `python -m joey.outbox` retries them. Notification creation itself queues audit records, which Christophe’s worker drains in a subsequent batch. Forbidden requests are queued by the shared error handler and automatically dispatched by Christophe’s own middleware.
 
-1. Confirm whether to retain Joey's FastAPI/SQLite local stack for team integration, and choose the longer-term database, migration ownership and deployment layout.
-2. Student names were confirmed by Joey: Joey Saade, Karl Khoury, Christophe El Chabab. Route prefixes are `/api/Joey-Saade`, `/api/Karl-Khoury`, and `/api/Christophe-El-Chabab`.
-3. Token claims, signing/verification, expiry and revocation; narrowly scoped service credentials.
-4. ID format, UTC timestamp representation, enum serialization, pagination and error format.
-5. Audit delivery on failures and failed login, avoiding loops; notification delivery and retry deduplication.
-6. Resolve permission contradictions in [permissions](permissions.md) with the instructor where needed.
+Reports call the owned list APIs with the actual caller's bearer token. Christophe returns the field names Karl already expects. The report-source defaults and environment template now use `/api/Christophe-ElChabab`; an existing private configuration must be updated if it overrides those defaults.
 
-## Integration order
+Local foreign-key/reference validation reads the shared Users and Assets tables; no second copy of their data is maintained. Audit/notification delivery and report aggregation use actual API calls. This preserves the existing topology rather than redesigning teammates' services.
 
-Joey starts authentication/roles and assets. Karl can build against documented contracts before services run and integrate once auth/assets are usable. Christophe can define audit events immediately, then build playbooks when user/workflow contracts exist. Reports use real data from the other APIs and come last. Tests with doubles must be labeled as such.
+The nine-process check in `tests/live_smoke_christophe.py` verifies registration/login, assets, threats, vulnerabilities, incident assignment/notes/lifecycle, notifications, audit records, a playbook action, and reports against a disposable database. Real Postman/database screenshots and the final report architecture/schema diagrams still need team preparation.
+
+See [permissions](permissions.md) for ambiguities in the brief and [API contracts](api-contracts.md) for current interfaces.

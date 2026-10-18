@@ -1,0 +1,198 @@
+{
+  "name": "Christophe ElChabab local template",
+  "values": [
+    {
+      "key": "userUrl",
+      "value": "http://127.0.0.1:8001",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "assetUrl",
+      "value": "http://127.0.0.1:8002",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "notificationUrl",
+      "value": "http://127.0.0.1:8003",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "threatUrl",
+      "value": "http://127.0.0.1:8004",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "vulnerabilityUrl",
+      "value": "http://127.0.0.1:8005",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "incidentUrl",
+      "value": "http://127.0.0.1:8006",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditUrl",
+      "value": "http://127.0.0.1:8007",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "reportUrl",
+      "value": "http://127.0.0.1:8009",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "adminUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "analystToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "auditorToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "employeeToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "otherEmployeeToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "analystId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditorId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "employeeId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "otherEmployeeId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "analystUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditorUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "employeeUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "otherEmployeeUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "assetId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "threatId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "ipThreatId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "vulnerabilityId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "secondVulnerabilityId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "incidentId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "secondIncidentId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "runTag",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

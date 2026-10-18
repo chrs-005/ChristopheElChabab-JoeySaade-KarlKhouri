@@ -13,9 +13,9 @@ from .common import PREFIX, date_range, init_db, parse_time
 # Each source is the full list URL of an upstream API. Change the environment value when an owner changes ports or prefix.
 SOURCES = {
     "assets": ("ASSET_REPORT_SOURCE", "http://127.0.0.1:8002/api/Joey-Saade/assets", "created_at"),
-    "threats": ("THREAT_REPORT_SOURCE", "http://127.0.0.1:8004/api/Christophe-El-Chabab/threats", "created_at"),
-    "vulnerabilities": ("VULNERABILITY_REPORT_SOURCE", "http://127.0.0.1:8005/api/Christophe-El-Chabab/vulnerabilities", "created_at"),
-    "incidents": ("INCIDENT_REPORT_SOURCE", "http://127.0.0.1:8006/api/Christophe-El-Chabab/incidents", "created_at"),
+    "threats": ("THREAT_REPORT_SOURCE", "http://127.0.0.1:8004/api/Christophe-ElChabab/threats", "created_at"),
+    "vulnerabilities": ("VULNERABILITY_REPORT_SOURCE", "http://127.0.0.1:8005/api/Christophe-ElChabab/vulnerabilities", "created_at"),
+    "incidents": ("INCIDENT_REPORT_SOURCE", "http://127.0.0.1:8006/api/Christophe-ElChabab/incidents", "created_at"),
     "activity": ("AUDIT_REPORT_SOURCE", "http://127.0.0.1:8007/api/Karl-Khouri/logs", "occurred_at"),
 }
 CLOSED_INCIDENT = ("Resolved", "Closed")

@@ -13,4 +13,4 @@ After every work session:
 
 Task states: TODO; IN_PROGRESS; BLOCKED; IMPLEMENTED (code exists); VERIFIED (relevant checks passed); DONE (implementation, integration, docs, Postman, and required real evidence complete). Missing evidence means below DONE. Only add commit or PR references after they exist. Each student commits and pushes with their own account; never impersonate an author.
 
-Every API route must include the confirmed owner's full name as a URL-safe prefix. Preserve the brief's endpoint suffix. Confirmed names: Joey Saade, Karl Khoury, Christophe El Chabab.
+Every API route must include the confirmed owner's full name as a URL-safe prefix. Preserve the brief's endpoint suffix. Current owner names: Joey Saade, Karl Khouri, Christophe ElChabab (confirmed by Christophe on 2026-10-18). Christophe uses `/api/Christophe-ElChabab`; preserve Joey and Karl's existing prefixes.

@@ -1,0 +1,3219 @@
+{
+  "info": {
+    "name": "Sprint I \u2014 Christophe ElChabab services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run folders in order against your own system. Fill administrator credentials and newUserPassword locally. Setup creates role accounts and an asset through Joey APIs. Threats/vulnerabilities/incidents are Christophe ElChabab routes; integration calls verify Karl/Joey services. No saved response is fabricated. Capture actual screenshots before Cleanup."
+  },
+  "item": [
+    {
+      "name": "01 Setup",
+      "item": [
+        {
+          "name": "Log in as administrator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Log in as administrator. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 200) pm.environment.set('adminToken', pm.response.json().access_token);",
+                  "if (pm.response.code === 200) pm.environment.set('runTag', String(Date.now()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject incorrect password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Reject incorrect password. Expected HTTP 401. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{adminUsername}}\",\n  \"password\": \"incorrect-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register analyst",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Christophe ElChabab \u2014 Register analyst. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Christophe ElChabab analyst\",\n  \"username\": \"cc_analyst_{{runTag}}\",\n  \"email\": \"cc_analyst_{{runTag}}@example.test\",\n  \"password\": \"{{newUserPassword}}\",\n  \"department\": \"SOC\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 201) pm.environment.set('analystId', pm.response.json().id);",
+                  "if (pm.response.code === 201) pm.environment.set('analystUsername', pm.response.json().username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Security Analyst",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{analystId}}/admin",
+            "description": "Christophe ElChabab \u2014 Assign Security Analyst. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Security Analyst\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log in as analyst",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Log in as analyst. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{analystUsername}}\",\n  \"password\": \"{{newUserPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 200) pm.environment.set('analystToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register auditor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Christophe ElChabab \u2014 Register auditor. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Christophe ElChabab auditor\",\n  \"username\": \"cc_auditor_{{runTag}}\",\n  \"email\": \"cc_auditor_{{runTag}}@example.test\",\n  \"password\": \"{{newUserPassword}}\",\n  \"department\": \"SOC\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 201) pm.environment.set('auditorId', pm.response.json().id);",
+                  "if (pm.response.code === 201) pm.environment.set('auditorUsername', pm.response.json().username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Security Auditor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{auditorId}}/admin",
+            "description": "Christophe ElChabab \u2014 Assign Security Auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Security Auditor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log in as auditor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Log in as auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{auditorUsername}}\",\n  \"password\": \"{{newUserPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 200) pm.environment.set('auditorToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Christophe ElChabab \u2014 Register employee. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Christophe ElChabab employee\",\n  \"username\": \"cc_employee_{{runTag}}\",\n  \"email\": \"cc_employee_{{runTag}}@example.test\",\n  \"password\": \"{{newUserPassword}}\",\n  \"department\": \"SOC\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 201) pm.environment.set('employeeId', pm.response.json().id);",
+                  "if (pm.response.code === 201) pm.environment.set('employeeUsername', pm.response.json().username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log in as employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Log in as employee. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{employeeUsername}}\",\n  \"password\": \"{{newUserPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 200) pm.environment.set('employeeToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register otherEmployee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Christophe ElChabab \u2014 Register otherEmployee. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Christophe ElChabab otherEmployee\",\n  \"username\": \"cc_otherEmployee_{{runTag}}\",\n  \"email\": \"cc_otherEmployee_{{runTag}}@example.test\",\n  \"password\": \"{{newUserPassword}}\",\n  \"department\": \"SOC\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 201) pm.environment.set('otherEmployeeId', pm.response.json().id);",
+                  "if (pm.response.code === 201) pm.environment.set('otherEmployeeUsername', pm.response.json().username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log in as otherEmployee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Christophe ElChabab \u2014 Log in as otherEmployee. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{otherEmployeeUsername}}\",\n  \"password\": \"{{newUserPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 200) pm.environment.set('otherEmployeeToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create affected asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "description": "Christophe ElChabab \u2014 Create affected asset. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Christophe ElChabab Gateway {{runTag}}\",\n  \"type\": \"Server\",\n  \"ip_address\": \"10.0.0.25\",\n  \"department\": \"SOC\",\n  \"owner_id\": \"{{employeeId}}\",\n  \"location\": \"Lab\",\n  \"criticality\": \"High\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "if (pm.response.code === 201) pm.environment.set('assetId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Threat Intelligence",
+      "item": [
+        {
+          "name": "Create domain threat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Create domain threat. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Domain\",\n  \"value\": \"cc-{{runTag}}.example\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"High\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('threatId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create IP threat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Create IP threat. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"IP Address\",\n  \"value\": \"198.51.100.42\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"Critical\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('ipThreatId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject duplicate domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject duplicate domain. Expected HTTP 409. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Domain\",\n  \"value\": \"cc-{{runTag}}.example\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"High\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid IP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject invalid IP. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"IP Address\",\n  \"value\": \"999.1.2.3\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"High\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid hash",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject invalid hash. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"File Hash\",\n  \"value\": \"not-a-hash\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"High\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject malformed domain terminator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject malformed domain terminator. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Domain\",\n  \"value\": \"evil.example..\",\n  \"description\": \"Phishing indicator investigated by Christophe ElChabab\",\n  \"severity\": \"High\",\n  \"source\": \"SOC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject missing fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject missing fields. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject employee reading threats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject employee reading threats. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject missing authentication",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 Reject missing authentication. Expected HTTP 401. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List threats as auditor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auditorToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats",
+            "description": "Christophe ElChabab \u2014 List threats as auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get threat as analyst",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Get threat as analyst. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unknown threat ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/999999999",
+            "description": "Christophe ElChabab \u2014 Reject unknown threat ID. Expected HTTP 404. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search by type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/search?type=Domain",
+            "description": "Christophe ElChabab \u2014 Search by type. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search by severity and source",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/search?severity=High&source=SOC",
+            "description": "Christophe ElChabab \u2014 Search by severity and source. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search by value",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/search?value=cc-{{runTag}}.example",
+            "description": "Christophe ElChabab \u2014 Search by value. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update threat",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Update threat. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Indicator confirmed by Christophe ElChabab\",\n  \"severity\": \"Critical\",\n  \"source\": \"Investigation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst threat update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Reject analyst threat update. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Unauthorized update\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst threat deletion",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Reject analyst threat deletion. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Vulnerability Management",
+      "item": [
+        {
+          "name": "Create vulnerability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Create vulnerability. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('vulnerabilityId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create second vulnerability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Create second vulnerability. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab secondary finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": 5.0,\n  \"severity\": \"Medium\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('secondVulnerabilityId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject CVSS outside range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject CVSS outside range. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": 11,\n  \"severity\": \"High\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject boolean CVSS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject boolean CVSS. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": true,\n  \"severity\": \"High\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject boolean vulnerability asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject boolean vulnerability asset. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"asset_id\": true,\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid CVE",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject invalid CVE. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"invalid\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject nonstandard CVE digits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject nonstandard CVE digits. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-\\uff12\\uff10\\uff12\\uff16-\\uff11\\uff12\\uff13\\uff14\\uff15\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"asset_id\": \"{{assetId}}\",\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unknown asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Reject unknown asset. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab gateway finding\",\n  \"description\": \"Missing security update\",\n  \"cve_id\": \"CVE-2026-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"asset_id\": 999999999,\n  \"source\": \"Scanner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List vulnerabilities as auditor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auditorToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 List vulnerabilities as auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get vulnerability",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Get vulnerability. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unknown vulnerability",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/999999999",
+            "description": "Christophe ElChabab \u2014 Reject unknown vulnerability. Expected HTTP 404. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search CVE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/search?cve_id=CVE-2026-12345",
+            "description": "Christophe ElChabab \u2014 Search CVE. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search asset and severity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/search?asset_id={{assetId}}&severity=High",
+            "description": "Christophe ElChabab \u2014 Search asset and severity. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject auditor update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auditorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Reject auditor update. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Unauthorized\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject lifecycle skip",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Reject lifecycle skip. Expected HTTP 409. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update vulnerability information",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Update vulnerability information. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Validated by Christophe ElChabab\",\n  \"cvss_score\": 9.1,\n  \"severity\": \"Critical\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vulnerability -> Under Investigation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Vulnerability -> Under Investigation. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Under Investigation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vulnerability -> In Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Vulnerability -> In Progress. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vulnerability -> Resolved",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Vulnerability -> Resolved. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Resolved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vulnerability -> Closed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Vulnerability -> Closed. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search closed vulnerabilities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/search?status=Closed",
+            "description": "Christophe ElChabab \u2014 Search closed vulnerabilities. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst deletion",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Reject analyst deletion. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Incident Management",
+      "item": [
+        {
+          "name": "Report incident as employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Report incident as employee. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab phishing incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"reporter_id\": \"{{employeeId}}\",\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('incidentId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create second incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Create second incident. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab critical incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"Critical\",\n  \"reporter_id\": \"{{employeeId}}\",\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('secondIncidentId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject invalid severity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Reject invalid severity. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab phishing incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"Extreme\",\n  \"reporter_id\": \"{{employeeId}}\",\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject boolean reporter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Reject boolean reporter. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab phishing incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"reporter_id\": true,\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject boolean incident asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Reject boolean incident asset. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab phishing incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"reporter_id\": \"{{employeeId}}\",\n  \"asset_id\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject reporter impersonation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Reject reporter impersonation. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab phishing incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"reporter_id\": \"{{otherEmployeeId}}\",\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List incidents as administrator",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 List incidents as administrator. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List own submitted incidents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 List own submitted incidents. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Only own reports returned', () => pm.response.json().forEach(r => pm.expect(r.reporter_id).to.eql(Number(pm.environment.get('employeeId')))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get own incident",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}",
+            "description": "Christophe ElChabab \u2014 Get own incident. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject another employee reading incident",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{otherEmployeeToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}",
+            "description": "Christophe ElChabab \u2014 Reject another employee reading incident. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unassigned analyst reading incident",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}",
+            "description": "Christophe ElChabab \u2014 Reject unassigned analyst reading incident. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unknown incident ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/999999999",
+            "description": "Christophe ElChabab \u2014 Reject unknown incident ID. Expected HTTP 404. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject employee assignment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/assign",
+            "description": "Christophe ElChabab \u2014 Reject employee assignment. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"analyst_id\": \"{{analystId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject nonanalyst assignee",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/assign",
+            "description": "Christophe ElChabab \u2014 Reject nonanalyst assignee. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"analyst_id\": \"{{employeeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign incident to analyst",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/assign",
+            "description": "Christophe ElChabab \u2014 Assign incident to analyst. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"analyst_id\": \"{{analystId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "pm.test('Assigned to requested analyst', () => pm.expect(pm.response.json().assigned_to).to.eql(Number(pm.environment.get('analystId'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List assigned incidents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 List assigned incidents. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Only assigned incidents returned', () => pm.response.json().forEach(r => pm.expect(r.assigned_to).to.eql(Number(pm.environment.get('analystId')))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject incident lifecycle skip",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Reject incident lifecycle skip. Expected HTTP 409. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject employee changing status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Reject employee changing status. Expected HTTP 403. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Under Investigation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add investigation note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/notes",
+            "description": "Christophe ElChabab \u2014 Add investigation note. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Christophe ElChabab reviewed gateway logs and identified phishing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject empty note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/notes",
+            "description": "Christophe ElChabab \u2014 Reject empty note. Expected HTTP 422. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \" \"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retrieve incident with notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}",
+            "description": "Christophe ElChabab \u2014 Retrieve incident with notes. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incident -> Under Investigation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Incident -> Under Investigation. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Under Investigation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incident -> Mitigated",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Incident -> Mitigated. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Mitigated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incident -> Resolved",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Incident -> Resolved. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Resolved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incident -> Closed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents/{{incidentId}}/status",
+            "description": "Christophe ElChabab \u2014 Incident -> Closed. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Peer integration",
+      "item": [
+        {
+          "name": "Verify assignment notification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/user/{{analystId}}",
+            "description": "Christophe ElChabab \u2014 Verify assignment notification. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const target = pm.variables.replaceIn(pm.request.url.toString());",
+                  "let attempt = 0;",
+                  "function waitForDelivery() {",
+                  "  pm.sendRequest({url: target, method: 'GET', header: {Authorization: 'Bearer ' + pm.environment.get('analystToken')}}, (err, res) => {",
+                  "    if (err || res.code !== 200) throw new Error('Cannot verify real event delivery');",
+                  "    const records = res.json();",
+                  "    if (Array.isArray(records) && records.some(r => r.type === 'Incident Assignment' && r.message.includes('Incident ' + pm.environment.get('incidentId') + ':'))) return;",
+                  "    if (++attempt >= 40) throw new Error('Actual outbox event was not delivered within the bounded wait');",
+                  "    setTimeout(waitForDelivery, 500);",
+                  "  });",
+                  "}",
+                  "waitForDelivery();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Assignment notice exists', () => pm.expect(pm.response.json().some(r => r.type === 'Incident Assignment')).to.eql(true));",
+                  "pm.test('This run produced the expected event', () => pm.expect(pm.response.json().some(r => r.type === 'Incident Assignment' && r.message.includes('Incident ' + pm.environment.get('incidentId') + ':'))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify threat audit entries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?related_service=threats",
+            "description": "Christophe ElChabab \u2014 Verify threat audit entries. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const target = pm.variables.replaceIn(pm.request.url.toString());",
+                  "let attempt = 0;",
+                  "function waitForDelivery() {",
+                  "  pm.sendRequest({url: target, method: 'GET', header: {Authorization: 'Bearer ' + pm.environment.get('adminToken')}}, (err, res) => {",
+                  "    if (err || res.code !== 200) throw new Error('Cannot verify real event delivery');",
+                  "    const records = res.json();",
+                  "    if (Array.isArray(records) && records.some(r => r.action === 'threat_created' && String(r.subject_id) === String(pm.environment.get('threatId')))) return;",
+                  "    if (++attempt >= 40) throw new Error('Actual outbox event was not delivered within the bounded wait');",
+                  "    setTimeout(waitForDelivery, 500);",
+                  "  });",
+                  "}",
+                  "waitForDelivery();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Real audit records exist', () => pm.expect(pm.response.json()).to.be.an('array').and.not.empty);",
+                  "pm.test('This run produced the expected event', () => pm.expect(pm.response.json().some(r => r.action === 'threat_created' && String(r.subject_id) === String(pm.environment.get('threatId')))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify incident assignment audit",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?action=incident_assigned",
+            "description": "Christophe ElChabab \u2014 Verify incident assignment audit. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const target = pm.variables.replaceIn(pm.request.url.toString());",
+                  "let attempt = 0;",
+                  "function waitForDelivery() {",
+                  "  pm.sendRequest({url: target, method: 'GET', header: {Authorization: 'Bearer ' + pm.environment.get('adminToken')}}, (err, res) => {",
+                  "    if (err || res.code !== 200) throw new Error('Cannot verify real event delivery');",
+                  "    const records = res.json();",
+                  "    if (Array.isArray(records) && records.some(r => r.action === 'incident_assigned' && String(r.subject_id) === String(pm.environment.get('incidentId')))) return;",
+                  "    if (++attempt >= 40) throw new Error('Actual outbox event was not delivered within the bounded wait');",
+                  "    setTimeout(waitForDelivery, 500);",
+                  "  });",
+                  "}",
+                  "waitForDelivery();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Real audit records exist', () => pm.expect(pm.response.json()).to.be.an('array').and.not.empty);",
+                  "pm.test('This run produced the expected event', () => pm.expect(pm.response.json().some(r => r.action === 'incident_assigned' && String(r.subject_id) === String(pm.environment.get('incidentId')))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify permission violation audit",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?action=unauthorized_access",
+            "description": "Christophe ElChabab \u2014 Verify permission violation audit. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const target = pm.variables.replaceIn(pm.request.url.toString());",
+                  "let attempt = 0;",
+                  "function waitForDelivery() {",
+                  "  pm.sendRequest({url: target, method: 'GET', header: {Authorization: 'Bearer ' + pm.environment.get('adminToken')}}, (err, res) => {",
+                  "    if (err || res.code !== 200) throw new Error('Cannot verify real event delivery');",
+                  "    const records = res.json();",
+                  "    if (Array.isArray(records) && records.some(r => r.action === 'unauthorized_access' && Number(r.actor_user_id) === Number(pm.environment.get('employeeId')))) return;",
+                  "    if (++attempt >= 40) throw new Error('Actual outbox event was not delivered within the bounded wait');",
+                  "    setTimeout(waitForDelivery, 500);",
+                  "  });",
+                  "}",
+                  "waitForDelivery();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Real audit records exist', () => pm.expect(pm.response.json()).to.be.an('array').and.not.empty);",
+                  "pm.test('This run produced the expected event', () => pm.expect(pm.response.json().some(r => r.action === 'unauthorized_access' && Number(r.actor_user_id) === Number(pm.environment.get('employeeId')))).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify threats report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/threats",
+            "description": "Christophe ElChabab \u2014 Verify threats report. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify vulnerabilities report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/vulnerabilities",
+            "description": "Christophe ElChabab \u2014 Verify vulnerabilities report. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify incidents report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/incidents",
+            "description": "Christophe ElChabab \u2014 Verify incidents report. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify summary report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/summary",
+            "description": "Christophe ElChabab \u2014 Verify summary report. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('All report sources available', () => { pm.expect(pm.response.json().complete).to.eql(true); pm.expect(pm.response.json().unavailable).to.eql([]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Cleanup",
+      "item": [
+        {
+          "name": "Delete domain threat",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Delete domain threat. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm deleted threat",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{threatId}}",
+            "description": "Christophe ElChabab \u2014 Confirm deleted threat. Expected HTTP 404. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete IP threat",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/{{ipThreatId}}",
+            "description": "Christophe ElChabab \u2014 Delete IP threat. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete vulnerability",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Delete vulnerability. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm deleted vulnerability",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{vulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Confirm deleted vulnerability. Expected HTTP 404. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Clear error response', () => { const r = pm.response.json(); pm.expect(r.status).to.eql('error'); pm.expect(r.message).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete second vulnerability",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{vulnerabilityUrl}}/api/Christophe-ElChabab/vulnerabilities/{{secondVulnerabilityId}}",
+            "description": "Christophe ElChabab \u2014 Delete second vulnerability. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
