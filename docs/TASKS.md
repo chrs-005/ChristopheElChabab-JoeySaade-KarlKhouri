@@ -1,5 +1,13 @@
 # Canonical task board
 
+## LaTeX compile and teammate integration verified, 2026-10-20
+
+Actual owned commits: 2c8a917 (confirmed permissions and tests) and 380e048 (LaTeX/evidence documentation). Integrated Joey's newer 395e4c7 using a normal merge; shared documents merged cleanly. Verified no difference from origin/main in Joey's service files or tests/test_joey.py. The combined existing suite passed 69 tests, 43 dependency deprecation warnings, in 62.07 seconds using disposable test databases. Before merge, 67 tests passed. No live screenshot database was reset or replayed.
+
+Compiled report/main.tex with portable official Tectonic 0.17.0. The revised PDF has 103 pages including 94 unchanged screenshot pages, a contents page, named sections, architecture and owned-schema diagrams. Rendered all pages; inspected layout previews and detailed narrative/diagram/table/example pages. Fixed a crossing schema arrow, kept diagrams with their text, added a repeated API-table header and corrected the evidence count. Rotation-aware bounds checks reported no out-of-page text. One underfull text warning and a duplicate page-anchor warning remain non-fatal; no missing image, undefined reference or overfull box was reported. The report is explicitly a draft with teammate sections, final Git contribution captures, complete team schema and genuine CREATES feedback pending.
+
+The local deliverables are Sprint1-Report-Draft.pdf and Sprint1-LaTeX.zip alongside the repository. The ZIP is for Overleaf and includes source plus all 94 real images; it is not committed. Source files remain in report/ on Git; screenshots, private credentials and generated PDF/ZIP remain outside Git. User authorized a normal non-force push after checking teammate safety. No AI-generated work is presented as unaided student code, and no contribution dates or history are fabricated.
+
 ## LaTeX report and shared authentication evidence, 2026-10-20
 
 Christophe requested LaTeX and genuine commits. Verified the handout specifies an 11-section common report outline, captions, names, contents/page numbers and embedded screenshots; it supplies no Word template or explicit Word-only rule. PDF acceptance is not expressly guaranteed by the handout. Prepared report/main.tex, christophe-implementation.tex, evidence.tex and build instructions with the required outline, architecture and owned-schema diagrams, Christophe explanations/API reference and factual AI disclosure. Teammate text, final Git evidence, full team schema and genuine CREATES feedback remain explicit pending items. No teammate implementation or meeting is fabricated.
@@ -278,3 +286,11 @@ All T/V/I implementation/test rows remain below DONE: real screenshots, named co
 ## Joey Saade collection follow-up, 2026-10-19
 
 Joey's generator and exported collection now run reads/history before asset deletion and delete the created plus automatic welcome notifications before deleting the sample user. The registration pre-request creates unique username, email and event ID values for repeat runs. Cleanup is the last folder. `python tests/postman_joey.py` started nine real services with a disposable database and Newman passed 27 requests / 29 assertions with zero failures and no server tracebacks ([transcript](evidence/joey-postman-newman-2026-10-19.txt)). Full regression: 60 passed, 42 deprecation warnings ([transcript](evidence/joey-final-pytest-2026-10-19.txt)). U/A/N Postman tasks are VERIFIED; real GUI/database screenshots and report evidence remain pending, so no U/A/N task is DONE.
+
+## Joey Saade user ID reuse follow-up, 2026-10-19
+
+| ID | Owner | Service / responsibility | Concrete deliverable | Dependencies | Acceptance criteria | Status | Implementation / test / evidence links | Commit / PR |
+|---|---|---|---|---|---|---|---|---|
+| U-REG-11 | Joey Saade | Users and Identity | Prevent deleted user ID and welcome outbox event identity reuse | U-API-01, U-API-04 | Register, delete, register succeeds with a higher user ID; historical welcome keys remain unique; old token cannot access new user; existing database migration checked | VERIFIED | [code](../joey/common.py), [schema](../joey/schema.sql), [regression tests](../tests/test_joey.py), [focused result](evidence/joey-id-reuse-pytest-2026-10-19.txt) | - |
+
+The prior Postman cleanup exposed a 500 on later registration because SQLite could reuse the deleted highest user ID while `welcome-user-{id}` persisted in the outbox. A durable user ID allocation table now retains issued IDs. Initialization seeds older databases from current users and historical welcome/user audit events. The focused seven-test suite passed after the final token-isolation assertion. The full 62-test suite passed before that last test assertion was added; no application code changed afterward. Joey's nine-service Newman collection passed 27 requests / 29 assertions after the ID allocation change, before the one-time seed optimization; the focused suite passed after the optimization. [Newman transcript](evidence/joey-postman-newman-2026-10-19-after-id-fix.txt). No GUI/database screenshots or Git commit are claimed.

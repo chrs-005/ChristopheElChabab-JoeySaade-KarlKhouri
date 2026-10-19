@@ -5,6 +5,9 @@ CREATE TABLE IF NOT EXISTS users (
  status TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active','Inactive','Suspended')),
  created_at TEXT NOT NULL, last_login_at TEXT
 );
+-- Keep issued user IDs after deletion so tokens, audit events and notification IDs
+-- can never refer to a different account later.
+CREATE TABLE IF NOT EXISTS user_id_allocations (id INTEGER PRIMARY KEY AUTOINCREMENT);
 CREATE TABLE IF NOT EXISTS assets (
  id INTEGER PRIMARY KEY, name TEXT NOT NULL, type TEXT NOT NULL, ip_address TEXT NOT NULL,
  operating_system TEXT, department TEXT NOT NULL, owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,

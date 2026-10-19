@@ -2,7 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[margin=23mm]{geometry}
-\usepackage{graphicx,array,longtable,booktabs,caption,pdflscape,tikz}
+\usepackage{graphicx,array,longtable,booktabs,caption,pdflscape,tikz,float}
 \usetikzlibrary{positioning,arrows.meta}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{pdftitle={Sprint I Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab}}
@@ -40,7 +40,7 @@ The system organizes security incident reporting, investigation and response. It
 Sprint I implements backend APIs and persistent storage rather than a graphical interface. The goals are validated input, authenticated role-based access, traceable investigation workflows and API integration across the nine services.
 \section{System Architecture (Christophe ElChabab)}
 Nine FastAPI processes share a local SQLite database for identity and foreign-key relationships. Services expose owner-prefixed routes. Audit and notification events are delivered over HTTP using service credentials; reports retrieve data through service APIs.
-\begin{figure}[htbp]\centering
+\begin{figure}[H]\centering
 \begin{tikzpicture}[box/.style={draw,rounded corners,align=center,font=\small,text width=43mm,minimum height=13mm},>=Latex]
 \node[box] (j) {Joey Saade\\Users 8001\\Assets 8002\\Notifications 8003};
 \node[box,right=10mm of j] (c) {Christophe ElChabab\\Threats 8004\\Vulnerabilities 8005\\Incidents 8006};
@@ -67,17 +67,17 @@ The four owned tables use integer primary keys. Threats enforce uniqueness on (t
 
 User/asset references restrict deletion while still referenced. Note rows specify ON DELETE CASCADE for their incident foreign key. Severity, CVSS and lifecycle CHECK constraints supplement API validation. Resolution dates are nullable until resolution. The schema captures below display the actual table definitions, including primary and foreign keys. The record captures were taken before the authorized threat/vulnerability Cleanup requests.
 
-\begin{figure}[htbp]\centering
+\begin{figure}[H]\centering
 \begin{tikzpicture}[box/.style={draw,align=left,font=\small,text width=43mm,minimum height=13mm},>=Latex]
 \node[box] (u) {users\\PK id};
 \node[box,right=18mm of u] (a) {assets\\PK id\\FK owner\_id};
-\node[box,below=14mm of u] (i) {incidents\\PK id\\FK reporter\_id, assigned\_to\\FK asset\_id};
+\node[box,below=14mm of u] (i) {incidents\\PK id\\FK reporter\_id\\FK assigned\_to\\FK asset\_id};
 \node[box,below=14mm of a] (v) {vulnerabilities\\PK id\\FK asset\_id};
 \node[box,below=18mm of i] (n) {investigation\_notes\\PK id\\FK incident\_id, analyst\_id};
 \node[box,below=18mm of v] (t) {threats\\PK id\\UNIQUE type, value};
 \draw[->] (a.west) -- (u.east);
 \draw[->] (i.north) -- (u.south);
-\draw[->] (i.east) -- node[above,font=\scriptsize]{asset} (v.west |- i.east) -- (a.south);
+\draw[->] (i.east) -- ++(5mm,0) |- (a.south west);
 \draw[->] (v.north) -- (a.south);
 \draw[->] (n.north) -- (i.south);
 \draw[->] (n.west) -- ++(-9mm,0) |- (u.west);
@@ -91,15 +91,17 @@ The real API evidence covers successful calls, invalid formats/ranges/references
 
 The pre-Cleanup reports match the captured database: two threats, two vulnerabilities and three incidents. The summary reports complete=true and an empty unavailable list. Integration routes retain Joey Saade's and Karl Khouri's prefixes because those services belong to them; these captures demonstrate Christophe's integration, not ownership of their implementations.
 
-Screenshots were captured by Christophe from his running local environment. Codex inspected and organized the originals without changing their image bytes. The screenshot set below contains 84 API/integration captures and eight database captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
+Screenshots were captured by Christophe from his running local environment. Codex inspected and organized the originals without changing their image bytes. The screenshot set contains 84 owned API/integration captures, eight database captures and two shared-authentication captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
 
 \section{API Documentation (Christophe ElChabab)}
 All suffixes below follow \texttt{/api/Christophe-ElChabab}. Administrator, Analyst and Auditor mean the Security Administrator, Security Analyst and Security Auditor roles. Employee means Regular Employee.
 
 \begin{small}
-\begin{longtable}{p{0.09\linewidth}p{0.22\linewidth}p{0.32\linewidth}p{0.25\linewidth}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.25\linewidth}}
 \toprule
-Method & Suffix & Function & Authorized roles \\
+\textbf{Method} & \textbf{Suffix} & \textbf{Function} & \textbf{Authorized roles} \\
+\midrule
+\endhead
 POST & /threats & Create indicator & Administrator \\
 GET & /threats & List indicators & Administrator, Analyst, Auditor \\
 GET & /threats/\{id\} & Retrieve indicator & Administrator, Analyst, Auditor \\

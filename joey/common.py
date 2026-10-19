@@ -57,7 +57,24 @@ def db():
 
 def init_db():
     with db() as conn:
+        needs_user_id_seed = not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='user_id_allocations'").fetchone()
         conn.executescript((Path(__file__).parent / "schema.sql").read_text(encoding="utf-8"))
+        if needs_user_id_seed:
+            # Upgrade once. Deleted registrations still have welcome events;
+            # deleted bootstrap administrators are represented in audit events.
+            conn.execute("INSERT OR IGNORE INTO user_id_allocations(id) SELECT id FROM users")
+            for (event_id,) in conn.execute("SELECT event_id FROM outbox WHERE event_id LIKE 'welcome-user-%'"):
+                suffix = event_id.removeprefix("welcome-user-")
+                if suffix.isdecimal():
+                    conn.execute("INSERT OR IGNORE INTO user_id_allocations(id) VALUES(?)", (int(suffix),))
+            for (payload_json,) in conn.execute("SELECT payload_json FROM outbox WHERE destination='audit'"):
+                payload = json.loads(payload_json)
+                ids = [payload.get("actor_user_id")]
+                if payload.get("related_service") == "users":
+                    ids.append(payload.get("subject_id"))
+                for value in ids:
+                    if str(value).isdecimal():
+                        conn.execute("INSERT OR IGNORE INTO user_id_allocations(id) VALUES(?)", (int(value),))
 
 
 def row_dict(row, *excluded):

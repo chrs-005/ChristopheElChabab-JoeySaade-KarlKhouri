@@ -13,7 +13,8 @@ def main():
     with db() as conn:
         if conn.execute("SELECT 1 FROM users WHERE role='Security Administrator'").fetchone():
             raise SystemExit("An administrator already exists")
-        conn.execute("INSERT INTO users(full_name,username,email,password_hash,department,role,status,created_at) VALUES(?,?,?,?,?,?,?,?)", (values["BOOTSTRAP_ADMIN_NAME"], values["BOOTSTRAP_ADMIN_USERNAME"], values["BOOTSTRAP_ADMIN_EMAIL"], hash_password(values["BOOTSTRAP_ADMIN_PASSWORD"]), values["BOOTSTRAP_ADMIN_DEPARTMENT"], "Security Administrator", "Active", now()))
+        user_id = conn.execute("INSERT INTO user_id_allocations DEFAULT VALUES").lastrowid
+        conn.execute("INSERT INTO users(id,full_name,username,email,password_hash,department,role,status,created_at) VALUES(?,?,?,?,?,?,?,?,?)", (user_id, values["BOOTSTRAP_ADMIN_NAME"], values["BOOTSTRAP_ADMIN_USERNAME"], values["BOOTSTRAP_ADMIN_EMAIL"], hash_password(values["BOOTSTRAP_ADMIN_PASSWORD"]), values["BOOTSTRAP_ADMIN_DEPARTMENT"], "Security Administrator", "Active", now()))
     print("Administrator created")
 
 

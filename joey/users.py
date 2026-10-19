@@ -55,7 +55,8 @@ def register(data: Registration, background_tasks: BackgroundTasks):
         error(422, "Invalid email or password; password needs 12-128 characters with letters and digits")
     with db() as conn:
         try:
-            cur = conn.execute("INSERT INTO users(full_name,username,email,password_hash,department,role,status,created_at) VALUES(?,?,?,?,?,?,?,?)", (data.full_name.strip(), data.username.strip(), data.email.lower().strip(), hash_password(data.password), data.department.strip(), data.role, "Active", now()))
+            user_id = conn.execute("INSERT INTO user_id_allocations DEFAULT VALUES").lastrowid
+            cur = conn.execute("INSERT INTO users(id,full_name,username,email,password_hash,department,role,status,created_at) VALUES(?,?,?,?,?,?,?,?,?)", (user_id, data.full_name.strip(), data.username.strip(), data.email.lower().strip(), hash_password(data.password), data.department.strip(), data.role, "Active", now()))
         except sqlite3.IntegrityError:
             error(409, "Username or email already exists")
         user = conn.execute("SELECT * FROM users WHERE id=?", (cur.lastrowid,)).fetchone()

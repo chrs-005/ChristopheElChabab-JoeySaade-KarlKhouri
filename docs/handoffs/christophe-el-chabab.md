@@ -1,5 +1,13 @@
 # Christophe ElChabab handoff
 
+## LaTeX compile and teammate integration verified, 2026-10-20
+
+Actual owned commits: 2c8a917 (confirmed permissions and tests) and 380e048 (LaTeX/evidence documentation). Integrated Joey's newer 395e4c7 using a normal merge; shared documents merged cleanly. Verified no difference from origin/main in Joey's service files or tests/test_joey.py. The combined existing suite passed 69 tests, 43 dependency deprecation warnings, in 62.07 seconds using disposable test databases. Before merge, 67 tests passed. No live screenshot database was reset or replayed.
+
+Compiled report/main.tex with portable official Tectonic 0.17.0. The revised PDF has 103 pages including 94 unchanged screenshot pages, a contents page, named sections, architecture and owned-schema diagrams. Rendered all pages; inspected layout previews and detailed narrative/diagram/table/example pages. Fixed a crossing schema arrow, kept diagrams with their text, added a repeated API-table header and corrected the evidence count. Rotation-aware bounds checks reported no out-of-page text. One underfull text warning and a duplicate page-anchor warning remain non-fatal; no missing image, undefined reference or overfull box was reported. The report is explicitly a draft with teammate sections, final Git contribution captures, complete team schema and genuine CREATES feedback pending.
+
+The local deliverables are Sprint1-Report-Draft.pdf and Sprint1-LaTeX.zip alongside the repository. The ZIP is for Overleaf and includes source plus all 94 real images; it is not committed. Source files remain in report/ on Git; screenshots, private credentials and generated PDF/ZIP remain outside Git. User authorized a normal non-force push after checking teammate safety. No AI-generated work is presented as unaided student code, and no contribution dates or history are fabricated.
+
 ## LaTeX report and shared authentication evidence, 2026-10-20
 
 Christophe requested LaTeX and genuine commits. Verified the handout specifies an 11-section common report outline, captions, names, contents/page numbers and embedded screenshots; it supplies no Word template or explicit Word-only rule. PDF acceptance is not expressly guaranteed by the handout. Prepared report/main.tex, christophe-implementation.tex, evidence.tex and build instructions with the required outline, architecture and owned-schema diagrams, Christophe explanations/API reference and factual AI disclosure. Teammate text, final Git evidence, full team schema and genuine CREATES feedback remain explicit pending items. No teammate implementation or meeting is fabricated.

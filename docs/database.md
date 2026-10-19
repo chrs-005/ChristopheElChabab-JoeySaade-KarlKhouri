@@ -21,3 +21,5 @@ erDiagram
 ```
 
 Threat indicators have independent unique type/value identities; the brief does not require a threat-to-incident FK. The common report must also include Joey/Karl's remaining relationships and field-level PK/FK details.
+
+Joey's `user_id_allocations` table retains every issued user ID after deletion. Registration and admin bootstrap allocate from it before inserting a user. Existing databases are seeded once from live users and historical welcome/audit outbox records, preventing reuse of a deleted account ID and its `welcome-user-{id}` event key.
