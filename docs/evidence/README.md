@@ -23,3 +23,5 @@ The same Christophe live-output file includes actual Newman execution of the exp
 All screenshot/report evidence tasks remain pending. Caption Christophe's actual future screenshots `Christophe ElChabab — API title — what it demonstrates`.
 
 Karl Khouri, 2026-10-18 follow-up: [Newman output](karl-postman-newman-2026-10-18.txt) from `python tests/postman_karl.py`, which ran Karl's exported collection against nine real services on a disposable database: 37 requests, 51 assertions, 0 failures. Not a screenshot.
+
+Joey Saade, 2026-10-19 follow-up: [Newman output](joey-postman-newman-2026-10-19.txt) from `python tests/postman_joey.py` ran Joey's corrected collection against nine real services on a disposable database: 27 requests, 29 assertions, zero failures, no server tracebacks. [Full regression output](joey-final-pytest-2026-10-19.txt): 60 passed, 42 dependency deprecation warnings. These outputs are not GUI or database screenshots; U/A/N evidence remains pending.

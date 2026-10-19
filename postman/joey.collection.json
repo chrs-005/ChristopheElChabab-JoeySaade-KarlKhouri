@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Sprint I \u2014 Joey Saade services",
-    "description": "Real requests for Joey's three services. Run against your own backend and capture actual results.",
+    "name": "Sprint I — Joey Saade services",
+    "description": "Run ordered folders against the backend, with Cleanup last. Capture actual results and database evidence.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Users and Identity \u2014 Joey Saade",
+      "name": "Users and Identity — Joey Saade",
       "item": [
         {
           "name": "Register employee",
@@ -19,10 +19,10 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/register",
-            "description": "Joey Saade \u2014 Register employee. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Register employee. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"full_name\": \"Example Employee\",\n  \"username\": \"example_employee\",\n  \"email\": \"example@example.test\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"IT\",\n  \"role\": \"Regular Employee\"\n}",
+              "raw": "{\n  \"full_name\": \"Example Employee\",\n  \"username\": \"{{employeeUsername}}\",\n  \"email\": \"{{employeeEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"IT\",\n  \"role\": \"Regular Employee\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -31,6 +31,18 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);",
+                  "pm.environment.set('employeeUsername', 'joey_employee_' + suffix);",
+                  "pm.environment.set('employeeEmail', 'joey_employee_' + suffix + '@example.test');",
+                  "pm.environment.set('eventId', 'joey-event-' + suffix);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -55,7 +67,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/login",
-            "description": "Joey Saade \u2014 Login. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Login. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username_or_email\": \"{{username}}\",\n  \"password\": \"{{userPassword}}\"\n}",
@@ -94,7 +106,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
-            "description": "Joey Saade \u2014 Update profile. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Update profile. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"department\": \"Security\"\n}",
@@ -111,32 +123,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Delete user",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
-            "description": "Joey Saade \u2014 Delete user. Replace variables and inspect the actual response."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -153,7 +140,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users",
-            "description": "Joey Saade \u2014 List users. Replace variables and inspect the actual response."
+            "description": "Joey Saade — List users. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -161,7 +148,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -177,8 +164,8 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{username}}",
-            "description": "Joey Saade \u2014 Get user by username. Replace variables and inspect the actual response."
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{employeeUsername}}",
+            "description": "Joey Saade — Get user by username. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -186,7 +173,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -207,7 +194,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}/admin",
-            "description": "Joey Saade \u2014 Admin role/status update. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Admin role/status update. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"Security Analyst\"\n}",
@@ -224,7 +211,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -233,7 +220,7 @@
       ]
     },
     {
-      "name": "Asset Management \u2014 Joey Saade",
+      "name": "Asset Management — Joey Saade",
       "item": [
         {
           "name": "Create asset",
@@ -250,7 +237,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets",
-            "description": "Joey Saade \u2014 Create asset. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Create asset. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Server One\",\n  \"type\": \"Server\",\n  \"ip_address\": \"10.0.0.1\",\n  \"department\": \"IT\",\n  \"owner_id\": \"{{userId}}\",\n  \"location\": \"Lab\",\n  \"criticality\": \"High\",\n  \"status\": \"Active\"\n}",
@@ -289,7 +276,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
-            "description": "Joey Saade \u2014 Update asset. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Update asset. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"Under Maintenance\"\n}",
@@ -306,32 +293,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Delete asset",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
-            "description": "Joey Saade \u2014 Delete asset. Replace variables and inspect the actual response."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -348,7 +310,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets",
-            "description": "Joey Saade \u2014 List assets. Replace variables and inspect the actual response."
+            "description": "Joey Saade — List assets. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -356,7 +318,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -373,7 +335,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
-            "description": "Joey Saade \u2014 Get asset. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Get asset. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -381,7 +343,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -398,7 +360,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets/search?name=Server",
-            "description": "Joey Saade \u2014 Search assets. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Search assets. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -406,7 +368,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -423,7 +385,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}/history",
-            "description": "Joey Saade \u2014 Asset history. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Asset history. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -431,7 +393,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -440,7 +402,7 @@
       ]
     },
     {
-      "name": "Notification and Alert Management \u2014 Joey Saade",
+      "name": "Notification and Alert Management — Joey Saade",
       "item": [
         {
           "name": "Create notification as service",
@@ -457,7 +419,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
-            "description": "Joey Saade \u2014 Create notification as service. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Create notification as service. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"title\": \"Assigned\",\n  \"message\": \"Incident assigned\",\n  \"type\": \"Incident Assignment\",\n  \"severity\": \"High\",\n  \"event_id\": \"{{eventId}}\"\n}",
@@ -492,7 +454,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications/user/{{userId}}",
-            "description": "Joey Saade \u2014 List user notifications. Replace variables and inspect the actual response."
+            "description": "Joey Saade — List user notifications. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -500,7 +462,12 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Listed', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const welcome = pm.response.json().filter(n => n.title === 'Welcome');",
+                  "  pm.test('One welcome notification for this user', () => pm.expect(welcome).to.have.lengthOf(1));",
+                  "  if (welcome.length === 1) pm.environment.set('welcomeNotificationId', welcome[0].id);",
+                  "}"
                 ]
               }
             }
@@ -517,7 +484,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
-            "description": "Joey Saade \u2014 Get notification. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Get notification. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -525,7 +492,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -542,7 +509,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}/read",
-            "description": "Joey Saade \u2014 Mark notification read. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Mark notification read. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -550,7 +517,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -567,7 +534,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications/search?status=Unread",
-            "description": "Joey Saade \u2014 Search notifications. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Search notifications. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -575,32 +542,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Delete notification",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
-            "description": "Joey Saade \u2014 Delete notification. Replace variables and inspect the actual response."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Successful response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -609,7 +551,7 @@
       ]
     },
     {
-      "name": "Negative checks \u2014 Joey Saade",
+      "name": "Negative checks — Joey Saade",
       "item": [
         {
           "name": "Reject invalid registration email",
@@ -622,7 +564,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/register",
-            "description": "Joey Saade \u2014 Reject invalid registration email. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Reject invalid registration email. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"full_name\": \"Bad\",\n  \"username\": \"badmail\",\n  \"email\": \"invalid\",\n  \"password\": \"SecurePassword123\",\n  \"department\": \"IT\",\n  \"role\": \"Regular Employee\"\n}",
@@ -656,7 +598,7 @@
               }
             ],
             "url": "{{userUrl}}/api/Joey-Saade/users/register",
-            "description": "Joey Saade \u2014 Reject privileged public registration. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Reject privileged public registration. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"full_name\": \"Bad\",\n  \"username\": \"badadmin\",\n  \"email\": \"badadmin@example.test\",\n  \"password\": \"SecurePassword123\",\n  \"department\": \"IT\",\n  \"role\": \"Security Administrator\"\n}",
@@ -685,7 +627,7 @@
             "method": "GET",
             "header": [],
             "url": "{{userUrl}}/api/Joey-Saade/users",
-            "description": "Joey Saade \u2014 Reject unauthenticated users listing. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Reject unauthenticated users listing. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -714,7 +656,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets",
-            "description": "Joey Saade \u2014 Reject invalid asset IP. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Reject invalid asset IP. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Server One\",\n  \"type\": \"Server\",\n  \"ip_address\": \"not-an-ip\",\n  \"department\": \"IT\",\n  \"owner_id\": \"{{userId}}\",\n  \"location\": \"Lab\",\n  \"criticality\": \"High\",\n  \"status\": \"Active\"\n}",
@@ -748,7 +690,7 @@
               }
             ],
             "url": "{{assetUrl}}/api/Joey-Saade/assets/999999999",
-            "description": "Joey Saade \u2014 Reject missing asset. Replace variables and inspect the actual response."
+            "description": "Joey Saade — Reject missing asset. Run folders in order and inspect the actual response."
           },
           "event": [
             {
@@ -773,7 +715,7 @@
               }
             ],
             "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
-            "description": "Joey Saade \u2014 Reject notification without auth. Replace variables and inspect the actual response.",
+            "description": "Joey Saade — Reject notification without auth. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"title\": \"Assigned\",\n  \"message\": \"Incident assigned\",\n  \"type\": \"Incident Assignment\",\n  \"severity\": \"High\",\n  \"event_id\": \"{{eventId}}\"\n}",
@@ -791,6 +733,111 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Authentication required', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleanup — Joey Saade",
+      "item": [
+        {
+          "name": "Delete asset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "description": "Joey Saade — Delete asset. Run folders in order and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete created notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
+            "description": "Joey Saade — Delete created notification. Run folders in order and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete welcome notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{welcomeNotificationId}}",
+            "description": "Joey Saade — Delete welcome notification. Run folders in order and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
+            "description": "Joey Saade — Delete user. Run folders in order and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Successful response', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }

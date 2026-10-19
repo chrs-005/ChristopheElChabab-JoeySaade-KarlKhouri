@@ -50,6 +50,18 @@
       "type": "default"
     },
     {
+      "key": "employeeUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "employeeEmail",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "assetId",
       "value": "",
       "enabled": true,
@@ -62,8 +74,14 @@
       "type": "default"
     },
     {
+      "key": "welcomeNotificationId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "eventId",
-      "value": "example-event-1",
+      "value": "",
       "enabled": true,
       "type": "default"
     }

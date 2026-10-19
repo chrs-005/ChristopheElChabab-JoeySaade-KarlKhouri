@@ -20,7 +20,7 @@ python -m uvicorn joey.assets:app --port 8002
 python -m uvicorn joey.notifications:app --port 8003
 ```
 
-Run `python -m pytest tests/test_joey.py -q` and `python tests/live_smoke.py`. The smoke script starts all three services on ports 18001–18003 with a temporary database. Import [Joey's Postman collection](postman/joey.collection.json) and [environment template](postman/joey.environment.template.json); fill in credentials locally, then select the environment. Retry queued notifications and audit events with `python -m joey.outbox`. See [Joey API details](docs/joey-api.md) and [architecture](docs/architecture.md).
+Run `python -m pytest tests/test_joey.py -q` and `python tests/live_smoke.py`. Run `python tests/postman_joey.py` for Joey's exported collection against nine disposable local services (Node.js/Newman required; on Windows set `NODE_OPTIONS=--use-system-ca`). Run its Postman folders in order, with Cleanup last. The smoke script starts all three services on ports 18001–18003 with a temporary database. Import [Joey's Postman collection](postman/joey.collection.json) and [environment template](postman/joey.environment.template.json); fill in credentials locally, then select the environment. Retry queued notifications and audit events with `python -m joey.outbox`. See [Joey API details](docs/joey-api.md) and [architecture](docs/architecture.md).
 
 ## Run Karl Khouri's services
 
