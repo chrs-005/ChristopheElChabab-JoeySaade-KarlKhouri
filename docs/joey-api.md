@@ -52,3 +52,5 @@ Types: Incident Assignment, Security Alert, System Notification, Threat Alert, V
 ## Integration and limitations
 
 The audit outbox stores successful/failed login, user creation/update/delete, role/status change, asset changes, notification changes and forbidden access events. Current integration update: configure `AUDIT_SERVICE_URL` and `AUDIT_SERVICE_AUTH_SECRET` for Karl's implemented `POST /api/Karl-Khouri/logs`. Pending events can be retried with `python -m joey.outbox`. Christophe ElChabab's implemented incident, threat and vulnerability services now produce notifications using Joey's existing API and the shared outbox; the nine-service check verifies those calls. A scheduled outbox worker and separate production secret management are needed for long-running deployment.
+
+User IDs are allocated monotonically and retained after account deletion. Registration welcome outbox IDs (`welcome-user-{id}`) therefore remain unique; a later account cannot inherit an old bearer token subject. On first startup with an older database, Joey's initialization seeds issued IDs from current users and historical welcome/audit events.

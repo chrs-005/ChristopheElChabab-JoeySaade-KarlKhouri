@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from joey import assets, notifications, users
-from joey.common import PREFIX, db
+from joey.common import PREFIX, db, init_db
 from joey.outbox import deliver_pending as real_deliver_pending
 
 
@@ -55,6 +55,45 @@ def test_registration_login_and_permissions(clients):
     assert u.patch(f"{PREFIX}/users/{other['id']}/admin", headers=admin, json={"status": "Suspended"}).status_code == 200
     assert u.post(f"{PREFIX}/users/login", json={"username_or_email": "other", "password": "SecurePassword123"}).status_code == 403
     assert u.delete(f"{PREFIX}/users/{other['id']}", headers=admin).status_code == 200
+
+
+def test_register_delete_register_keeps_user_and_welcome_event_ids_unique(clients):
+    u, _, _ = clients
+    admin_user = register(u, "admin").json()
+    promote(admin_user["id"], "Security Administrator")
+    admin = login(u, "admin")
+    first = register(u, "first")
+    assert first.status_code == 201
+    first_id = first.json()["id"]
+    first_token = login(u, "first")
+    assert u.delete(f"{PREFIX}/users/{first_id}", headers=admin).status_code == 200
+
+    second = register(u, "second")
+    assert second.status_code == 201, second.text
+    second_id = second.json()["id"]
+    assert second_id > first_id
+    assert u.get(f"{PREFIX}/users/second", headers=first_token).status_code == 401
+    with db() as conn:
+        events = {row["event_id"] for row in conn.execute("SELECT event_id FROM outbox WHERE destination='notification'")}
+        assert f"welcome-user-{first_id}" in events
+        assert f"welcome-user-{second_id}" in events
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_existing_database_seeds_deleted_user_ids_from_welcome_events(clients):
+    u, _, _ = clients
+    admin_user = register(u, "admin").json()
+    promote(admin_user["id"], "Security Administrator")
+    admin = login(u, "admin")
+    deleted_id = register(u, "legacy").json()["id"]
+    assert u.delete(f"{PREFIX}/users/{deleted_id}", headers=admin).status_code == 200
+    with db() as conn:
+        conn.execute("DROP TABLE user_id_allocations")
+    init_db()
+
+    replacement = register(u, "replacement")
+    assert replacement.status_code == 201, replacement.text
+    assert replacement.json()["id"] > deleted_id
 
 
 def test_assets_history_and_notification_scope(clients):
