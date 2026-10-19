@@ -1,0 +1,33 @@
+The Threat Intelligence, Vulnerability Management and Incident Management services run as separate FastAPI processes on ports 8004, 8005 and 8006. Their 18 business endpoints use the prefix \texttt{/api/Christophe-ElChabab}. The source files are \texttt{christophe/threats.py}, \texttt{christophe/vulnerabilities.py}, \texttt{christophe/incidents.py} and \texttt{christophe/schema.sql}.
+
+Joey Saade's Users service authenticates users and issues bearer tokens. Each request checks the authenticated account and its current role. Users and Assets are shared database entities; Christophe's services reference them instead of creating separate copies. Mutations queue audit and notification events in the same database transaction. After commit, delivery calls Karl Khouri's Audit service and Joey Saade's Notifications service over HTTP. Failed deliveries remain queued for retry. Karl's Reports service reads the list APIs over HTTP.
+
+\subsection{Threat Intelligence (Christophe ElChabab)}
+
+Administrators create indicators with a type, value, description, severity and source. Reads return IDs and UTC creation/update timestamps alongside those fields. List and search return JSON arrays; detail returns one object. Search accepts type, value, severity and source, combining supplied conditions with AND. Updates accept description, severity and source. Deletion returns a confirmation message.
+
+IP addresses, domain syntax and hexadecimal file hashes are validated according to their indicator type. Normalization precedes the unique type/value check, so repeated indicators return 409. The captured duplicate, invalid address/hash/domain and missing-field requests demonstrate rejection. Only administrators can mutate threats; analysts and auditors can read/search. The professor confirmed that auditors may use GET /threats/search.
+
+Two synthetic indicators were used in the real local execution: a Domain indicator and IP indicator 198.51.100.42. They are test inputs, not assertions of real malicious activity. The domain was initially High and then updated to Critical with source Investigation; the IP was Critical with source SOC. These classifications exercise the stored severity/source fields and filtering. Before Cleanup, the database and threat report both contained two Critical indicators. Successful deletion and the subsequent 404 for the domain are captured separately.
+
+\subsection{Vulnerability Management (Christophe ElChabab)}
+
+Administrators create vulnerabilities with title, description, CVE ID, CVSS score, explicit severity, affected asset ID and source. Creation returns the stored object with status Open. Reads and searches return the stored fields and server timestamps. Search supports CVE ID, severity, asset ID and status, combining supplied filters with AND.
+
+CVSS must be a finite number from 0 to 10; booleans are not valid scores or IDs. CVE validation checks the CVE-YYYY-NNNN syntax with at least four final digits; it does not verify a vulnerability against an external registry. The affected asset must exist. Captures demonstrate malformed CVEs, invalid CVSS and an unknown asset returning 422. Administrators and analysts can update permitted fields; auditors cannot update, and only administrators can delete.
+
+The required remediation sequence is Open -> Under Investigation -> In Progress -> Resolved -> Closed. Skipping a state returns 409. The server sets the resolution timestamp at Resolved and retains it at Closed. Every transition is captured.
+
+The first test record starts at CVSS 8.1/High, then is updated to 9.1/Critical and reaches Closed. The second remains 5.0/Medium/Open. The Critical/High/Medium values are explicit test classifications; they demonstrate priority differences rather than verified production risk. Before Cleanup, the report and database agree on one Critical Closed record and one Medium Open record, with average CVSS (9.1 + 5.0) / 2 = 7.05.
+
+\subsection{Incident Management (Christophe ElChabab)}
+
+Administrators and employees can report an incident with title, description, category, severity, reporter ID and asset ID. The reporter and asset must exist. An employee cannot submit under another user's identity. Creation returns a new Open incident; assignment requires an active Security Analyst and administrator permission.
+
+The professor confirmed that GET /incidents is available to all four roles. Administrators and auditors see all incidents, analysts see only their assignments, and employees see only their submissions. These restrictions derive from authenticated identity. Forged reporter, assignee or role query parameters do not broaden access. The screenshots show employee 4 seeing records 1 and 2, while the other employee's record 3 is excluded; analyst 2 sees only assigned record 1.
+
+The sequence is Open -> Under Investigation -> Mitigated -> Resolved -> Closed. Only administrators or the assigned analyst may change status. Skips are rejected with 409. The captured workflow includes all transitions and retention of the resolution timestamp.
+
+Authorized staff add a nonblank investigation note. The server records the authenticated author, incident ID and creation timestamp, rather than accepting a forged author from the request. The stored note is linked to incident 1 and analyst 2 and appears in the retrieved incident. No incident DELETE endpoint is added because the handout does not request one.
+
+The three test incidents use High, Critical and Medium severity. High represents the primary suspicious-message investigation, Critical the higher-priority comparison scenario, and Medium the other reporter's lower-priority scenario. These are test classifications, not evidence that an actual compromise occurred. The different reporters and severities exercise priority storage and identity-based access. At the end of the captured workflow, incident 1 is Closed/High and assigned to analyst 2; incident 2 is Open/Critical and incident 3 is Open/Medium.

@@ -1,5 +1,13 @@
 # Contribution record
 
+## LaTeX report and shared authentication evidence, 2026-10-20
+
+Christophe requested LaTeX and genuine commits. Verified the handout specifies an 11-section common report outline, captions, names, contents/page numbers and embedded screenshots; it supplies no Word template or explicit Word-only rule. PDF acceptance is not expressly guaranteed by the handout. Prepared report/main.tex, christophe-implementation.tex, evidence.tex and build instructions with the required outline, architecture and owned-schema diagrams, Christophe explanations/API reference and factual AI disclosure. Teammate text, final Git evidence, full team schema and genuine CREATES feedback remain explicit pending items. No teammate implementation or meeting is fabricated.
+
+Visually checked Christophe's incorrect-password capture: raw request, 401 Invalid credentials and 2/2 tests. Organized it and his earlier successful login as two unchanged shared-authentication images outside Git, verifying hashes. Joey owns the login API; Christophe captured shared security evidence, not additional owned endpoints. Local LaTeX links all 94 images (92 earlier plus two authentication captures). A portable official Tectonic compiler and a PDF renderer were placed only in task temp folders; compilation and render review are in progress, not yet claimed complete.
+
+The existing full suite passed 67 tests with 43 deprecation warnings before integrating newer remote work. Committed the actual professor-permission changes as 2c8a917, with Christophe's confirmed name and existing email, no fabricated dates. Fetched Joey's newer 395e4c7 user-ID-reuse fix; it is remote teammate work and must be preserved, not rewritten or credited to Christophe. User authorized a normal push provided teammate work is preserved; no screenshots or private environments are to be pushed.
+
 ## Christophe captured evidence complete and report section prepared, 2026-10-20
 
 Codex visually reviewed all six actual Cleanup images supplied by Christophe: domain DELETE 200, deleted-domain GET 404, IP DELETE 200, vulnerability DELETE 200, deleted-vulnerability GET 404, second-vulnerability DELETE 200. All displayed tests are 2/2. Organized the six unchanged originals in sibling local evidence folder Christophe-ElChabab-Screenshots/06-Cleanup and verified all SHA-256 hashes unchanged. No retakes identified. Combined owned API/integration evidence is 84 images across folders 02-06 plus eight database images, 92 total; the separate shared-login screenshot is not counted.

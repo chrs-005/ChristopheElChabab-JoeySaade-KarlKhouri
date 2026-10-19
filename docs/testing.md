@@ -1,5 +1,30 @@
 # Testing and Postman plan
 
+## Professor clarification verification, 2026-10-19
+
+Authority: the professor's answer supplied by Christophe in chat. Auditors may search threats, and `GET /incidents` must use authenticated-user scoping for analysts/employees while administrators/auditors see all records. Before the change, the new auditor search test failed with 403 and all six identity-scope cases passed. After the minimal allowlist change and matrix update, the complete suite passed **67 tests** (43 pinned-dependency warnings). Tests include two analysts, two employee reporters and unassigned incidents; each role is checked with five normal/forged query parameter combinations, comparing exact returned record IDs.
+
+The updated exported collection passed **97 items, 229 assertions, zero failures**, with four asynchronous-event probes making **101 actual HTTP requests**, against nine real disposable servers. Its new requests explicitly show auditor threat search, auditor visibility across reporters, and attempted query-based scope overrides for employee/analyst. No saved responses or screenshots were fabricated. See [actual pytest output](evidence/christophe-professor-permissions-pytest-2026-10-19.txt) and [actual live output](evidence/christophe-professor-permissions-live-2026-10-19.txt).
+
+The running screenshot services now load the corrected contract. Existing screenshot records were not reset: the persistent database still contains only its bootstrap administrator and no incident records. Import the latest tracked collection and private `.venv/christophe.local.environment.json`; start with only `01 Setup` (13 requests). No new business endpoints or unrelated fixes were added. These two permission questions are resolved; earlier dated ambiguity statements below are historical. The shared registration-after-user-deletion defect remains separate and unchanged. Do not run Cleanup before capturing required before/after, lifecycle and database evidence.
+
+## Readiness recheck, 2026-10-19
+
+Revision checked: `75ca31b` after a safe fast-forward pull. Full pytest suite: **60 passed**, 43 pinned-dependency deprecation warnings. The actual nine-service integration path passed, including valid/invalid lifecycles, notes, assignment notifications, audit records, complete reports and database integrity. The unchanged collection runs on the same temporary database produced:
+
+| Collection | Result |
+|---|---|
+| Christophe | 92 items, 96 actual HTTP requests including four probes, 214 assertions, zero failures |
+| Joey | 27 requests, 29 assertions, zero failures |
+| Karl, immediately after Joey cleanup | Registration HTTP 500; nine assertion failures cascaded from the missing analyst account |
+| Karl, separately on a fresh temporary database | 37 requests, 51 assertions, zero failures; no server tracebacks |
+
+The [combined raw transcript](evidence/team-postman-recheck-2026-10-19.txt) records actual failures and is not a screenshot or submission-ready result. An [isolated diagnostic](evidence/registration-reuse-diagnostic-2026-10-19.txt) confirmed the cause through actual register/delete/register handlers. `users.id` is `INTEGER PRIMARY KEY` without a non-reuse guarantee; deleting the highest ID lets SQLite reuse it. Registration queues `welcome-user-{id}`, while cleanup retains that old outbox event. The next new account therefore raises `sqlite3.IntegrityError: UNIQUE constraint failed: outbox.event_id` and rolls back. The collection's later analyst login and action requests fail as a consequence. No teammate service code was changed to conceal or work around this defect.
+
+Joey should correct user/event identity reuse and add a regression for this exact sequence; the shared database run must then pass. The old collection ordering/header defects are fixed, but the full team is not yet cleared for an uninterrupted serial screenshot session. Christophe's own APIs pass on the tested fresh setup. His 18 required method/path combinations retain `/api/Christophe-ElChabab` and remain covered by contract/role/validation checks.
+
+Interactive prerequisites remain: configure the ignored private `.env` with three distinct secrets, correct report sources and an administrator, then start all nine services on ports 8001-8009. Tests used disposable data and stopped all temporary servers. Capture real request/response screenshots and database records before Cleanup, including before/after updates and each incident status transition, with captions `Christophe ElChabab - API title - purpose`. The professor's auditor-threat-search/scoped-incident-list ambiguities remain unresolved. None of these checks substitutes for actual evidence, the report or compliance with the brief's AI-use restrictions.
+
 ## Whole-team readiness check, 2026-10-18
 
 At Christophe's request, all 60 regression tests were rerun and passed (43 pinned-dependency deprecation warnings). Nine actual servers were started against a disposable SQLite database; authentication, assignments, notes, both lifecycles, notifications, audit logging, playbooks, report reconciliation and database integrity passed. All spawned servers were stopped afterward.

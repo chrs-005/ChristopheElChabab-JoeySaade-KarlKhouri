@@ -1,0 +1,153 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=23mm]{geometry}
+\usepackage{graphicx,array,longtable,booktabs,caption,pdflscape,tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Sprint I Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{3em}
+\captionsetup{font=small,labelfont=bf}
+\newcommand{\pending}[1]{\par\textbf{Pending team input:} #1\par}
+\newcommand{\evidencefigure}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{evidence/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{evidence/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../Christophe-ElChabab-Screenshots/#1}}
+\caption{#2}
+\end{figure}\clearpage}
+\begin{document}
+\begin{titlepage}
+\centering
+{\Large American University of Beirut\par}
+{\large EECE 435L\par}
+\vspace{15mm}
+{\LARGE\bfseries Security Incident Detection and Response Management System\par}
+\vspace{8mm}
+{\Large Sprint I Report\par}
+\vspace{12mm}
+Christophe ElChabab\par Joey Saade\par Karl Khouri\par
+\vspace{10mm}
+Date of submission: to be confirmed\par
+\vfill
+\textbf{Draft for team completion}\par
+Christophe's service explanations and actual local execution evidence are included. Teammate implementation sections, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
+\end{titlepage}
+\tableofcontents
+\clearpage
+\section{Introduction (Christophe ElChabab)}
+The system organizes security incident reporting, investigation and response. It links affected assets to vulnerabilities and incidents, maintains threat indicators, records security activity, notifies users and generates reports.
+Sprint I implements backend APIs and persistent storage rather than a graphical interface. The goals are validated input, authenticated role-based access, traceable investigation workflows and API integration across the nine services.
+\section{System Architecture (Christophe ElChabab)}
+Nine FastAPI processes share a local SQLite database for identity and foreign-key relationships. Services expose owner-prefixed routes. Audit and notification events are delivered over HTTP using service credentials; reports retrieve data through service APIs.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[box/.style={draw,rounded corners,align=center,font=\small,text width=43mm,minimum height=13mm},>=Latex]
+\node[box] (j) {Joey Saade\\Users 8001\\Assets 8002\\Notifications 8003};
+\node[box,right=10mm of j] (c) {Christophe ElChabab\\Threats 8004\\Vulnerabilities 8005\\Incidents 8006};
+\node[box,right=10mm of c] (k) {Karl Khouri\\Audit logs 8007\\Playbooks 8008\\Reports 8009};
+\node[box,below=23mm of c,text width=75mm] (d) {Shared SQLite database\\Primary and foreign key constraints};
+\draw[<->] (j) -- node[above,font=\scriptsize]{HTTP} (c);
+\draw[<->] (c) -- node[above,font=\scriptsize]{HTTP} (k);
+\draw[->] (j.south) |- (d.west);
+\draw[->] (c.south) -- (d.north);
+\draw[->] (k.south) |- (d.east);
+\end{tikzpicture}
+\caption{Christophe ElChabab - System architecture - Shows service ownership, ports, HTTP integration and shared storage.}
+\end{figure}
+The arrows describe the implemented data flow, not independent student authorship of shared code. Users authenticate through Joey's service. Christophe's mutations queue events transactionally; delivery sends them to audit logging and notifications. Karl's reports call the relevant list APIs with the requesting user's token.
+\section{Implementation Details}
+\subsection{Users Assets and Notifications (Joey Saade)}
+\pending{Joey supplies his reviewed implementation explanations, request/response formats, database interactions and actual execution evidence.}
+\subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
+\input{christophe-implementation.tex}
+\subsection{Audit Logging Playbooks and Reports (Karl Khouri)}
+\pending{Karl supplies his reviewed implementation explanations and actual execution evidence. Christophe's integration screenshots do not replace Karl's endpoint evidence.}
+\section{Database Design (Christophe ElChabab)}
+The four owned tables use integer primary keys. Threats enforce uniqueness on (type, value). Vulnerabilities reference assets.id. Incidents reference users.id through reporter\_id and assigned\_to, and assets.id through asset\_id. Investigation notes reference incidents.id and users.id through analyst\_id. One asset can have many vulnerabilities and incidents; one reporter can submit many incidents; one analyst can have many assignments/notes; one incident can contain many notes.
+
+User/asset references restrict deletion while still referenced. Note rows specify ON DELETE CASCADE for their incident foreign key. Severity, CVSS and lifecycle CHECK constraints supplement API validation. Resolution dates are nullable until resolution. The schema captures below display the actual table definitions, including primary and foreign keys. The record captures were taken before the authorized threat/vulnerability Cleanup requests.
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[box/.style={draw,align=left,font=\small,text width=43mm,minimum height=13mm},>=Latex]
+\node[box] (u) {users\\PK id};
+\node[box,right=18mm of u] (a) {assets\\PK id\\FK owner\_id};
+\node[box,below=14mm of u] (i) {incidents\\PK id\\FK reporter\_id, assigned\_to\\FK asset\_id};
+\node[box,below=14mm of a] (v) {vulnerabilities\\PK id\\FK asset\_id};
+\node[box,below=18mm of i] (n) {investigation\_notes\\PK id\\FK incident\_id, analyst\_id};
+\node[box,below=18mm of v] (t) {threats\\PK id\\UNIQUE type, value};
+\draw[->] (a.west) -- (u.east);
+\draw[->] (i.north) -- (u.south);
+\draw[->] (i.east) -- node[above,font=\scriptsize]{asset} (v.west |- i.east) -- (a.south);
+\draw[->] (v.north) -- (a.south);
+\draw[->] (n.north) -- (i.south);
+\draw[->] (n.west) -- ++(-9mm,0) |- (u.west);
+\end{tikzpicture}
+\caption{Christophe ElChabab - Owned service schema - Arrows point from foreign-key tables to referenced tables. Users and Assets belong to Joey's services.}
+\end{figure}
+The appendix contains actual SQL table definitions and rows with column labels for all four Christophe tables.
+\pending{Merge the remaining team schema (notifications, audit logs, playbooks, response actions and supporting history/outbox tables), field explanations and teammate database evidence into the common schema documentation.}
+\section{Error Handling and Validation (Christophe ElChabab)}
+The real API evidence covers successful calls, invalid formats/ranges/references, duplicates, unknown IDs, missing authentication, forbidden mutations, incident ownership and assignment, spoofed query scope, lifecycle skips and blank notes. The captured integration calls show the incident-assignment notification, threat audit events, assignment audit event and denied-access audit records.
+
+The pre-Cleanup reports match the captured database: two threats, two vulnerabilities and three incidents. The summary reports complete=true and an empty unavailable list. Integration routes retain Joey Saade's and Karl Khouri's prefixes because those services belong to them; these captures demonstrate Christophe's integration, not ownership of their implementations.
+
+Screenshots were captured by Christophe from his running local environment. Codex inspected and organized the originals without changing their image bytes. The screenshot set below contains 84 API/integration captures and eight database captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
+
+\section{API Documentation (Christophe ElChabab)}
+All suffixes below follow \texttt{/api/Christophe-ElChabab}. Administrator, Analyst and Auditor mean the Security Administrator, Security Analyst and Security Auditor roles. Employee means Regular Employee.
+
+\begin{small}
+\begin{longtable}{p{0.09\linewidth}p{0.22\linewidth}p{0.32\linewidth}p{0.25\linewidth}}
+\toprule
+Method & Suffix & Function & Authorized roles \\
+POST & /threats & Create indicator & Administrator \\
+GET & /threats & List indicators & Administrator, Analyst, Auditor \\
+GET & /threats/\{id\} & Retrieve indicator & Administrator, Analyst, Auditor \\
+GET & /threats/search & Filter type, value, severity, source & Administrator, Analyst, Auditor \\
+PUT & /threats/\{id\} & Update description, severity, source & Administrator \\
+DELETE & /threats/\{id\} & Delete indicator & Administrator \\
+POST & /vulnerabilities & Create vulnerability & Administrator \\
+GET & /vulnerabilities & List vulnerabilities & Administrator, Analyst, Auditor \\
+GET & /vulnerabilities/\{id\} & Retrieve vulnerability & Administrator, Analyst, Auditor \\
+GET & /vulnerabilities/search & Filter CVE, severity, asset, status & Administrator, Analyst, Auditor \\
+PUT & /vulnerabilities/\{id\} & Update vulnerability and remediation state & Administrator, Analyst \\
+DELETE & /vulnerabilities/\{id\} & Delete vulnerability & Administrator \\
+POST & /incidents & Report incident & Administrator, Employee \\
+GET & /incidents & List within authenticated scope & All four roles with restrictions \\
+GET & /incidents/\{id\} & Retrieve incident & Administrator, Auditor, assigned Analyst, original Employee \\
+PUT & /incidents/\{id\}/assign & Assign analyst & Administrator \\
+PUT & /incidents/\{id\}/status & Change lifecycle state & Administrator, assigned Analyst \\
+POST & /incidents/\{id\}/notes & Add investigation note & Administrator, assigned Analyst \\
+\bottomrule
+\end{longtable}
+\end{small}
+
+Creation returns 201; successful reads, searches, updates and deletions return 200. Detail responses are objects, lists/searches return arrays, and deletions return a message. Unknown IDs return 404. Error responses contain status and message; validation responses can also contain field-specific errors. Missing authentication returns 401, insufficient permission returns 403, duplicates/invalid transitions return 409, and invalid input/references return 422. SQL values use bound parameters, and accepted filter fields are fixed server-side.
+
+The importable request collection is \texttt{postman/christophe.collection.json}. The public environment template is \texttt{postman/christophe.environment.template.json}. Credentials must be supplied privately; local secrets and access tokens are not submission material.
+
+Detailed real request and response examples appear in the captioned appendix. Import postman/christophe.collection.json with the credential-free environment template, then set private credentials locally. Do not publish access tokens or private environment files.
+\pending{Merge Joey's and Karl's complete API references and Postman collections.}
+\section{Authentication and Authorization (Christophe ElChabab)}
+Joey's Users service issues signed bearer tokens. Protected calls verify the token and current account status, then apply role and object-level authorization. The four role names are Security Administrator, Security Analyst, Security Auditor and Regular Employee.
+The professor confirmed auditor access to threat searching and identity-scoped incident lists. These permissions are included in the endpoint reference and real tests. A supplied role, reporter or assignee query parameter cannot replace authenticated identity.
+The shared authentication appendix includes a successful administrator login and an incorrect-password request returning 401. Both use Joey's login route; Christophe captured them to demonstrate the authentication dependency. They are not additional Christophe APIs. Insufficient and correct permissions are demonstrated on Christophe's routes in the service evidence.
+\section{GitHub and Version Control (Christophe ElChabab)}
+Repository: \url{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}.
+The original Christophe three-service implementation is recorded in commit \texttt{537e769}. Subsequent commits must describe actual changes and preserve genuine author identity and dates.
+\pending{After final commits are pushed, insert actual commit-history and per-member contribution screenshots with captions. Do not create fictitious history or attribute generated code to unaided manual authorship.}
+\section{References (Christophe ElChabab)}
+Requirements source: Final Project Fall 2026-2027-Sprint 1.docx, supplied by the instructor. Permission clarifications: the professor's answers supplied by Christophe on 19 October 2026 concerning auditor threat searching and identity-scoped incident lists. Implementation references: the owned source/schema files, docs/christophe-api.md and the importable Postman collection.
+
+Codex generated implementation, tests, documentation and Postman artifacts, assisted with local execution and review, and prepared this report section. Christophe captured the execution screenshots. This disclosure does not represent AI-generated code as independent manual student authorship or replace the course requirement to understand, review, adapt and explain the implementation.
+
+\subsection*{CREATES completion}
+\pending{Record the team's genuine CREATES session, received feedback and changes made. All three members must meet the timing and attendance requirements. No meeting or feedback is claimed here.}
+\clearpage
+\appendix
+\section{Actual Execution Evidence (Christophe ElChabab)}
+Captures are retained unchanged. Schema and stored-record screenshots precede Cleanup; later successful deletions therefore do not contradict the earlier populated state. Each caption identifies the capturer, operation and purpose. Shared login and integration screenshots retain their real service owners' routes.
+\begin{landscape}
+\input{evidence.tex}
+\end{landscape}
+\end{document}
