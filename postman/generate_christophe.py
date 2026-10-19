@@ -91,6 +91,7 @@ threats = [
     request('Get threat as analyst','GET','threatUrl','/threats/{{threatId}}',token='analystToken'),
     request('Reject unknown threat ID','GET','threatUrl','/threats/999999999',404),
     request('Search by type','GET','threatUrl','/threats/search?type=Domain',token='analystToken'),
+    request('Search threats as auditor','GET','threatUrl','/threats/search?type=Domain&value=cc-{{runTag}}.example',token='auditorToken',tests=["pm.test('Auditor can search the created threat', () => pm.expect(pm.response.json().map(r => r.id)).to.eql([Number(pm.environment.get('threatId'))]));"]),
     request('Search by severity and source','GET','threatUrl','/threats/search?severity=High&source=SOC'),
     request('Search by value','GET','threatUrl','/threats/search?value=cc-{{runTag}}.example'),
     request('Update threat','PUT','threatUrl','/threats/{{threatId}}',body=dict(description='Indicator confirmed by Christophe ElChabab',severity='Critical',source='Investigation')),
@@ -122,12 +123,15 @@ incident = dict(title='Christophe ElChabab phishing incident',description='Suspi
 incidents = [
     request('Report incident as employee','POST','incidentUrl','/incidents',201,body=incident,token='employeeToken',save=dict(incidentId='id')),
     request('Create second incident','POST','incidentUrl','/incidents',201,body=dict(incident,title='Christophe ElChabab critical incident',severity='Critical'),save=dict(secondIncidentId='id')),
+    request('Report incident as other employee','POST','incidentUrl','/incidents',201,body=dict(incident,title='Christophe ElChabab other reporter incident',severity='Medium',reporter_id='{{otherEmployeeId}}'),token='otherEmployeeToken',save=dict(otherIncidentId='id')),
     request('Reject invalid severity','POST','incidentUrl','/incidents',422,body=dict(incident,severity='Extreme'),token='employeeToken'),
     request('Reject boolean reporter','POST','incidentUrl','/incidents',422,body=dict(incident,reporter_id=True)),
     request('Reject boolean incident asset','POST','incidentUrl','/incidents',422,body=dict(incident,asset_id=True)),
     request('Reject reporter impersonation','POST','incidentUrl','/incidents',403,body=dict(incident,reporter_id='{{otherEmployeeId}}'),token='employeeToken'),
     request('List incidents as administrator','GET','incidentUrl','/incidents'),
+    request('List incidents as auditor','GET','incidentUrl','/incidents',token='auditorToken',tests=["pm.test('Auditor sees both reporters', () => { const ids = pm.response.json().map(r => r.id); for (const key of ['incidentId','secondIncidentId','otherIncidentId']) pm.expect(ids).to.include(Number(pm.environment.get(key))); });"]),
     request('List own submitted incidents','GET','incidentUrl','/incidents',token='employeeToken'),
+    request('Employee scope cannot be overridden by query','GET','incidentUrl','/incidents?reporter_id={{otherEmployeeId}}&assigned_to={{analystId}}&role=Security%20Administrator',token='employeeToken',tests=["pm.test('Query cannot change employee identity or scope', () => pm.expect(pm.response.json().map(r => r.id).sort((a,b) => a-b)).to.eql([Number(pm.environment.get('incidentId')),Number(pm.environment.get('secondIncidentId'))].sort((a,b) => a-b)));"]),
     request('Get own incident','GET','incidentUrl','/incidents/{{incidentId}}',token='employeeToken'),
     request('Reject another employee reading incident','GET','incidentUrl','/incidents/{{incidentId}}',403,token='otherEmployeeToken'),
     request('Reject unassigned analyst reading incident','GET','incidentUrl','/incidents/{{incidentId}}',403,token='analystToken'),
@@ -136,6 +140,7 @@ incidents = [
     request('Reject nonanalyst assignee','PUT','incidentUrl','/incidents/{{incidentId}}/assign',422,body=dict(analyst_id='{{employeeId}}')),
     request('Assign incident to analyst','PUT','incidentUrl','/incidents/{{incidentId}}/assign',body=dict(analyst_id='{{analystId}}')),
     request('List assigned incidents','GET','incidentUrl','/incidents',token='analystToken'),
+    request('Analyst scope cannot be overridden by query','GET','incidentUrl','/incidents?assigned_to={{employeeId}}&reporter_id={{otherEmployeeId}}&role=Security%20Administrator',token='analystToken',tests=["pm.test('Query cannot change analyst identity or scope', () => pm.expect(pm.response.json().map(r => r.id)).to.eql([Number(pm.environment.get('incidentId'))]));"]),
     request('Reject incident lifecycle skip','PUT','incidentUrl','/incidents/{{incidentId}}/status',409,body=dict(status='Closed'),token='analystToken'),
     request('Reject employee changing status','PUT','incidentUrl','/incidents/{{incidentId}}/status',403,body=dict(status='Under Investigation'),token='employeeToken'),
     request('Add investigation note','POST','incidentUrl','/incidents/{{incidentId}}/notes',201,body=dict(content='Christophe ElChabab reviewed gateway logs and identified phishing'),token='analystToken'),
@@ -153,7 +158,7 @@ integrations += [request('Verify ' + name + ' report','GET','reportUrl','/report
 cleanup = [request('Delete domain threat','DELETE','threatUrl','/threats/{{threatId}}'),request('Confirm deleted threat','GET','threatUrl','/threats/{{threatId}}',404),request('Delete IP threat','DELETE','threatUrl','/threats/{{ipThreatId}}'),request('Delete vulnerability','DELETE','vulnerabilityUrl','/vulnerabilities/{{vulnerabilityId}}'),request('Confirm deleted vulnerability','GET','vulnerabilityUrl','/vulnerabilities/{{vulnerabilityId}}',404),request('Delete second vulnerability','DELETE','vulnerabilityUrl','/vulnerabilities/{{secondVulnerabilityId}}')]
 collection = dict(info=dict(name='Sprint I — Christophe ElChabab services',schema='https://schema.getpostman.com/json/collection/v2.1.0/collection.json',description='Run folders in order against your own system. Fill administrator credentials and newUserPassword locally. Setup creates role accounts and an asset through Joey APIs. Threats/vulnerabilities/incidents are Christophe ElChabab routes; integration calls verify Karl/Joey services. No saved response is fabricated. Capture actual screenshots before Cleanup.'),item=[dict(name=name,item=items) for name,items in [('01 Setup',setup),('02 Threat Intelligence',threats),('03 Vulnerability Management',vulns),('04 Incident Management',incidents),('05 Peer integration',integrations),('06 Cleanup',cleanup)]])
 values = dict(userUrl='http://127.0.0.1:8001',assetUrl='http://127.0.0.1:8002',notificationUrl='http://127.0.0.1:8003',threatUrl='http://127.0.0.1:8004',vulnerabilityUrl='http://127.0.0.1:8005',incidentUrl='http://127.0.0.1:8006',auditUrl='http://127.0.0.1:8007',reportUrl='http://127.0.0.1:8009',adminUsername='',adminPassword='',newUserPassword='')
-for key in ('adminToken','analystToken','auditorToken','employeeToken','otherEmployeeToken','analystId','auditorId','employeeId','otherEmployeeId','analystUsername','auditorUsername','employeeUsername','otherEmployeeUsername','assetId','threatId','ipThreatId','vulnerabilityId','secondVulnerabilityId','incidentId','secondIncidentId','runTag'):
+for key in ('adminToken','analystToken','auditorToken','employeeToken','otherEmployeeToken','analystId','auditorId','employeeId','otherEmployeeId','analystUsername','auditorUsername','employeeUsername','otherEmployeeUsername','assetId','threatId','ipThreatId','vulnerabilityId','secondVulnerabilityId','incidentId','secondIncidentId','otherIncidentId','runTag'):
     values[key] = ''
 environment = dict(name='Christophe ElChabab local template',values=[dict(key=key,value=value,enabled=True,type='secret' if 'Password' in key or 'Token' in key else 'default') for key,value in values.items()],_postman_variable_scope='environment')
 (ROOT / 'christophe.collection.json').write_text(json.dumps(collection,indent=2) + '\n',encoding='utf-8')

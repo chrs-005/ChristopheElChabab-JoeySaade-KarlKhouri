@@ -12,6 +12,32 @@ from test_christophe import system, create, THREAT, VULN, INCIDENT
 PREFIX = '/api/Christophe-ElChabab'
 
 
+def test_professor_auditor_can_search_threats(system):
+    c,h = system
+    threat = create(c,h,'threats',THREAT)
+    result = c['threats'].get(PREFIX+'/threats/search',params={'type':'Domain','value':THREAT['value']},headers=h[3])
+    assert result.status_code == 200, result.text
+    assert [row['id'] for row in result.json()] == [threat['id']]
+
+
+@pytest.mark.parametrize('actor_id', [1,2,3,4,5,6])
+def test_professor_incident_scope_ignores_query_identity(system, actor_id):
+    c,h = system
+    own = create(c,h,'incidents',INCIDENT)
+    other = create(c,h,'incidents',dict(INCIDENT,reporter_id=6))
+    unassigned = create(c,h,'incidents',INCIDENT)
+    for record, analyst in ((own,2),(other,5)):
+        response = c['incidents'].put(PREFIX+f'/incidents/{record["id"]}/assign',json={'analyst_id':analyst},headers=h[1])
+        assert response.status_code == 200
+    all_ids = {own['id'],other['id'],unassigned['id']}
+    expected = {1:all_ids,2:{own['id']},3:all_ids,4:{own['id'],unassigned['id']},5:{other['id']},6:{other['id']}}[actor_id]
+    for params in ({},{'reporter_id':6},{'assigned_to':5},{'user_id':1,'role':'Security Administrator'},
+                   {'reporter_id':6,'assigned_to':5,'user_id':1,'role':'Security Administrator'}):
+        response = c['incidents'].get(PREFIX+'/incidents',params=params,headers=h[actor_id])
+        assert response.status_code == 200, response.text
+        assert {row['id'] for row in response.json()} == expected, (actor_id,params,response.text)
+
+
 def test_exact_brief_routes_and_owner_name():
     expected = {
         'threats': {('post','/threats'),('get','/threats'),('get','/threats/{id}'),('get','/threats/search'),('put','/threats/{id}'),('delete','/threats/{id}')},
@@ -105,7 +131,7 @@ def test_role_matrix_for_every_required_endpoint(system, service):
         specs = [
             ('post','',dict(body,**({'value':'matrix.example'} if service=='threats' else {})),{1}),
             ('get','',None,{1,2,3}),('get',f'/{id}',None,{1,2,3}),
-            ('get','/search',None,{1,2} if service=='threats' else {1,2,3}),
+            ('get','/search',None,{1,2,3}),
             ('put',f'/{id}',dict(description='Role-matrix update'),{1} if service=='threats' else {1,2}),
             ('delete',f'/{id}',None,{1}),
         ]

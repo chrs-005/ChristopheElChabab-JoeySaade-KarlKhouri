@@ -1,5 +1,7 @@
 # API contracts
 
+Professor clarification supplied by Christophe on 2026-10-19: `GET /api/Christophe-ElChabab/threats/search` allows Administrator, Analyst and Auditor. `GET /api/Christophe-ElChabab/incidents` returns all records for Administrator/Auditor, assigned-only for Analyst, and submitted-only for Employee. Incident access predicates are derived from the authenticated identity and cannot be overridden through query parameters. No method/path pairs were added.
+
 Every actual route must use `/api/<Confirmed-Full-Student-Name>` followed by the exact brief suffix. Implemented prefixes: `/api/Joey-Saade`, `/api/Karl-Khouri`, and `/api/Christophe-ElChabab`. Christophe explicitly confirmed his route name on 2026-10-18. Do not expose required APIs only as unprefixed routes.
 
 | Owner | Brief suffixes |
@@ -18,6 +20,6 @@ Joey's implemented conventions: signed bearer token with one-hour expiry and liv
 
 Joey's current queued audit payload is `{event_id, actor_user_id|null, actor_label, action, description, occurred_at, severity, related_service, subject_id}`. Karl Khouri's `POST /api/Karl-Khouri/logs` accepts exactly this payload with `X-Service-Key` set to `AUDIT_SERVICE_AUTH_SECRET` and deduplicates on `event_id`; see [Karl's API reference](karl-api.md). Reports call peers' list APIs with the caller's token and need `created_at`, `status` and `severity` fields. Notification creation accepts `{event_id, user_id, title, message, type, severity}`. Authenticated service calls need `X-Service-Key`; clients cannot set trusted audit actors. Notification events deduplicate on `event_id`. Christophe uses the existing outbox to call this notification API for incident assignment, security alerts, threat alerts and vulnerability alerts.
 
-Christophe implements exactly six required endpoints per owned service. Responses use `id`, `created_at`, `severity`, `type` (threats), `assigned_to` (incidents), and `cvss_score`/`status` (vulnerabilities), as expected by Karl’s reports. See [API details](christophe-api.md) for fields, validation, access restrictions and interpretation of brief conflicts.
+Christophe implements exactly six required endpoints per owned service. Responses use `id`, `created_at`, `severity`, `type` (threats), `assigned_to` (incidents), and `cvss_score`/`status` (vulnerabilities), as expected by Karl’s reports. See [API details](christophe-api.md) for fields, validation and professor-confirmed access restrictions.
 
 Christophe's reviewed implementation now declares bearer authentication, typed success responses and standard error schemas directly in OpenAPI, with the same 18 suffixes. His delivery worker consumes the existing shared outbox using a persistent HTTP client and serialized delivery per process; failed events remain pending. Denials trigger delivery automatically. Current identity is `Christophe ElChabab` and prefix `/api/Christophe-ElChabab`; historical prefixes are not exposed as aliases.

@@ -1,0 +1,12 @@
+﻿...................................................................      [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\starlette\testclient.py:45
+  C:\1Christophe\AUB\FALL 2026-2027\EECE 435L\Final Project\ChristopheElChabab-JoeySaade-KarlKhouri\.venv\Lib\site-packages\starlette\testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_christophe_review.py: 42 warnings
+  C:\1Christophe\AUB\FALL 2026-2027\EECE 435L\Final Project\ChristopheElChabab-JoeySaade-KarlKhouri\.venv\Lib\site-packages\pydantic\main.py:1086: PydanticDeprecatedSince20: The `__fields__` attribute is deprecated, use `model_fields` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+67 passed, 43 warnings in 61.68s (0:01:01)

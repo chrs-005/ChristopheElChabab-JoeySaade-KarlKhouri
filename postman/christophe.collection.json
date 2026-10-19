@@ -924,6 +924,33 @@
           ]
         },
         {
+          "name": "Search threats as auditor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auditorToken}}"
+              }
+            ],
+            "url": "{{threatUrl}}/api/Christophe-ElChabab/threats/search?type=Domain&value=cc-{{runTag}}.example",
+            "description": "Christophe ElChabab \u2014 Search threats as auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Auditor can search the created threat', () => pm.expect(pm.response.json().map(r => r.id)).to.eql([Number(pm.environment.get('threatId'))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Search by severity and source",
           "request": {
             "method": "GET",
@@ -1949,6 +1976,47 @@
           ]
         },
         {
+          "name": "Report incident as other employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{otherEmployeeToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 Report incident as other employee. Expected HTTP 201. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Christophe ElChabab other reporter incident\",\n  \"description\": \"Suspicious message received\",\n  \"category\": \"Phishing\",\n  \"severity\": \"Medium\",\n  \"reporter_id\": \"{{otherEmployeeId}}\",\n  \"asset_id\": \"{{assetId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('Returned fields match the submitted request', () => { const sent = JSON.parse(pm.variables.replaceIn(pm.request.body.raw)); const got = pm.response.json(); for (const [key, value] of Object.entries(sent)) { if (Object.prototype.hasOwnProperty.call(got, key)) pm.expect(got[key]).to.eql(typeof got[key] === 'number' ? Number(value) : value); } });",
+                  "if (pm.response.code === 201) pm.environment.set('otherIncidentId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Reject invalid severity",
           "request": {
             "method": "POST",
@@ -2131,6 +2199,33 @@
           ]
         },
         {
+          "name": "List incidents as auditor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auditorToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents",
+            "description": "Christophe ElChabab \u2014 List incidents as auditor. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Auditor sees both reporters', () => { const ids = pm.response.json().map(r => r.id); for (const key of ['incidentId','secondIncidentId','otherIncidentId']) pm.expect(ids).to.include(Number(pm.environment.get(key))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "List own submitted incidents",
           "request": {
             "method": "GET",
@@ -2152,6 +2247,33 @@
                   "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
                   "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
                   "pm.test('Only own reports returned', () => pm.response.json().forEach(r => pm.expect(r.reporter_id).to.eql(Number(pm.environment.get('employeeId')))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Employee scope cannot be overridden by query",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents?reporter_id={{otherEmployeeId}}&assigned_to={{analystId}}&role=Security%20Administrator",
+            "description": "Christophe ElChabab \u2014 Employee scope cannot be overridden by query. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Query cannot change employee identity or scope', () => pm.expect(pm.response.json().map(r => r.id).sort((a,b) => a-b)).to.eql([Number(pm.environment.get('incidentId')),Number(pm.environment.get('secondIncidentId'))].sort((a,b) => a-b)));"
                 ]
               }
             }
@@ -2402,6 +2524,33 @@
                   "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
                   "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
                   "pm.test('Only assigned incidents returned', () => pm.response.json().forEach(r => pm.expect(r.assigned_to).to.eql(Number(pm.environment.get('analystId')))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analyst scope cannot be overridden by query",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{incidentUrl}}/api/Christophe-ElChabab/incidents?assigned_to={{employeeId}}&reporter_id={{otherEmployeeId}}&role=Security%20Administrator",
+            "description": "Christophe ElChabab \u2014 Analyst scope cannot be overridden by query. Expected HTTP 200. Capture the actual method, URL, request body (if any), status and response; caption with your full name and what the call demonstrates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response has expected JSON shape', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Query cannot change analyst identity or scope', () => pm.expect(pm.response.json().map(r => r.id)).to.eql([Number(pm.environment.get('incidentId'))]));"
                 ]
               }
             }

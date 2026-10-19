@@ -188,6 +188,12 @@
       "type": "default"
     },
     {
+      "key": "otherIncidentId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "runTag",
       "value": "",
       "enabled": true,

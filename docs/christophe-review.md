@@ -1,5 +1,7 @@
 # Christophe ElChabab service review
 
+Latest follow-up, 2026-10-19: the professor's two permission decisions are now implemented and verified: auditor threat search is allowed and incident-list query parameters cannot override authenticated-user scope. Full checks passed **67 tests** and **229 collection assertions over 97 items** against nine real servers. See [pytest](evidence/christophe-professor-permissions-pytest-2026-10-19.txt) and [live HTTP](evidence/christophe-professor-permissions-live-2026-10-19.txt). Older dated check counts and Git status below describe their original review session, not current submission completeness. The separate shared registration-reuse defect and real screenshot/report requirements remain outstanding.
+
 Source: the supplied Sprint I brief, especially Services 3, 4 and 7 plus its authentication, validation, error, documentation and evidence requirements. Scope is Christophe's own services and their integration contracts. This is a technical pass/fail assessment, not the instructor's marking scheme or a prediction of an AI grader's score; no numerical rubric was supplied.
 
 ## Teammate evidence status
@@ -58,12 +60,12 @@ Each suffix below is preceded by `/api/Christophe-ElChabab`. There are exactly 1
 | Own-account Git contributions and history screenshots | Christophe's current changes are local, uncommitted and unpushed; final evidence pending |
 | CREATES meeting / applied feedback | Team requirement remains pending; not inferred from implementation |
 
-## Remaining specification ambiguities
+## Instructor clarification supplied on 2026-10-19
 
-- The general Auditor role says it can search threat indicators, but Service 4's specific Auditor endpoint list omits searching. The implementation retains the narrower service-specific search permission (administrator/analyst) pending instructor clarification.
-- The general roles require employees to view submitted incidents and analysts to view assigned incidents, while the per-endpoint `GET /incidents` table names administrator/auditor for retrieving all. The current route returns only the caller's own/assigned subset for employee/analyst; only administrator/auditor gets the organization's complete list. This interpretation is explicit, not claimed as an instructor-confirmed resolution.
+- The professor confirmed auditor access to `GET /threats/search`; its omission from Service 4's authorization list was an oversight. The search permission now includes Administrator, Analyst and Auditor, without allowing auditor mutations.
+- The professor confirmed `GET /incidents` for all four roles: all records for Administrator/Auditor, assigned-only for Analyst, submitted-only for Employee. The authenticated user's live identity controls the SQL predicate; supplied query parameters cannot change it. Additional tests exercise two different analysts/reporters and forged identity/role parameters.
 
-Those contradictions cannot be made unambiguously “perfect” by guessing a grader's preference. No teammate service permissions were silently changed.
+These two questions are resolved using the professor's answer supplied by Christophe, not a guessed grader preference. Exactly 18 required operations remain; no teammate-service permissions were changed. Screenshot/report work and the separately documented shared registration-reuse defect remain outside this clarification.
 
 ## Reproduce
 

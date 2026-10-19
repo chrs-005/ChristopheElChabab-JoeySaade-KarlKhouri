@@ -92,7 +92,7 @@ def create_incident(data: IncidentCreate, background_tasks: BackgroundTasks, act
 
 
 @app.get(f'{PREFIX}/incidents', response_model=list[IncidentRecord],
-         summary='Retrieve All Incidents', description='Administrator or auditor sees all incidents. To support the role summary, analysts receive only assigned incidents and employees only their own submitted incidents; neither can retrieve the full organization list.')
+         summary='Retrieve All Incidents', description='Administrator or auditor sees all incidents. Analysts receive only incidents assigned to their authenticated user ID; employees receive only incidents they submitted. Query parameters cannot override the verified identity, role or access scope.')
 def list_incidents(actor=Depends(current_user)):
     require_role(actor, ADMIN, AUDITOR, ANALYST, EMPLOYEE)
     where, args = '', ()

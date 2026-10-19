@@ -1,0 +1,596 @@
+﻿Administrator created
+All nine real HTTP services are ready
+POST users/users/login: HTTP 200
+POST users/users/register: HTTP 201
+PATCH users/users/2/admin: HTTP 200
+POST users/users/login: HTTP 200
+POST users/users/register: HTTP 201
+POST users/users/login: HTTP 200
+POST users/users/login: HTTP 401
+POST assets/assets: HTTP 201
+POST threats/threats: HTTP 201
+POST threats/threats: HTTP 201
+POST threats/threats: HTTP 409
+POST threats/threats: HTTP 422
+GET threats/threats: HTTP 401
+DELETE threats/threats/2: HTTP 403
+POST vulnerabilities/vulnerabilities: HTTP 201
+POST incidents/incidents: HTTP 201
+PUT incidents/incidents/1/assign: HTTP 403
+PUT incidents/incidents/1/assign: HTTP 200
+PUT incidents/incidents/1/status: HTTP 409
+POST incidents/incidents/1/notes: HTTP 201
+PUT incidents/incidents/1/status: HTTP 200
+PUT incidents/incidents/1/status: HTTP 200
+PUT incidents/incidents/1/status: HTTP 200
+PUT incidents/incidents/1/status: HTTP 200
+PUT vulnerabilities/vulnerabilities/1: HTTP 200
+PUT vulnerabilities/vulnerabilities/1: HTTP 200
+PUT vulnerabilities/vulnerabilities/1: HTTP 200
+PUT vulnerabilities/vulnerabilities/1: HTTP 200
+GET incidents/incidents/1: HTTP 200
+POST playbooks/playbooks: HTTP 201
+PUT playbooks/actions/1/status: HTTP 200
+PUT playbooks/actions/1/status: HTTP 200
+GET notifications/notifications/user/2: HTTP 200
+GET audit_logs/logs: HTTP 200
+GET reports/reports/incidents: HTTP 200
+GET incidents/incidents: HTTP 200
+GET reports/reports/vulnerabilities: HTTP 200
+GET vulnerabilities/vulnerabilities: HTTP 200
+GET reports/reports/threats: HTTP 200
+GET threats/threats: HTTP 200
+GET reports/reports/summary: HTTP 200
+PASS: all nine services; real API calls, permissions, validation, lifecycles, notes, audit, notifications, playbooks, report reconciliation, database integrity
+Sprint I — Christophe ElChabab services
+
+□ 01 Setup
+└ Log in as administrator
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 95ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject incorrect password
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [401 Unauthorized, 185B, 91ms]
+  √  Expected HTTP 401
+  √  Clear error response
+
+└ Register analyst
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 399B, 87ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+
+└ Assign Security Analyst
+  PATCH http://127.0.0.1:18001/api/Joey-Saade/users/4/admin [200 OK, 394B, 40ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Log in as analyst
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 88ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Register auditor
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 399B, 86ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+
+└ Assign Security Auditor
+  PATCH http://127.0.0.1:18001/api/Joey-Saade/users/5/admin [200 OK, 394B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Log in as auditor
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 86ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Register employee
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 402B, 82ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+
+└ Log in as employee
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 83ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Register otherEmployee
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 417B, 80ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+
+└ Log in as otherEmployee
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 86ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Create affected asset
+  POST http://127.0.0.1:18002/api/Joey-Saade/assets [201 Created, 439B, 14ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+
+□ 02 Threat Intelligence
+└ Create domain threat
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [201 Created, 390B, 15ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Create IP threat
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [201 Created, 387B, 15ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Reject duplicate domain
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [409 Conflict, 217B, 11ms]
+  √  Expected HTTP 409
+  √  Clear error response
+
+└ Reject invalid IP
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [422 Unprocessable Entity, 269B, 10ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject invalid hash
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [422 Unprocessable Entity, 296B, 10ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject malformed domain terminator
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [422 Unprocessable Entity, 265B, 10ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject missing fields
+  POST http://127.0.0.1:18004/api/Christophe-ElChabab/threats [422 Unprocessable Entity, 460B, 8ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject employee reading threats
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats [403 Forbidden, 218B, 55ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject missing authentication
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats [401 Unauthorized, 186B, 7ms]
+  √  Expected HTTP 401
+  √  Clear error response
+
+└ List threats as auditor
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats [200 OK, 1.09kB, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Get threat as analyst
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [200 OK, 385B, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject unknown threat ID
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/999999999 [404 Not Found, 179B, 9ms]
+  √  Expected HTTP 404
+  √  Clear error response
+
+└ Search by type
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/search?type=Domain [200 OK, 610B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Search threats as auditor
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/search?type=Domain&value=cc-1792441112057.example [200 OK, 387B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Auditor can search the created threat
+
+└ Search by severity and source
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/search?severity=High&source=SOC [200 OK, 610B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Search by value
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/search?value=cc-1792441112057.example [200 OK, 387B, 8ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Update threat
+  PUT http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [200 OK, 387B, 26ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Reject analyst threat update
+  PUT http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [403 Forbidden, 218B, 12ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject analyst threat deletion
+  DELETE http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [403 Forbidden, 218B, 11ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+□ 03 Vulnerability Management
+└ Create vulnerability
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [201 Created, 453B, 18ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Create second vulnerability
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [201 Created, 457B, 14ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Reject CVSS outside range
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 282B, 8ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject boolean CVSS
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 296B, 11ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject boolean vulnerability asset
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 294B, 10ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject invalid CVE
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 292B, 9ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject nonstandard CVE digits
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 292B, 10ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject unknown asset
+  POST http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [422 Unprocessable Entity, 203B, 8ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ List vulnerabilities as auditor
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities [200 OK, 1.1kB, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Get vulnerability
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 448B, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject unknown vulnerability
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/999999999 [404 Not Found, 186B, 9ms]
+  √  Expected HTTP 404
+  √  Clear error response
+
+└ Search CVE
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/search?cve_id=CVE-2026-12345 [200 OK, 1.1kB, 7ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Search asset and severity
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/search?asset_id=2&severity=High [200 OK, 450B, 7ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject auditor update
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [403 Forbidden, 218B, 11ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject lifecycle skip
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [409 Conflict, 203B, 7ms]
+  √  Expected HTTP 409
+  √  Clear error response
+
+└ Update vulnerability information
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 461B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Vulnerability -> Under Investigation
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 476B, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Vulnerability -> In Progress
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 468B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Vulnerability -> Resolved
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 495B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Vulnerability -> Closed
+  PUT http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 493B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Search closed vulnerabilities
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/search?status=Closed [200 OK, 821B, 35ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject analyst deletion
+  DELETE http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [403 Forbidden, 218B, 10ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+□ 04 Incident Management
+└ Report incident as employee
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [201 Created, 465B, 15ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Create second incident
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [201 Created, 469B, 14ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Report incident as other employee
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [201 Created, 473B, 23ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Reject invalid severity
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [422 Unprocessable Entity, 293B, 8ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject boolean reporter
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [422 Unprocessable Entity, 297B, 36ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject boolean incident asset
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [422 Unprocessable Entity, 294B, 9ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Reject reporter impersonation
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [403 Forbidden, 204B, 14ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ List incidents as administrator
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [200 OK, 1.45kB, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ List incidents as auditor
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [200 OK, 1.45kB, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Auditor sees both reporters
+
+└ List own submitted incidents
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [200 OK, 779B, 6ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Only own reports returned
+
+└ Employee scope cannot be overridden by query
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents?reporter_id=7&assigned_to=4&role=Security%20Administrator [200 OK, 779B, 9ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Query cannot change employee identity or scope
+
+└ Get own incident
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2 [200 OK, 460B, 7ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Reject another employee reading incident
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2 [403 Forbidden, 199B, 9ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject unassigned analyst reading incident
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2 [403 Forbidden, 203B, 10ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject unknown incident ID
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/999999999 [404 Not Found, 181B, 21ms]
+  √  Expected HTTP 404
+  √  Clear error response
+
+└ Reject employee assignment
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/assign [403 Forbidden, 218B, 12ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Reject nonanalyst assignee
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/assign [422 Unprocessable Entity, 217B, 7ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Assign incident to analyst
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/assign [200 OK, 457B, 11ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+  √  Assigned to requested analyst
+
+└ List assigned incidents
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents [200 OK, 448B, 10ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Only assigned incidents returned
+
+└ Analyst scope cannot be overridden by query
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents?assigned_to=6&reporter_id=7&role=Security%20Administrator [200 OK, 448B, 36ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Query cannot change analyst identity or scope
+
+└ Reject incident lifecycle skip
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [409 Conflict, 203B, 9ms]
+  √  Expected HTTP 409
+  √  Clear error response
+
+└ Reject employee changing status
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [403 Forbidden, 218B, 10ms]
+  √  Expected HTTP 403
+  √  Clear error response
+
+└ Add investigation note
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/notes [201 Created, 296B, 14ms]
+  √  Expected HTTP 201
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Reject empty note
+  POST http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/notes [422 Unprocessable Entity, 278B, 9ms]
+  √  Expected HTTP 422
+  √  Clear error response
+
+└ Retrieve incident with notes
+  GET http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2 [200 OK, 622B, 8ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Incident -> Under Investigation
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [200 OK, 637B, 14ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Incident -> Mitigated
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [200 OK, 627B, 16ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Incident -> Resolved
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [200 OK, 656B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+└ Incident -> Closed
+  PUT http://127.0.0.1:18006/api/Christophe-ElChabab/incidents/2/status [200 OK, 654B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Returned fields match the submitted request
+
+□ 05 Peer integration
+└ Verify assignment notification
+  GET http://127.0.0.1:18003/api/Joey-Saade/notifications/user/4 [200 OK, 645B, 9ms]
+  GET http://127.0.0.1:18003/api/Joey-Saade/notifications/user/4 [200 OK, 645B, 8ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Assignment notice exists
+  √  This run produced the expected event
+
+└ Verify threat audit entries
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?related_service=threats [200 OK, 2.04kB, 9ms]
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?related_service=threats [200 OK, 2.04kB, 7ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Real audit records exist
+  √  This run produced the expected event
+
+└ Verify incident assignment audit
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=incident_assigned [200 OK, 907B, 8ms]
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=incident_assigned [200 OK, 907B, 7ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Real audit records exist
+  √  This run produced the expected event
+
+└ Verify permission violation audit
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=unauthorized_access [200 OK, 5.74kB, 7ms]
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=unauthorized_access [200 OK, 5.74kB, 8ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  Real audit records exist
+  √  This run produced the expected event
+
+└ Verify threats report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/threats [200 OK, 362B, 20ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Verify vulnerabilities report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/vulnerabilities [200 OK, 405B, 25ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Verify incidents report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/incidents [200 OK, 395B, 33ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Verify summary report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/summary [200 OK, 2.02kB, 68ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+  √  All report sources available
+
+□ 06 Cleanup
+└ Delete domain threat
+  DELETE http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [200 OK, 153B, 15ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Confirm deleted threat
+  GET http://127.0.0.1:18004/api/Christophe-ElChabab/threats/3 [404 Not Found, 179B, 9ms]
+  √  Expected HTTP 404
+  √  Clear error response
+
+└ Delete IP threat
+  DELETE http://127.0.0.1:18004/api/Christophe-ElChabab/threats/4 [200 OK, 153B, 12ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Delete vulnerability
+  DELETE http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [200 OK, 160B, 13ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+└ Confirm deleted vulnerability
+  GET http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/2 [404 Not Found, 186B, 51ms]
+  √  Expected HTTP 404
+  √  Clear error response
+
+└ Delete second vulnerability
+  DELETE http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities/3 [200 OK, 160B, 22ms]
+  √  Expected HTTP 200
+  √  Response has expected JSON shape
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │              101 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               97 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                4 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │              229 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 10s                                       │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 45.02kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 21ms [min: 6ms, max: 95ms, s.d.: 23ms] │
+└───────────────────────────────────────────────────────────────┘
+PASS: exported Christophe Postman collection executed by Newman against nine actual servers

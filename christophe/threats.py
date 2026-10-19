@@ -76,9 +76,9 @@ def create_threat(data: ThreatCreate, background_tasks: BackgroundTasks, actor=D
 
 
 @app.get(f'{PREFIX}/threats/search', response_model=list[ThreatRecord],
-         summary='Search Threat Indicators', description='Administrator or analyst searches by threat type, value, severity and source. Filters are combined with AND; no matches returns an empty list.')
+         summary='Search Threat Indicators', description='Administrator, analyst or auditor searches by threat type, value, severity and source. Filters are combined with AND; no matches returns an empty list.')
 def search_threats(type: ThreatType | None = None, value: str | None = None, severity: Severity | None = None, source: str | None = None, actor=Depends(current_user)):
-    require_role(actor, ADMIN, ANALYST)
+    require_role(actor, ADMIN, ANALYST, AUDITOR)
     if value is not None and type is not None:
         try:
             value = indicator(type, value.strip())

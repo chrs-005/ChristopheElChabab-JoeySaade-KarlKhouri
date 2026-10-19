@@ -1,6 +1,6 @@
 # Christophe ElChabab API and evidence guide
 
-Owner: Christophe ElChabab. Services: Threat Intelligence, Vulnerability Management and Incident Management. Every business route below begins with `/api/Christophe-ElChabab`. This document describes the implementation and choices made where the brief is ambiguous; it is not a completed student report or execution evidence.
+Owner: Christophe ElChabab. Services: Threat Intelligence, Vulnerability Management and Incident Management. Every business route below begins with `/api/Christophe-ElChabab`. Permissions incorporate the professor's clarification supplied by Christophe on 2026-10-19; this guide is not a completed student report or execution evidence.
 
 ## Run and authenticate
 
@@ -37,7 +37,7 @@ Role literals retain the team's existing contract: `Security Administrator`, `Se
 | POST `/threats` | Add `type`, `value`, `description`, `severity`, `source` | Created threat object | Administrator |
 | GET `/threats` | List all threats; no body | Threat list | Administrator, Analyst, Auditor |
 | GET `/threats/{id}` | Read integer ID | Threat object, or 404 | Administrator, Analyst, Auditor |
-| GET `/threats/search` | Optional query: `type`, `value`, `severity`, `source`; combined with AND | Matching threat list | Administrator, Analyst |
+| GET `/threats/search` | Optional query: `type`, `value`, `severity`, `source`; combined with AND | Matching threat list | Administrator, Analyst, Auditor |
 | PUT `/threats/{id}` | Any nonempty subset of `description`, `severity`, `source` | Updated threat object | Administrator |
 | DELETE `/threats/{id}` | Delete integer ID | `{"message":"Threat deleted"}` | Administrator |
 
@@ -51,7 +51,7 @@ Stored/returned fields: `id`, `type`, `value`, `description`, `severity`, `sourc
 
 Types: `IP Address`, `Domain`, `File Hash`, `Malware Signature`, `Other Indicators`. Severity: Low, Medium, High, Critical. IP threats use valid IPv4/IPv6 and canonical formatting. Domains are lowercased, have their terminal dot removed, require multiple valid DNS labels, and cannot include URL paths or whitespace. File hashes accept hexadecimal MD5/SHA-1/SHA-256 (32/40/64 characters) and are lowercased. Signatures/other indicators are nonblank text. `UNIQUE(type,value)` rejects normalized duplicates with 409. Identity/type cannot be changed through update, matching the brief's listed update fields.
 
-The auditor search permission conflicts between the brief's broad role summary and Service 4's specific list. The implementation uses the narrower list and denies auditor searching; see permissions.md.
+The professor confirmed auditor search access and identified its omission from Service 4's list as an oversight. Auditor search now uses the same validated filters as administrator/analyst search; auditors still cannot create, update or delete threats.
 
 ## Vulnerability Management — port 8005
 
@@ -107,7 +107,7 @@ Assignment requires an existing Active Security Analyst. Assignment is audited a
 
 Skipped/backward transitions return 409. Resolution is timestamped at Resolved. Updates use a write lock. Notes store `id`, `incident_id`, authenticated `analyst_id`, `content`, `created_at`; clients cannot forge the note author/timestamp. Administrators can add notes under their own actor ID because the service-specific authorization list permits this. No incident delete endpoint is requested or added.
 
-The scoped list implements the brief's broad “view assigned/submitted incidents” role requirements through the existing GET suffix. Its narrower service authorization list names only Administrator/Auditor for that suffix; the interpretation is recorded for team/instructor confirmation.
+The professor confirmed the scoped incident-list policy. The backend derives the SQL restriction from the authenticated user's current ID and role. Parameters such as `reporter_id`, `assigned_to`, `user_id` or `role` cannot expand or replace that scope: employees still get only their reports, analysts only their assignments, and administrator/auditor lists remain unrestricted.
 
 ## Database relationships and service communication
 
@@ -145,4 +145,4 @@ The strict review fixed malformed multi-dot domains, non-ASCII CVE digits, boole
 
 Latest verification: **60 pytest tests passed**; **92 collection items and 214 assertions passed** against nine actual servers (96 HTTP requests including four event probes). The final run needed one successful probe per event check. See [review and limitations](christophe-review.md) and [actual evidence index](evidence/README.md). The 18 endpoints use bearer-auth security definitions, typed success schemas, standard error schemas, descriptions and summaries. Input samples and schemas remain documentation, not fabricated evidence.
 
-All required screenshots and the common report remain pending. The brief's auditor threat-search and scoped incident-list ambiguities remain documented in permissions.md.
+All required screenshots and the common report remain pending. The professor's resolution of auditor searching and scoped incident lists is recorded in permissions.md; earlier verification counts above are historical.
