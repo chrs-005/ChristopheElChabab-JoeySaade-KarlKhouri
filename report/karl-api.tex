@@ -12,14 +12,14 @@ GET & /logs & List audit entries, newest first & Administrator, Auditor \\
 GET & /logs/\{id\} & Retrieve an audit entry & Administrator, Analyst, Auditor \\
 GET & /logs/search & Filter by actor, action, severity, service, subject and date range & Administrator, Analyst, Auditor \\
 DELETE & /logs/\{id\} & Delete an entry and record the deletion & Administrator \\
-GET & /logs/user/\{user\_id\} & List one user's activity & Administrator, Auditor, self \\
+GET & /logs/user/\{user\_id\} & List one user's activity; empty list if none & Administrator, Auditor \\
 POST & /playbooks & Create a playbook with optional ordered steps & Administrator \\
 GET & /playbooks & List playbooks with steps and progress & Administrator, Analyst, Auditor \\
 GET & /playbooks/\{id\} & Retrieve a playbook, steps and execution state & Administrator, Analyst, Auditor \\
-POST & /playbooks/\{id\}/actions & Add the next ordered response step & Administrator, Analyst \\
-PUT & /actions/\{id\}/status & Move a step Pending, In Progress, Completed & Assigned user, Administrator \\
+POST & /playbooks/\{id\}/actions & Add an ordered step (description, step number; optional assignee) & Administrator, Analyst \\
+PUT & /actions/\{id\}/status & Update status, assigned user or completion date & Administrator, Analyst \\
 DELETE & /playbooks/\{id\} & Delete a playbook not in progress & Administrator \\
-GET & /reports/summary & Combined figures from all five sources & Administrator, Auditor \\
+GET & /reports/summary & Combined figures: users plus the five sources below & Administrator, Auditor \\
 GET & /reports/incidents & Incidents by status and severity, open, unassigned & Administrator, Auditor \\
 GET & /reports/assets & Assets by type, criticality, status, department & Administrator, Auditor \\
 GET & /reports/threats & Threats by type and severity & Administrator, Auditor \\

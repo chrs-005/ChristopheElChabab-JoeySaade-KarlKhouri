@@ -1,5 +1,7 @@
 import json
 import sqlite3
+import uuid
+from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 
 from fastapi import BackgroundTasks, Depends, FastAPI
@@ -7,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from joey.common import api_error_handler, current_user, db, error, now, queue_audit, require_role, row_dict, token_secret
 
-from .common import PREFIX, SEVERITIES, init_db
+from .common import PREFIX, SEVERITIES, init_db, parse_time
 
 CATEGORIES = ("Malware", "Phishing", "Ransomware", "Unauthorized Access", "Data Breach", "Denial of Service", "Insider Threat", "Vulnerability Remediation", "Other")
 STATUSES = ("Pending", "In Progress", "Completed")
@@ -30,9 +32,14 @@ api_error_handler(app)
 class StepCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     step_order: int | None = Field(default=None, ge=1)
-    title: str = Field(min_length=1, max_length=200)
+    title: str | None = Field(default=None, min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=2000)
-    assigned_to: int
+    assigned_to: int | None = None
+
+
+class ActionCreate(StepCreate):
+    # The handout's required information for a new response action: action description and step number.
+    step_order: int = Field(ge=1)
 
 
 class PlaybookCreate(BaseModel):
@@ -45,8 +52,11 @@ class PlaybookCreate(BaseModel):
 
 
 class StatusUpdate(BaseModel):
+    # The handout's possible updates: status, assigned user and completion date.
     model_config = ConfigDict(extra="forbid")
-    status: str
+    status: str | None = None
+    assigned_to: int | None = None
+    completion_date: str | None = None
     note: str | None = Field(default=None, max_length=2000)
 
 
@@ -58,13 +68,20 @@ def check_assignee(conn, user_id):
         error(422, f"Assignee {user_id} must be an active analyst or administrator")
 
 
-def insert_step(conn, playbook, step, order, actor):
-    check_assignee(conn, step.assigned_to)
-    cur = conn.execute("INSERT INTO response_actions(playbook_id,step_order,title,description,assigned_to,status,created_at) VALUES(?,?,?,?,?,?,?)", (playbook["id"], order, step.title.strip(), step.description.strip(), step.assigned_to, "Pending", now()))
-    conn.execute("INSERT INTO action_history(action_id,original_action_id,playbook_id,original_playbook_id,from_status,to_status,changed_by,changed_by_label,changed_at,note) VALUES(?,?,?,?,?,?,?,?,?,?)", (cur.lastrowid, cur.lastrowid, playbook["id"], playbook["id"], None, "Pending", actor["id"], actor["username"], now(), "Step created"))
-    event_id = f"playbook-action-{cur.lastrowid}-assigned"
-    payload = {"event_id": event_id, "user_id": step.assigned_to, "title": "Response action assigned", "message": f"Step {order} of playbook '{playbook['name']}': {step.title.strip()}", "type": "Security Alert", "severity": playbook["severity"]}
+def notify_assignee(conn, playbook, order, title, user_id, event_id):
+    payload = {"event_id": event_id, "user_id": user_id, "title": "Response action assigned", "message": f"Step {order} of playbook '{playbook['name']}': {title}", "type": "Security Alert", "severity": playbook["severity"]}
     conn.execute("INSERT INTO outbox(event_id,destination,payload_json,created_at) VALUES(?,?,?,?)", (event_id, "notification", json.dumps(payload), now()))
+
+
+def insert_step(conn, playbook, step, order, actor):
+    if step.assigned_to is not None:
+        check_assignee(conn, step.assigned_to)
+    description = step.description.strip()
+    title = step.title.strip() if step.title else description[:80]
+    cur = conn.execute("INSERT INTO response_actions(playbook_id,step_order,title,description,assigned_to,status,created_at) VALUES(?,?,?,?,?,?,?)", (playbook["id"], order, title, description, step.assigned_to, "Pending", now()))
+    conn.execute("INSERT INTO action_history(action_id,original_action_id,playbook_id,original_playbook_id,from_status,to_status,changed_by,changed_by_label,changed_at,note) VALUES(?,?,?,?,?,?,?,?,?,?)", (cur.lastrowid, cur.lastrowid, playbook["id"], playbook["id"], None, "Pending", actor["id"], actor["username"], now(), "Step created"))
+    if step.assigned_to is not None:
+        notify_assignee(conn, playbook, order, title, step.assigned_to, f"playbook-action-{cur.lastrowid}-assigned")
     queue_audit(conn, "response_action_created", actor["id"], actor["username"], related_service="playbooks", subject_id=cur.lastrowid)
     return cur.lastrowid
 
@@ -136,14 +153,14 @@ def get_history(id: int, actor=Depends(current_user)):
 
 
 @app.post(f"{PREFIX}/playbooks/{{id}}/actions", status_code=201)
-def add_action(id: int, data: StepCreate, background_tasks: BackgroundTasks, actor=Depends(current_user)):
+def add_action(id: int, data: ActionCreate, background_tasks: BackgroundTasks, actor=Depends(current_user)):
     require_role(actor, *EDITORS)
     with db() as conn:
         playbook = conn.execute("SELECT * FROM playbooks WHERE id=?", (id,)).fetchone()
         if not playbook:
             error(404, "Playbook not found")
         next_order = conn.execute("SELECT COALESCE(MAX(step_order), 0) + 1 FROM response_actions WHERE playbook_id=?", (id,)).fetchone()[0]
-        order = data.step_order or next_order
+        order = data.step_order
         if order < next_order:
             error(409, f"Step {order} already exists; the next step is {next_order}")
         if order > next_order:
@@ -157,28 +174,57 @@ def add_action(id: int, data: StepCreate, background_tasks: BackgroundTasks, act
 
 @app.put(f"{PREFIX}/actions/{{id}}/status")
 def update_action_status(id: int, data: StatusUpdate, background_tasks: BackgroundTasks, actor=Depends(current_user)):
+    # The handout lets Security Administrators and Security Analysts update response action status.
     require_role(actor, *EDITORS)
-    if data.status not in STATUSES:
+    if data.status is None and data.assigned_to is None:
+        error(422, "Provide status and/or assigned_to")
+    if data.status is not None and data.status not in STATUSES:
         error(422, "Invalid status")
+    if data.completion_date is not None and data.status != "Completed":
+        error(422, "completion_date can only be set when the status becomes Completed")
     with db() as conn:
         action = conn.execute("SELECT * FROM response_actions WHERE id=?", (id,)).fetchone()
         if not action:
             error(404, "Response action not found")
-        if actor["role"] != "Security Administrator" and actor["id"] != action["assigned_to"]:
-            error(403, "Only the assigned analyst or an administrator can update this action")
-        if NEXT_STATUS.get(action["status"]) != data.status:
-            error(409, f"Invalid transition {action['status']} -> {data.status}; allowed: Pending -> In Progress -> Completed")
-        unfinished = conn.execute("SELECT step_order FROM response_actions WHERE playbook_id=? AND step_order<? AND status!='Completed' ORDER BY step_order", (action["playbook_id"], action["step_order"])).fetchone()
-        if unfinished:
-            error(409, f"Step {unfinished['step_order']} must be completed first")
+        playbook = conn.execute("SELECT * FROM playbooks WHERE id=?", (action["playbook_id"],)).fetchone()
         stamp = now()
+        assignee = action["assigned_to"]
+        if data.assigned_to is not None:
+            if action["status"] == "Completed":
+                error(409, "A completed action cannot be reassigned")
+            check_assignee(conn, data.assigned_to)
+            assignee = data.assigned_to
+        if data.status is not None:
+            if NEXT_STATUS.get(action["status"]) != data.status:
+                error(409, f"Invalid transition {action['status']} -> {data.status}; allowed: Pending -> In Progress -> Completed")
+            if assignee is None:
+                error(409, "Assign the action to a user before changing its status")
+            unfinished = conn.execute("SELECT step_order FROM response_actions WHERE playbook_id=? AND step_order<? AND status!='Completed' ORDER BY step_order", (action["playbook_id"], action["step_order"])).fetchone()
+            if unfinished:
+                error(409, f"Step {unfinished['step_order']} must be completed first")
+        completed_at = stamp
+        if data.completion_date is not None:
+            completed = parse_time(data.completion_date, "completion_date")
+            if completed > datetime.now(timezone.utc) + timedelta(minutes=5):
+                error(422, "completion_date cannot be in the future")
+            if action["started_at"] and completed < parse_time(action["started_at"], "started_at"):
+                error(422, "completion_date cannot be before the action started")
+            completed_at = completed.isoformat()
+        history = "INSERT INTO action_history(action_id,original_action_id,playbook_id,original_playbook_id,from_status,to_status,changed_by,changed_by_label,changed_at,note) VALUES(?,?,?,?,?,?,?,?,?,?)"
+        if data.assigned_to is not None and data.assigned_to != action["assigned_to"]:
+            conn.execute("UPDATE response_actions SET assigned_to=? WHERE id=?", (data.assigned_to, id))
+            label = conn.execute("SELECT username FROM users WHERE id=?", (data.assigned_to,)).fetchone()["username"]
+            conn.execute(history, (id, id, action["playbook_id"], action["playbook_id"], action["status"], action["status"], actor["id"], actor["username"], stamp, f"Assigned to {label}"))
+            notify_assignee(conn, playbook, action["step_order"], action["title"], data.assigned_to, f"playbook-action-{id}-reassigned-{uuid.uuid4().hex}")
+            queue_audit(conn, "response_action_assigned", actor["id"], actor["username"], related_service="playbooks", subject_id=id, description=f"Action {id} assigned to user {data.assigned_to}")
         if data.status == "In Progress":
             conn.execute("UPDATE response_actions SET status=?, started_at=? WHERE id=?", (data.status, stamp, id))
-        else:
-            conn.execute("UPDATE response_actions SET status=?, completed_at=?, completed_by=? WHERE id=?", (data.status, stamp, actor["id"], id))
-        conn.execute("INSERT INTO action_history(action_id,original_action_id,playbook_id,original_playbook_id,from_status,to_status,changed_by,changed_by_label,changed_at,note) VALUES(?,?,?,?,?,?,?,?,?,?)", (id, id, action["playbook_id"], action["playbook_id"], action["status"], data.status, actor["id"], actor["username"], stamp, data.note))
+        elif data.status == "Completed":
+            conn.execute("UPDATE response_actions SET status=?, completed_at=?, completed_by=? WHERE id=?", (data.status, completed_at, actor["id"], id))
+        if data.status is not None:
+            conn.execute(history, (id, id, action["playbook_id"], action["playbook_id"], action["status"], data.status, actor["id"], actor["username"], stamp, data.note))
+            queue_audit(conn, "response_action_status_changed", actor["id"], actor["username"], related_service="playbooks", subject_id=id, description=f"Action {id}: {action['status']} -> {data.status}")
         conn.execute("UPDATE playbooks SET updated_at=? WHERE id=?", (stamp, action["playbook_id"]))
-        queue_audit(conn, "response_action_status_changed", actor["id"], actor["username"], related_service="playbooks", subject_id=id, description=f"Action {id}: {action['status']} -> {data.status}")
         result = row_dict(conn.execute("SELECT * FROM response_actions WHERE id=?", (id,)).fetchone())
     deliver_later(background_tasks)
     return result

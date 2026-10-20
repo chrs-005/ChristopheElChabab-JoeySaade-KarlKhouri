@@ -92,6 +92,24 @@
       "type": "default"
     },
     {
+      "key": "employeeUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "employeeId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "employeeToken",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "deletionLogId",
       "value": "",
       "enabled": true,
@@ -117,6 +135,12 @@
     },
     {
       "key": "action2Id",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "action3Id",
       "value": "",
       "enabled": true,
       "type": "default"

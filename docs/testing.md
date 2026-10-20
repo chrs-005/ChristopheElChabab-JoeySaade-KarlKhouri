@@ -98,3 +98,7 @@ Following the handout, analysts can retrieve/search audit logs and only administ
 ### Karl Khouri log-permission correction, 2026-10-20
 
 Analysts: `GET /logs/{id}` and `GET /logs/search` allowed; `GET /logs` and other users' `GET /logs/user/{user_id}` refused (403). Collection: 50 requests, 67 assertions, 0 failures. Full suite: 71 passed.
+
+### Karl Khouri handout alignment, 2026-10-20
+
+No self-access to `GET /logs/user/{user_id}` (tests use the caller's own ID); action creation needs only description and step number; status route updates status, assigned user and completion date; summary includes users. Results: pytest 71 passed; both live checks passed; Newman 57 requests / 77 assertions, 0 failures.

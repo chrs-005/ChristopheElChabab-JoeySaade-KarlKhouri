@@ -133,13 +133,10 @@ def search_logs(actor_user_id: int | None = None, action: str | None = None, sev
 
 @app.get(f"{PREFIX}/logs/user/{{user_id}}")
 def logs_for_user(user_id: int, actor=Depends(current_user)):
-    if actor["role"] not in READERS and actor["id"] != user_id:
-        error(403, "Users may view only their own activity")
+    require_role(actor, *READERS)  # no self-access exception: a user's history is Administrator/Auditor-only
     with db() as conn:
         rows = conn.execute("SELECT * FROM audit_logs WHERE original_actor_user_id=? ORDER BY occurred_at DESC, id DESC", (user_id,)).fetchall()
-        if not rows and not conn.execute("SELECT 1 FROM users WHERE id=?", (user_id,)).fetchone():
-            error(404, "User not found")
-    return [row_dict(x) for x in rows]
+    return [row_dict(x) for x in rows]  # empty list when the user has no available logs
 
 
 @app.get(f"{PREFIX}/logs/{{id}}")

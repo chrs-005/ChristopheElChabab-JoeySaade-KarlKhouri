@@ -231,7 +231,6 @@ Security Auditor & Reads permitted users, assets, incidents, threats, vulnerabil
 \textbf{Record-level permissions.} The professor clarified that auditors may search threats and that all four roles may call \code{GET /incidents}. Administrators/auditors see all incidents, analysts see their assignments and employees see their submissions. These restrictions use the token's user ID even if a request supplies misleading reporter, assignee or role query parameters. The same principle limits notifications to their recipient where required.
 
 The shared login evidence in Appendix~\ref{app:christophe} shows both a valid administrator login and an incorrect password returning 401. Employee threat access returns 403 while an allowed reader succeeds; auditor vulnerability updates and unauthorized incident changes are rejected. Joey's runner summary and Karl's protected API captures provide additional access-control evidence. The handout's two permission clarifications are applied in the endpoint tables above.
-\pending{Karl's audit detail/search and playbook-creation permissions await his update.}
 
 \section{GitHub and Version Control (Christophe ElChabab, Joey Saade, Karl Khouri)}
 \label{sec:git}
@@ -277,6 +276,6 @@ The ten supplied images comprise five Postman Runner summaries and five database
 
 \section{Postman and Database Evidence (Karl Khouri)}
 \label{app:karl}
-Karl's 45 captures cover Audit Logging, Playbooks, Reports and database queries from his local nine-service run. The Postman images are unchanged; the database images were only trimmed of empty console space. Captures from different members describe their respective local runs; record IDs and totals should not be pooled as one shared execution.
+Karl's 50 captures cover Audit Logging, Playbooks, Reports and database queries from his local nine-service run. The Postman images are unchanged; the database images were only trimmed of empty console space. Captures from different members describe their respective local runs; record IDs and totals should not be pooled as one shared execution.
 \begin{landscape}\pagestyle{plain}\input{karl-evidence.tex}\end{landscape}
 \end{document}

@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import sqlite3
+from datetime import datetime, timezone
 
 import httpx
 import pytest
@@ -115,19 +116,27 @@ def test_log_reading_permissions_search_and_deletion(clients):
     assert c["logs"].get(f"{PREFIX}/logs/search?start_date=2026-10-05&end_date=2026-10-01", headers=admin_h).status_code == 422
     assert c["logs"].get(f"{PREFIX}/logs/search?start_date=yesterday", headers=admin_h).status_code == 422
     assert c["logs"].get(f"{PREFIX}/logs/search?severity=Loud", headers=admin_h).status_code == 422
-    assert len(c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=employee_h).json()) == 4  # includes the denial
+    # A user's history is Administrator/Auditor-only, including the caller's own ID (no self-access exception).
+    assert c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=employee_h).status_code == 403  # employee's own ID
     assert c["logs"].get(f"{PREFIX}/logs/user/{admin['id']}", headers=employee_h).status_code == 403
-    assert c["logs"].get(f"{PREFIX}/logs/user/999999", headers=admin_h).status_code == 404
+    history = c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=admin_h)
+    assert history.status_code == 200 and len(history.json()) == 6  # 3 events + 3 recorded denials
+    assert c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=auditor_h).status_code == 200
+    no_logs = c["logs"].get(f"{PREFIX}/logs/user/999999", headers=admin_h)
+    assert no_logs.status_code == 200 and no_logs.json() == []  # a user with no available logs
     target = c["logs"].get(f"{PREFIX}/logs/search?action=asset_created", headers=admin_h).json()[0]["id"]
     assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=auditor_h).status_code == 200
     assert c["logs"].get(f"{PREFIX}/logs/999999", headers=auditor_h).status_code == 404
     assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=auditor_h).status_code == 403
-    # Analysts may retrieve one entry and search, but not list everything, read other users' histories or delete.
+    # Analysts may retrieve one entry and search, but not list everything, read any user's history (even their own) or delete.
     assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=analyst_h).status_code == 200
     assert [x["action"] for x in c["logs"].get(f"{PREFIX}/logs/search?action=asset_created", headers=analyst_h).json()] == ["asset_created"]
     assert c["logs"].get(f"{PREFIX}/logs", headers=analyst_h).status_code == 403
     assert c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=analyst_h).status_code == 403
-    assert c["logs"].get(f"{PREFIX}/logs/user/{analyst['id']}", headers=analyst_h).status_code == 200  # own history
+    assert c["logs"].get(f"{PREFIX}/logs/user/{analyst['id']}", headers=analyst_h).status_code == 403  # analyst's own ID
+    # Employees have no audit-log read access at all.
+    assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=employee_h).status_code == 403
+    assert c["logs"].get(f"{PREFIX}/logs/search?action=asset_created", headers=employee_h).status_code == 403
     assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=analyst_h).status_code == 403
     assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=admin_h).status_code == 200
     assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=admin_h).status_code == 404
@@ -175,17 +184,19 @@ def test_playbook_ordering_transitions_and_history(clients):
     assert c["playbooks"].post(f"{PREFIX}/playbooks", json={**body, "name": "phishing RESPONSE"}, headers=admin_h).status_code == 409
     pid = playbook["id"]
     first, second = (a["id"] for a in playbook["actions"])
-    step = {"title": "Notify users", "description": "Warn staff", "assigned_to": other["id"]}
+    step = {"description": "Warn staff", "step_order": 3}
+    assert c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json={"description": "Warn staff"}, headers=admin_h).status_code == 422  # step number required
     assert c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json={**step, "step_order": 2}, headers=admin_h).status_code == 409
     assert c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json={**step, "step_order": 5}, headers=admin_h).status_code == 422
     assert c["playbooks"].post(f"{PREFIX}/playbooks/999999/actions", json=step, headers=admin_h).status_code == 404
-    third = c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json=step, headers=admin_h)
-    assert third.status_code == 201 and third.json()["step_order"] == 3
+    assert c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json=step, headers=auditor_h).status_code == 403
+    third = c["playbooks"].post(f"{PREFIX}/playbooks/{pid}/actions", json=step, headers=analyst_h)  # analysts may add actions
+    assert third.status_code == 201 and third.json()["step_order"] == 3 and third.json()["assigned_to"] is None and third.json()["title"] == "Warn staff"
     status = lambda action, value, headers: c["playbooks"].put(f"{PREFIX}/actions/{action}/status", json={"status": value}, headers=headers)
     assert status(second, "In Progress", analyst_h).status_code == 409  # Step 1 is not completed yet.
     assert status(first, "Completed", analyst_h).status_code == 409  # Cannot skip In Progress.
-    assert status(first, "In Progress", other_h).status_code == 403  # Not the assignee.
     assert status(first, "In Progress", auditor_h).status_code == 403
+    assert status(first, "In Progress", employee_h).status_code == 403
     assert status(first, "Done", analyst_h).status_code == 422
     assert status(999999, "In Progress", admin_h).status_code == 404
     assert status(first, "In Progress", analyst_h).json()["started_at"] is not None
@@ -195,7 +206,20 @@ def test_playbook_ordering_transitions_and_history(clients):
     assert status(second, "In Progress", admin_h).status_code == 200
     assert status(second, "Completed", admin_h).status_code == 200
     assert c["playbooks"].get(f"{PREFIX}/playbooks/{pid}", headers=auditor_h).json()["execution_status"] == "In Progress"
-    status(third.json()["id"], "In Progress", other_h); status(third.json()["id"], "Completed", other_h)
+    tid = third.json()["id"]
+    put = lambda body, headers: c["playbooks"].put(f"{PREFIX}/actions/{tid}/status", json=body, headers=headers)
+    assert put({"status": "In Progress"}, other_h).status_code == 409  # unassigned actions cannot start
+    assert put({}, admin_h).status_code == 422
+    assert put({"assigned_to": employee["id"]}, admin_h).status_code == 422  # assignee must be an analyst or administrator
+    assert put({"assigned_to": other["id"], "completion_date": "2026-10-01T00:00:00Z"}, admin_h).status_code == 422  # only with Completed
+    reassigned = put({"assigned_to": other["id"]}, analyst_h)  # any analyst may update the assigned user
+    assert reassigned.status_code == 200 and reassigned.json()["assigned_to"] == other["id"]
+    assert put({"status": "In Progress"}, other_h).status_code == 200
+    assert put({"status": "Completed", "completion_date": "2999-01-01T00:00:00Z"}, other_h).status_code == 422  # not in the future
+    assert put({"status": "Completed", "completion_date": "2000-01-01T00:00:00Z"}, other_h).status_code == 422  # not before start
+    done = put({"status": "Completed", "completion_date": datetime.now(timezone.utc).isoformat()}, analyst_h)  # not the assignee, still allowed
+    assert done.status_code == 200 and done.json()["completed_by"] == analyst["id"]
+    assert put({"assigned_to": analyst["id"]}, admin_h).status_code == 409  # completed actions cannot be reassigned
     detail = c["playbooks"].get(f"{PREFIX}/playbooks/{pid}", headers=auditor_h).json()
     assert detail["execution_status"] == "Completed" and detail["completed_steps"] == 3
     assert c["playbooks"].get(f"{PREFIX}/playbooks/{pid}", headers=employee_h).status_code == 403
@@ -206,18 +230,18 @@ def test_playbook_ordering_transitions_and_history(clients):
     assert c["playbooks"].delete(f"{PREFIX}/playbooks/{pid}", headers=admin_h).status_code == 200
     assert c["playbooks"].get(f"{PREFIX}/playbooks/{pid}", headers=admin_h).status_code == 404
     history = c["playbooks"].get(f"{PREFIX}/playbooks/{pid}/history", headers=admin_h).json()
-    assert len(history) == 9 and all(h["action_id"] is None for h in history)  # 3 created + 6 transitions, kept after deletion
+    assert len(history) == 10 and all(h["action_id"] is None for h in history)  # 3 created + 1 assignment + 6 transitions, kept after deletion
     with db() as conn:
         assigned = conn.execute("SELECT COUNT(*) FROM outbox WHERE destination='notification' AND event_id LIKE 'playbook-action-%'").fetchone()[0]
         audited = conn.execute("SELECT COUNT(*) FROM outbox WHERE destination='audit' AND payload_json LIKE '%response_action_status_changed%'").fetchone()[0]
-    assert assigned == 3 and audited == 6
+    assert assigned == 3 and audited == 6  # two steps assigned at creation + one later assignment
 
 
 def route_reports(c, monkeypatch, down=()):
     def fake_get(url, headers):
         if any(name in url for name in down):
             raise httpx.ConnectError("refused")
-        for base, client in (("http://127.0.0.1:8002", c["assets"]), ("http://127.0.0.1:8007", c["logs"])):
+        for base, client in (("http://127.0.0.1:8001", c["users"]), ("http://127.0.0.1:8002", c["assets"]), ("http://127.0.0.1:8007", c["logs"])):
             if url.startswith(base):
                 return client.get(url[len(base):], headers=headers)
         raise httpx.ConnectError("not running")
@@ -256,6 +280,7 @@ def test_reports_reconcile_with_stored_data_and_fail_honestly(clients, monkeypat
     assert c["reports"].get(f"{PREFIX}/reports/vulnerabilities", headers=admin_h).status_code == 503
     summary = c["reports"].get(f"{PREFIX}/reports/summary", headers=auditor_h).json()
     assert summary["complete"] is False and summary["incidents"] is None and summary["assets"]["total"] == 3
+    assert summary["users"]["total"] == 3 and summary["users"]["by_role"]["Security Auditor"] == 1  # admin, auditor, analyst
     assert {x["source"] for x in summary["unavailable"]} == {"incidents", "threats", "vulnerabilities"}
     with db() as conn:
         assert conn.execute("SELECT COUNT(*) FROM outbox WHERE payload_json LIKE '%report_generated%'").fetchone()[0] >= 4
@@ -314,7 +339,7 @@ def test_existing_database_is_upgraded_without_losing_rows(tmp_path, monkeypatch
     from joey.common import init_db as joey_init
     from karl.common import init_db
     joey_init()
-    old_schema = (Path(__file__).parent.parent / "karl" / "schema.sql").read_text(encoding="utf-8").replace(" AUTOINCREMENT", "")
+    old_schema = (Path(__file__).parent.parent / "karl" / "schema.sql").read_text(encoding="utf-8").replace(" AUTOINCREMENT", "").replace(" assigned_to INTEGER REFERENCES", " assigned_to INTEGER NOT NULL REFERENCES")
     with db() as conn:
         conn.executescript(old_schema)
         conn.execute("INSERT INTO users(id,full_name,username,email,password_hash,department,role,status,created_at) VALUES(1,'A','a','a@example.com','h','IT','Security Administrator','Active','now')")
@@ -327,6 +352,7 @@ def test_existing_database_is_upgraded_without_losing_rows(tmp_path, monkeypatch
     with db() as conn:
         for table in ("audit_logs", "playbooks", "response_actions"):
             assert "AUTOINCREMENT" in conn.execute("SELECT sql FROM sqlite_master WHERE name=?", (table,)).fetchone()[0]
+        assert "assigned_to INTEGER NOT NULL" not in conn.execute("SELECT sql FROM sqlite_master WHERE name='response_actions'").fetchone()[0]
         assert conn.execute("SELECT name FROM playbooks WHERE id=2").fetchone()[0] == "P"
         seq = dict(conn.execute("SELECT name, seq FROM sqlite_sequence").fetchall())
         assert seq["playbooks"] == 5 and seq["response_actions"] == 9 and seq["audit_logs"] == 4

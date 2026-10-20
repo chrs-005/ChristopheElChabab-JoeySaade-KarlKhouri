@@ -303,6 +303,85 @@
               }
             }
           ]
+        },
+        {
+          "name": "Register employee account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Karl Khouri \u2014 Register employee account. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Karl Khouri Employee\",\n  \"username\": \"{{employeeUsername}}\",\n  \"email\": \"{{employeeUsername}}@example.test\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"Finance\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('employeeUsername', 'karl_employee_' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('employeeId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Karl Khouri \u2014 Login employee. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{employeeUsername}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.environment.set('employeeToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -572,7 +651,34 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Listed', () => pm.response.to.have.status(200));"
+                  "pm.test('Listed', () => pm.response.to.have.status(200));",
+                  "pm.test('Only that user', () => pm.response.json().forEach(x => pm.expect(x.original_actor_user_id).to.eql(Number(pm.environment.get('userId')))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logs for user with no activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/user/999999999",
+            "description": "Karl Khouri \u2014 Logs for user with no activity. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listed', () => pm.response.to.have.status(200));",
+                  "pm.test('Empty list when the user has no logs', () => pm.expect(pm.response.json()).to.eql([]));"
                 ]
               }
             }
@@ -831,7 +937,7 @@
             "description": "Karl Khouri \u2014 Add response action. Run against your own backend and inspect the actual response.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Notify staff\",\n  \"description\": \"Warn affected users\",\n  \"assigned_to\": \"{{analystId}}\"\n}",
+              "raw": "{\n  \"step_order\": 3,\n  \"description\": \"Warn affected users about the phishing email\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -846,7 +952,47 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Created', () => pm.response.to.have.status(201));",
-                  "pm.test('Appended as next step', () => pm.expect(pm.response.json().step_order).to.eql(3));"
+                  "pm.test('Stored as step 3, not yet assigned', () => { const a = pm.response.json(); pm.expect(a.step_order).to.eql(3); pm.expect(a.assigned_to).to.eql(null); });",
+                  "if (pm.response.code === 201) pm.environment.set('action3Id', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign response action",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/actions/{{action3Id}}/status",
+            "description": "Karl Khouri \u2014 Assign response action. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigned_to\": \"{{analystId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Assigned', () => pm.response.to.have.status(200));",
+                  "pm.test('Assigned user updated', () => pm.expect(pm.response.json().assigned_to).to.eql(Number(pm.environment.get('analystId'))));"
                 ]
               }
             }
@@ -985,7 +1131,7 @@
             "description": "Karl Khouri \u2014 Complete action as assigned analyst. Run against your own backend and inspect the actual response.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"Completed\",\n  \"note\": \"Done\"\n}",
+              "raw": "{\n  \"status\": \"Completed\",\n  \"completion_date\": \"{{$isoTimestamp}}\",\n  \"note\": \"Done\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1000,7 +1146,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Updated', () => pm.response.to.have.status(200));",
-                  "pm.test('Now Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));"
+                  "pm.test('Now Completed with a completion date', () => { const a = pm.response.json(); pm.expect(a.status).to.eql('Completed'); pm.expect(a.completed_at).to.be.a('string'); });"
                 ]
               }
             }
@@ -1026,7 +1172,32 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Listed', () => pm.response.to.have.status(200));",
-                  "pm.test('Three creations and two transitions recorded', () => pm.expect(pm.response.json().length).to.eql(5));"
+                  "pm.test('Three creations, one assignment and two transitions recorded', () => pm.expect(pm.response.json().length).to.eql(6));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst playbook deletion",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks/{{playbookId}}",
+            "description": "Karl Khouri \u2014 Reject analyst playbook deletion. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Only administrators delete playbooks', () => pm.response.to.have.status(403));"
                 ]
               }
             }
@@ -1389,6 +1560,56 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Full listing is administrator/auditor-only', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst reading own logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/user/{{analystId}}",
+            "description": "Karl Khouri \u2014 Reject analyst reading own logs. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('No self-access exception for analysts', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject employee reading own logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/user/{{employeeId}}",
+            "description": "Karl Khouri \u2014 Reject employee reading own logs. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('No self-access exception for employees', () => pm.response.to.have.status(403));"
                 ]
               }
             }

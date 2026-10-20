@@ -35,7 +35,7 @@ def main():
             "DATABASE_PATH": str(Path(temp) / "smoke.db"), "AUTH_SECRET": "smoke-auth-secret-with-at-least-32-characters",
             "SERVICE_AUTH_SECRET": "smoke-service-secret-with-at-least-32-characters", "AUDIT_SERVICE_AUTH_SECRET": "smoke-audit-secret-with-at-least-32-characters",
             "NOTIFICATION_SERVICE_URL": "http://127.0.0.1:18003", "AUDIT_SERVICE_URL": "http://127.0.0.1:18007",
-            "ASSET_REPORT_SOURCE": url("assets", "/assets"), "AUDIT_REPORT_SOURCE": url("audit_logs", "/logs"),
+            "USER_REPORT_SOURCE": url("users", "/users"), "ASSET_REPORT_SOURCE": url("assets", "/assets"), "AUDIT_REPORT_SOURCE": url("audit_logs", "/logs"),
             "INCIDENT_REPORT_SOURCE": "http://127.0.0.1:18006/api/Christophe-ElChabab/incidents",
             "THREAT_REPORT_SOURCE": "http://127.0.0.1:18004/api/Christophe-ElChabab/threats",
             "VULNERABILITY_REPORT_SOURCE": "http://127.0.0.1:18005/api/Christophe-ElChabab/vulnerabilities",
@@ -69,7 +69,7 @@ def main():
             assert failed[0]["actor_user_id"] is None and failed[0]["actor_label"] == "nobody"
             check(httpx.get(url("audit_logs", "/logs"), headers=analyst_h, timeout=8), 403, "analyst denied full log list")
             check(httpx.get(url("audit_logs", "/logs/search"), params={"action": "login_failed"}, headers=analyst_h, timeout=8), 200, "analyst searches logs")
-            check(httpx.get(url("audit_logs", f"/logs/user/{analyst['id']}"), headers=analyst_h, timeout=8), 200, "analyst reads own activity")
+            check(httpx.get(url("audit_logs", f"/logs/user/{analyst['id']}"), headers=analyst_h, timeout=8), 403, "analyst denied own history")
 
             print("playbooks")
             playbook = check(httpx.post(url("playbooks", "/playbooks"), json={"name": "Phishing containment", "description": "Contain a reported phishing email", "category": "Phishing", "severity": "High", "steps": [

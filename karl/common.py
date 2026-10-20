@@ -26,7 +26,8 @@ def init_db():
     with shared.db() as conn:
         for table in NEVER_REUSED:
             existing = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
-            if existing and "AUTOINCREMENT" not in existing["sql"].upper():
+            outdated = bool(existing) and ("AUTOINCREMENT" not in existing["sql"].upper() or "assigned_to INTEGER NOT NULL" in existing["sql"])
+            if outdated:
                 upgrade_to_autoincrement(conn, table, schema)
         conn.executescript(schema)  # also recreates the trigger and indexes dropped by an upgrade
         for table, referenced in NEVER_REUSED.items():
@@ -36,7 +37,7 @@ def init_db():
 
 
 def upgrade_to_autoincrement(conn, table, schema):
-    """Rebuild a table created before AUTOINCREMENT was added, keeping its rows (SQLite cannot alter a primary key)."""
+    """Rebuild a table from the current schema, keeping its rows (SQLite cannot alter a primary key or NOT NULL)."""
     create = re.search(rf"CREATE TABLE IF NOT EXISTS {table} \(.*?\n\);", schema, re.S).group(0)
     conn.commit()
     conn.execute("PRAGMA foreign_keys=OFF")
