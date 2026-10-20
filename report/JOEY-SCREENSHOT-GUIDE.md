@@ -1,100 +1,71 @@
-# Joey Saade: one screenshot per evidence category
+# Joey Saade: detailed Postman and database screenshots
 
-The report has **ten** named PNG slots in `joey-evidence.tex`: five Postman folder runs, four populated database views, and one database view after Cleanup. Save each screenshot under `report/joey-screenshots/` with the exact path below. A missing file shows a pending box; the matching real PNG loads when the report is compiled again. The three individual Users PNGs already saved in `01-Users/` are preserved as supplementary captures; the report's new Users slot expects a folder-run image.
+The report now has **32 individual image slots**: 27 Postman requests and 5 database views. Each file loads automatically after you save it under `report/joey-screenshots/` and compile `report/main.tex`. The existing whole-folder Runner images remain supplementary evidence; do not delete them.
 
-## Step 1: keep the demo running
+## 1. Open the completed Postman run
 
-Use the private `.env` in the repository root with `DATABASE_PATH=joey-evidence.db`, completed `BOOTSTRAP_ADMIN_*` fields and distinct secrets. The administrator should already have been created once. Keep the Users, Assets and Notifications services running on ports 8001, 8002 and 8003. Do not use `tests/postman_joey.py` for screenshots; it uses a disposable database.
+In Postman, open the Joey collection, choose **Runs**, and open the successful run. Click one request row to inspect its executed request, response, status, and test results. Postman can show response headers and body from a run when **Persist responses for a session** was enabled. If an old run lacks the response body, rerun the ordered collection with that setting enabled on a fresh demo database; do not resend isolated create/delete requests against the cleaned database. See [Postman's Collection Runner instructions](https://learning.postman.com/docs/tests-and-scripts/running-collections/intro-to-collection-runs).
 
-## Step 2: run one Postman folder at a time
+The collection uses literal service URLs (`http://127.0.0.1:8001`, `:8002`, and `:8003`). It still uses runtime values for credentials, bearer token, and IDs returned by earlier requests. In the run results, open the **executed request details** to show the resolved URL and sent body. A request tab may show the editable template with `{{userId}}`; do not use that template view as the sole detailed screenshot. Never expose a password, bearer token, service key, or password hash.
 
-Select **Joey local template** in Postman. Run one folder with the Collection Runner, **one iteration**, and turn on **Keep variable values** so `token`, `userId`, `assetId` and notification IDs remain available to the next folder. Postman documents folder runs and this option in its [Collection Runner guide](https://learning.postman.com/docs/tests-and-scripts/running-collections/intro-to-collection-runs). After each run, make sure every listed request has the expected status and a green PASS result. Capture the full run-results list, like the Users image you showed. If the list does not fit, maximize Postman or zoom out until every request is readable.
+For each row below, capture the individual request details and actual response with the method, owner-prefixed URL, status, and passing test visible. Use **Win+Shift+S**, then save the PNG to the exact relative path. The first digit is the section; the second is the request position.
 
-Run and save in this order. Paths are relative to `report/joey-screenshots/`:
+| Section | Request | Save under `report/joey-screenshots/` |
+|---|---|---|
+| 1 Users | Register employee | `01-Users/11-Register-employee.png` |
+| 1 Users | Login | `01-Users/12-Login.png` |
+| 1 Users | Update profile | `01-Users/13-Update-profile.png` |
+| 1 Users | List users | `01-Users/14-List-users.png` |
+| 1 Users | Get user by username | `01-Users/15-Get-user-by-username.png` |
+| 1 Users | Admin role/status update | `01-Users/16-Admin-role-status-update.png` |
+| 2 Assets | Create asset | `02-Assets/21-Create-asset.png` |
+| 2 Assets | Update asset | `02-Assets/22-Update-asset.png` |
+| 2 Assets | List assets | `02-Assets/23-List-assets.png` |
+| 2 Assets | Get asset | `02-Assets/24-Get-asset.png` |
+| 2 Assets | Search assets | `02-Assets/25-Search-assets.png` |
+| 2 Assets | Asset history | `02-Assets/26-Asset-history.png` |
+| 3 Notifications | Create notification as service | `03-Notifications/31-Create-notification-as-service.png` |
+| 3 Notifications | List user notifications | `03-Notifications/32-List-user-notifications.png` |
+| 3 Notifications | Get notification | `03-Notifications/33-Get-notification.png` |
+| 3 Notifications | Mark notification read | `03-Notifications/34-Mark-notification-read.png` |
+| 3 Notifications | Search notifications | `03-Notifications/35-Search-notifications.png` |
+| 4 Negative | Reject invalid registration email | `04-Negative/41-Reject-invalid-registration-email.png` |
+| 4 Negative | Reject privileged public registration | `04-Negative/42-Reject-privileged-public-registration.png` |
+| 4 Negative | Reject unauthenticated users listing | `04-Negative/43-Reject-unauthenticated-users-listing.png` |
+| 4 Negative | Reject invalid asset IP | `04-Negative/44-Reject-invalid-asset-IP.png` |
+| 4 Negative | Reject missing asset | `04-Negative/45-Reject-missing-asset.png` |
+| 4 Negative | Reject notification without auth | `04-Negative/46-Reject-notification-without-auth.png` |
+| 5 Database | Users | `05-Database/51-Users-Database.png` |
+| 5 Database | Assets | `05-Database/52-Assets-Database.png` |
+| 5 Database | Notifications | `05-Database/53-Notifications-Database.png` |
+| 5 Database | Outbox and user IDs | `05-Database/54-Outbox-and-User-IDs-Database.png` |
+| 6 Cleanup | Delete asset | `06-Cleanup/61-Delete-asset.png` |
+| 6 Cleanup | Delete created notification | `06-Cleanup/62-Delete-created-notification.png` |
+| 6 Cleanup | Delete welcome notification | `06-Cleanup/63-Delete-welcome-notification.png` |
+| 6 Cleanup | Delete user | `06-Cleanup/64-Delete-user.png` |
+| 5 Database after Cleanup | Retained history and IDs | `05-Database/55-After-Cleanup-Database.png` |
 
-| Order | Run this folder | Requests shown | Save the one PNG as |
-|---:|---|---:|---|
-| 1 | Users and Identity -- Joey Saade | 6 | `01-Users/Users-and-Identity-Runner.png` |
-| 2 | Asset Management -- Joey Saade | 6 | `02-Assets/Asset-Management-Runner.png` |
-| 3 | Notification and Alert Management -- Joey Saade | 5 | `03-Notifications/Notification-Management-Runner.png` |
-| 4 | Negative checks -- Joey Saade | 6 | `04-Negative/Negative-Checks-Runner.png` |
+## 2. Database screenshots
 
-**Save the Users screenshot you just showed** as `report/joey-screenshots/01-Users/Users-and-Identity-Runner.png`; it contains all six Users results. Do not rename or delete your three earlier individual PNGs.
+The existing whole-category database captures are at the old filenames. If they show the intended real results, **copy** each to its new numbered name above; keep the originals. The old after-Cleanup capture is in `06-Cleanup/After-Cleanup-Database.png`, so copy it to `05-Database/55-After-Cleanup-Database.png`. Do not label a screenshot as populated if it only shows the cleaned database.
 
-Check the selected environment after the Users run: `token` and `userId` should be filled. After Assets, `assetId` should be filled. After Notifications, `notificationId` and `welcomeNotificationId` should be filled. If a value is blank, rerun that folder with **Keep variable values** enabled before continuing. The Notifications list should include the automatic Welcome and service-created Assigned records. If Welcome is absent, run `python -m joey.outbox` in a repository terminal, then rerun the Notifications folder.
-
-**Stop before Cleanup.** The sample database rows must still exist for Step 3.
-
-To save a screenshot on Windows, press **Win+Shift+S**, select the entire run-results list, open the Snipping Tool thumbnail, press **Ctrl+S**, choose PNG and enter the exact path. Keep the folder name, method, owner-prefixed URLs, response codes and green assertions visible. The Runner list does not need to expose passwords or bearer tokens.
-
-## Step 3: take four populated database screenshots
-
-In Command Prompt at the repository root, open the persistent database:
+For new captures, open Command Prompt in the repo and run:
 
 ```cmd
-C:\Android\platform-tools\sqlite3.exe joey-evidence.db
+cd /d "C:\Main\School\CSE FALL 4\EECE 435L\Labs\Sprint1\repo"
+"C:\Android\platform-tools\sqlite3.exe" "joey-evidence.db"
 ```
 
-At the `sqlite>` prompt enter:
+At `sqlite>`, type `.headers on` and `.mode column`. Capture these commands and their real output, with the relevant schema and rows visible:
 
-```text
-.headers on
-.mode column
-```
+- **51 Users:** `.schema users` then `SELECT id, username, role, status FROM users ORDER BY id;`
+- **52 Assets:** `.schema assets`, `.schema asset_history`, then `SELECT id, name, owner_id, status FROM assets;` and `SELECT original_asset_id, action FROM asset_history ORDER BY id;`
+- **53 Notifications:** `.schema notifications` then `SELECT id, user_id, title, type, status, event_id FROM notifications ORDER BY id;`
+- **54 Outbox and IDs:** `.schema outbox`, `.schema user_id_allocations`, then `SELECT id, destination, event_id, attempts, delivered_at FROM outbox ORDER BY id DESC LIMIT 10;` and `SELECT id FROM user_id_allocations ORDER BY id;`
+- **55 After Cleanup:** `SELECT id, username FROM users ORDER BY id;`, `SELECT id, name FROM assets ORDER BY id;`, `SELECT original_asset_id, action FROM asset_history ORDER BY id;`, and `SELECT id FROM user_id_allocations ORDER BY id;`
 
-For each category, run the commands below, then capture the **real command output together in one image**. Maximize the terminal or reduce its font size if needed. The sample user, asset and notifications must still be present. Do not display `password_hash` or private credentials.
+If Cleanup has already run, your persistent DB will no longer have the sample rows. Use the genuine earlier captures for 51-54, or perform a new ordered demo run before Cleanup. Do not fabricate rows.
 
-**Users database** -- save as `05-Database/Users-Database.png`:
+## 3. Compile and check
 
-```sql
-.schema users
-SELECT id, username, role, status FROM users ORDER BY id;
-```
-
-**Assets database** -- save as `05-Database/Assets-Database.png`:
-
-```sql
-.schema assets
-.schema asset_history
-SELECT id, name, owner_id, status FROM assets;
-SELECT original_asset_id, action FROM asset_history ORDER BY id;
-```
-
-**Notifications database** -- save as `05-Database/Notifications-Database.png`:
-
-```sql
-.schema notifications
-SELECT id, user_id, title, type, status, event_id FROM notifications ORDER BY id;
-```
-
-**Outbox and issued IDs database** -- save as `05-Database/Outbox-and-User-IDs-Database.png`:
-
-```sql
-.schema outbox
-.schema user_id_allocations
-SELECT id, destination, event_id, attempts, delivered_at FROM outbox ORDER BY id DESC LIMIT 10;
-SELECT id FROM user_id_allocations ORDER BY id;
-```
-
-If a category's output is too tall for one readable screenshot, capture the key schema and rows at a smaller terminal font. Keep extra screenshots as supplementary evidence if needed; the report uses the single named category image.
-
-## Step 4: run Cleanup and capture its folder result
-
-Back in Postman, run **Cleanup -- Joey Saade** as one folder with one iteration and **Keep variable values** on. It should show four HTTP 200 results in order: delete asset, created notification, Welcome notification, then user. Save the full Runner list as:
-
-`report/joey-screenshots/06-Cleanup/Cleanup-Runner.png`
-
-Return to SQLite and run the four checks below. Save their combined output as `report/joey-screenshots/05-Database/After-Cleanup-Database.png`:
-
-```sql
-SELECT id, username FROM users ORDER BY id;
-SELECT id, name FROM assets ORDER BY id;
-SELECT original_asset_id, action FROM asset_history ORDER BY id;
-SELECT id FROM user_id_allocations ORDER BY id;
-```
-
-The sample user and asset should be gone; asset history and issued IDs should remain. Type `.quit` to leave SQLite.
-
-## Step 5: check the report
-
-Compile `report/main.tex` again. From the `report/` folder, use `tectonic main.tex` if available or `xelatex main.tex` twice; Overleaf can also compile the report source and uploaded image folders. Each exact PNG replaces its pending box on the next PDF build. Keep `.env`, the SQLite database, passwords, bearer tokens and service keys out of the report and Git.
+From `report/`, run `xelatex main.tex` twice. Open `main.pdf` and check that all 32 named images load and their captions match. Missing filenames show pending boxes. Keep `.env`, databases, passwords, bearer tokens, and service keys out of the report and Git.

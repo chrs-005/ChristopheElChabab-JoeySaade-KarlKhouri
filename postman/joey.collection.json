@@ -18,7 +18,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/register",
             "description": "Joey Saade — Register employee. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -66,7 +66,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/login",
             "description": "Joey Saade — Login. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -105,7 +105,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/{{userId}}",
             "description": "Joey Saade — Update profile. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -139,7 +139,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users",
             "description": "Joey Saade — List users. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -164,7 +164,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{employeeUsername}}",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/{{employeeUsername}}",
             "description": "Joey Saade — Get user by username. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -193,7 +193,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}/admin",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/{{userId}}/admin",
             "description": "Joey Saade — Admin role/status update. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -236,7 +236,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets",
             "description": "Joey Saade — Create asset. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -275,7 +275,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/{{assetId}}",
             "description": "Joey Saade — Update asset. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -309,7 +309,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets",
             "description": "Joey Saade — List assets. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -334,7 +334,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/{{assetId}}",
             "description": "Joey Saade — Get asset. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -359,7 +359,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/search?name=Server",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/search?name=Server",
             "description": "Joey Saade — Search assets. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -384,7 +384,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}/history",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/{{assetId}}/history",
             "description": "Joey Saade — Asset history. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -418,7 +418,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications",
             "description": "Joey Saade — Create notification as service. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -453,7 +453,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/user/{{userId}}",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/user/{{userId}}",
             "description": "Joey Saade — List user notifications. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -483,7 +483,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/{{notificationId}}",
             "description": "Joey Saade — Get notification. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -508,7 +508,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}/read",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/{{notificationId}}/read",
             "description": "Joey Saade — Mark notification read. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -533,7 +533,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/search?status=Unread",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/search?status=Unread",
             "description": "Joey Saade — Search notifications. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -563,7 +563,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/register",
             "description": "Joey Saade — Reject invalid registration email. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -597,7 +597,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/register",
             "description": "Joey Saade — Reject privileged public registration. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -626,7 +626,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{userUrl}}/api/Joey-Saade/users",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users",
             "description": "Joey Saade — Reject unauthenticated users listing. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -655,7 +655,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets",
             "description": "Joey Saade — Reject invalid asset IP. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -689,7 +689,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/999999999",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/999999999",
             "description": "Joey Saade — Reject missing asset. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -714,7 +714,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications",
             "description": "Joey Saade — Reject notification without auth. Run folders in order and inspect the actual response.",
             "body": {
               "mode": "raw",
@@ -753,7 +753,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{assetUrl}}/api/Joey-Saade/assets/{{assetId}}",
+            "url": "http://127.0.0.1:8002/api/Joey-Saade/assets/{{assetId}}",
             "description": "Joey Saade — Delete asset. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -778,7 +778,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{notificationId}}",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/{{notificationId}}",
             "description": "Joey Saade — Delete created notification. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -803,7 +803,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{notificationUrl}}/api/Joey-Saade/notifications/{{welcomeNotificationId}}",
+            "url": "http://127.0.0.1:8003/api/Joey-Saade/notifications/{{welcomeNotificationId}}",
             "description": "Joey Saade — Delete welcome notification. Run folders in order and inspect the actual response."
           },
           "event": [
@@ -828,7 +828,7 @@
                 "value": "Bearer {{token}}"
               }
             ],
-            "url": "{{userUrl}}/api/Joey-Saade/users/{{userId}}",
+            "url": "http://127.0.0.1:8001/api/Joey-Saade/users/{{userId}}",
             "description": "Joey Saade — Delete user. Run folders in order and inspect the actual response."
           },
           "event": [

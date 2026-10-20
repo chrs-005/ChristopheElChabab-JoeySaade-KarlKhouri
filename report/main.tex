@@ -46,7 +46,7 @@ Christophe ElChabab\par Joey Saade\par Karl Khouri\par
 Date of submission: to be confirmed\par
 \vfill
 \textbf{Draft for team completion}\par
-Christophe's service explanations and actual local execution evidence, and Joey's service explanations and recorded automated checks, are included. Joey's screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
+Christophe's service explanations and actual local execution evidence, and Joey's service explanations, recorded automated checks and available database screenshots, are included. Joey's individual Postman request screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
 \end{titlepage}
 \tableofcontents
 \clearpage
@@ -103,7 +103,7 @@ User/asset references restrict deletion while still referenced. Note rows specif
 \end{figure}
 The appendix contains actual SQL table definitions and rows with column labels for all four Christophe tables.
 
-Joey's \texttt{users} table has a unique username and email, password hash, role, status and timestamps. \texttt{assets.owner\_id} and \texttt{notifications.user\_id} reference users; both restrict deletion while referenced. The \texttt{asset\_history} table retains the original asset ID and before/after JSON snapshots when a live asset is deleted. Notification \texttt{event\_id} is unique for retry deduplication. The \texttt{outbox} table holds destination, payload, delivery attempts and delivery time. \texttt{user\_id\_allocations} retains issued account IDs, so deleting the highest numbered user cannot reuse its token subject or welcome-event key. Joey's schema and relationships are recorded in \texttt{joey/schema.sql}; real Joey database screenshots remain pending.
+Joey's \texttt{users} table has a unique username and email, password hash, role, status and timestamps. \texttt{assets.owner\_id} and \texttt{notifications.user\_id} reference users; both restrict deletion while referenced. The \texttt{asset\_history} table retains the original asset ID and before/after JSON snapshots when a live asset is deleted. Notification \texttt{event\_id} is unique for retry deduplication. The \texttt{outbox} table holds destination, payload, delivery attempts and delivery time. \texttt{user\_id\_allocations} retains issued account IDs, so deleting the highest numbered user cannot reuse its token subject or welcome-event key. Joey's schema and relationships are recorded in \texttt{joey/schema.sql}; captured database screenshots appear in the evidence appendix.
 \input{karl-database.tex}
 \pending{Add Joey's real database captures.}
 \section{Error Handling and Validation (Christophe ElChabab, Joey Saade)}
@@ -169,7 +169,7 @@ Requirements source: Final Project Fall 2026-2027-Sprint 1.docx, supplied by the
 
 Codex generated implementation, tests, documentation and Postman artifacts, assisted with local execution and review, and prepared this report section. Christophe captured the execution screenshots. This disclosure does not represent AI-generated code as independent manual student authorship or replace the course requirement to understand, review, adapt and explain the implementation.
 
-Joey's service explanation uses \path{joey/} source and schema, \path{docs/joey-api.md}, \path{tests/test_joey.py} and the saved local check outputs in \path{docs/evidence/}. Codex assisted with Joey's implementation, Postman collection, regression fix and report text. Joey's own Postman GUI and database screenshots have not yet been supplied; their absence is retained explicitly in this draft.
+Joey's service explanation uses \path{joey/} source and schema, \path{docs/joey-api.md}, \path{tests/test_joey.py} and the saved local check outputs in \path{docs/evidence/}. Codex assisted with Joey's implementation, Postman collection, regression fix and report text. Joey's captured folder-run and database images are retained; individual Postman request images remain pending and are shown as named boxes until supplied.
 
 Karl's service explanation uses \path{karl/} source and schema, \path{docs/karl-api.md}, \path{tests/test_karl.py} and the saved local check outputs in \path{docs/evidence/}.
 \pending{Karl adds his AI-use statement, as the other members have.}

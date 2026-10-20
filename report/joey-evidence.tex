@@ -1,16 +1,42 @@
-% One real screenshot per Postman folder and one per SQLite evidence category.
-% Save each PNG under report/joey-screenshots/ with this exact relative path.
-% Missing images display named pending boxes. Older individual captures are retained.
+% One real screenshot per request. NN = section number followed by request order.
+% Capture request details, actual response, status, and tests in Postman.
+% Existing folder-run screenshots remain supplementary evidence.
 
-\joeyevidence{01-Users/Users-and-Identity-Runner.png}{Joey Saade - Users and Identity collection run - Six ordered user and role requests return their expected statuses and pass their assertions.}
-\joeyevidence{02-Assets/Asset-Management-Runner.png}{Joey Saade - Asset Management collection run - Asset creation, update, list, detail, search and history requests pass before Cleanup.}
-\joeyevidence{03-Notifications/Notification-Management-Runner.png}{Joey Saade - Notification and Alert Management collection run - Service creation, recipient list, detail, read update and search requests pass.}
-\joeyevidence{04-Negative/Negative-Checks-Runner.png}{Joey Saade - Negative checks collection run - Invalid input, missing authentication and missing resources return the expected 401, 403, 404 and 422 responses.}
+\joeyevidence{01-Users/11-Register-employee.png}{Joey Saade - Register employee - POST creates a regular employee and omits the password hash from the response.}
+\joeyevidence{01-Users/12-Login.png}{Joey Saade - Login - POST authenticates the administrator. Hide the password and access token in the screenshot.}
+\joeyevidence{01-Users/13-Update-profile.png}{Joey Saade - Update profile - PUT changes the employee department.}
+\joeyevidence{01-Users/14-List-users.png}{Joey Saade - List users - GET returns the user records.}
+\joeyevidence{01-Users/15-Get-user-by-username.png}{Joey Saade - Get user by username - GET returns the registered employee.}
+\joeyevidence{01-Users/16-Admin-role-status-update.png}{Joey Saade - Admin role and status update - PATCH assigns the security analyst role.}
 
-\joeyevidence{05-Database/Users-Database.png}{Joey Saade - Users database evidence - SQLite shows the users schema and stored administrator/sample user records without exposing password hashes.}
-\joeyevidence{05-Database/Assets-Database.png}{Joey Saade - Assets database evidence - SQLite shows the asset owner relationship, stored asset and create/update history.}
-\joeyevidence{05-Database/Notifications-Database.png}{Joey Saade - Notifications database evidence - SQLite shows recipient and event-ID fields plus the stored Welcome and Assigned notifications.}
-\joeyevidence{05-Database/Outbox-and-User-IDs-Database.png}{Joey Saade - Outbox and user ID evidence - SQLite shows retained event IDs, delivery status and issued user IDs.}
+\joeyevidence{02-Assets/21-Create-asset.png}{Joey Saade - Create asset - POST stores an asset owned by the registered user.}
+\joeyevidence{02-Assets/22-Update-asset.png}{Joey Saade - Update asset - PUT changes its status.}
+\joeyevidence{02-Assets/23-List-assets.png}{Joey Saade - List assets - GET returns the stored assets.}
+\joeyevidence{02-Assets/24-Get-asset.png}{Joey Saade - Get asset - GET returns the asset before Cleanup.}
+\joeyevidence{02-Assets/25-Search-assets.png}{Joey Saade - Search assets - GET filters by name.}
+\joeyevidence{02-Assets/26-Asset-history.png}{Joey Saade - Asset history - GET returns the asset's recorded changes.}
 
-\joeyevidence{06-Cleanup/Cleanup-Runner.png}{Joey Saade - Cleanup collection run - Asset, created notification, Welcome notification and user deletion all return HTTP 200 in dependency order.}
-\joeyevidence{05-Database/After-Cleanup-Database.png}{Joey Saade - Database after Cleanup - The sample user and asset are gone while asset history and allocated user IDs remain.}
+\joeyevidence{03-Notifications/31-Create-notification-as-service.png}{Joey Saade - Create notification as service - POST creates an assignment notification. Hide the service key.}
+\joeyevidence{03-Notifications/32-List-user-notifications.png}{Joey Saade - List user notifications - GET includes the automatic Welcome record.}
+\joeyevidence{03-Notifications/33-Get-notification.png}{Joey Saade - Get notification - GET returns the created assignment.}
+\joeyevidence{03-Notifications/34-Mark-notification-read.png}{Joey Saade - Mark notification read - PUT updates its status.}
+\joeyevidence{03-Notifications/35-Search-notifications.png}{Joey Saade - Search notifications - GET filters unread records.}
+
+\joeyevidence{04-Negative/41-Reject-invalid-registration-email.png}{Joey Saade - Invalid registration email - POST returns validation error 422.}
+\joeyevidence{04-Negative/42-Reject-privileged-public-registration.png}{Joey Saade - Privileged public registration - POST rejects role escalation with 403.}
+\joeyevidence{04-Negative/43-Reject-unauthenticated-users-listing.png}{Joey Saade - Users listing without authentication - GET returns 401.}
+\joeyevidence{04-Negative/44-Reject-invalid-asset-IP.png}{Joey Saade - Invalid asset IP - POST returns validation error 422.}
+\joeyevidence{04-Negative/45-Reject-missing-asset.png}{Joey Saade - Missing asset - GET returns 404.}
+\joeyevidence{04-Negative/46-Reject-notification-without-auth.png}{Joey Saade - Notification without authentication - POST returns 401.}
+
+\joeyevidence{05-Database/51-Users-Database.png}{Joey Saade - Users SQLite evidence - Schema and stored account records without password hashes.}
+\joeyevidence{05-Database/52-Assets-Database.png}{Joey Saade - Assets SQLite evidence - Owner relationship, asset record and history.}
+\joeyevidence{05-Database/53-Notifications-Database.png}{Joey Saade - Notifications SQLite evidence - Welcome and assignment records.}
+\joeyevidence{05-Database/54-Outbox-and-User-IDs-Database.png}{Joey Saade - Outbox and issued user IDs SQLite evidence - Retained event keys and allocated IDs.}
+
+\joeyevidence{06-Cleanup/61-Delete-asset.png}{Joey Saade - Delete asset - DELETE succeeds before user deletion.}
+\joeyevidence{06-Cleanup/62-Delete-created-notification.png}{Joey Saade - Delete created notification - DELETE removes the assignment.}
+\joeyevidence{06-Cleanup/63-Delete-welcome-notification.png}{Joey Saade - Delete welcome notification - DELETE removes the user's remaining reference.}
+\joeyevidence{06-Cleanup/64-Delete-user.png}{Joey Saade - Delete user - DELETE succeeds after dependent records are removed.}
+
+\joeyevidence{05-Database/55-After-Cleanup-Database.png}{Joey Saade - SQLite after Cleanup - User and asset are gone while history and issued IDs remain.}

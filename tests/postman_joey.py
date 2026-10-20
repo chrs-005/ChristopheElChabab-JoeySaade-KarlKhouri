@@ -37,8 +37,7 @@ def main():
                 wait_ready(port)
             print("All nine real HTTP services are ready", flush=True)
             args = [npx, "--yes", "newman@6.2.1", "run", "postman/joey.collection.json", "-e", "postman/joey.environment.template.json", "--reporters", "cli", "--reporter-cli-no-banner", "--timeout-request", "30000"]
-            values = {"userUrl": f"http://127.0.0.1:{PORTS['users']}", "assetUrl": f"http://127.0.0.1:{PORTS['assets']}", "notificationUrl": f"http://127.0.0.1:{PORTS['notifications']}",
-                      "username": "joey_admin", "userPassword": PASSWORD, "serviceKey": env["SERVICE_AUTH_SECRET"]}
+            values = {"username": "joey_admin", "userPassword": PASSWORD, "serviceKey": env["SERVICE_AUTH_SECRET"]}
             for key, value in values.items():
                 args += ["--env-var", f"{key}={value}"]
             result = subprocess.run(args, env=env)

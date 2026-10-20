@@ -2,24 +2,6 @@
   "name": "Joey local template",
   "values": [
     {
-      "key": "userUrl",
-      "value": "http://127.0.0.1:8001",
-      "enabled": true,
-      "type": "default"
-    },
-    {
-      "key": "assetUrl",
-      "value": "http://127.0.0.1:8002",
-      "enabled": true,
-      "type": "default"
-    },
-    {
-      "key": "notificationUrl",
-      "value": "http://127.0.0.1:8003",
-      "enabled": true,
-      "type": "default"
-    },
-    {
       "key": "username",
       "value": "",
       "enabled": true,

@@ -11,8 +11,8 @@ def request(name, method, path, body=None, headers=None, tests=None, prerequest=
     header = list(AUTH if headers is None else headers)
     if body is not None:
         header.append({"key": "Content-Type", "value": "application/json"})
-    url_key = "userUrl" if path.startswith("/users") else "assetUrl" if path.startswith("/assets") else "notificationUrl"
-    req = {"method": method, "header": header, "url": "{{" + url_key + "}}/api/Joey-Saade" + path,
+    base_url = "http://127.0.0.1:8001" if path.startswith("/users") else "http://127.0.0.1:8002" if path.startswith("/assets") else "http://127.0.0.1:8003"
+    req = {"method": method, "header": header, "url": base_url + "/api/Joey-Saade" + path,
            "description": f"Joey Saade — {name}. Run folders in order and inspect the actual response."}
     if body is not None:
         req["body"] = {"mode": "raw", "raw": json.dumps(body, indent=2), "options": {"raw": {"language": "json"}}}
@@ -72,7 +72,7 @@ cleanup = [
 
 folders = [("Users and Identity", users), ("Asset Management", assets), ("Notification and Alert Management", notifications), ("Negative checks", negative), ("Cleanup", cleanup)]
 collection = {"info": {"name": "Sprint I — Joey Saade services", "description": "Run ordered folders against the backend, with Cleanup last. Capture actual results and database evidence.", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"}, "item": [{"name": f"{label} — Joey Saade", "item": items} for label, items in folders]}
-variables = [("userUrl", "http://127.0.0.1:8001"), ("assetUrl", "http://127.0.0.1:8002"), ("notificationUrl", "http://127.0.0.1:8003"), ("username", ""), ("userPassword", ""), ("token", ""), ("serviceKey", ""), ("userId", ""), ("employeeUsername", ""), ("employeeEmail", ""), ("assetId", ""), ("notificationId", ""), ("welcomeNotificationId", ""), ("eventId", "")]
+variables = [("username", ""), ("userPassword", ""), ("token", ""), ("serviceKey", ""), ("userId", ""), ("employeeUsername", ""), ("employeeEmail", ""), ("assetId", ""), ("notificationId", ""), ("welcomeNotificationId", ""), ("eventId", "")]
 environment = {"name": "Joey local template", "values": [{"key": key, "value": value, "enabled": True, "type": "default"} for key, value in variables], "_postman_variable_scope": "environment"}
 
 (ROOT / "joey.collection.json").write_text(json.dumps(collection, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
