@@ -86,3 +86,7 @@ Regenerate Joey's exported files with `python postman/generate.py`. Run `python 
 ### Joey Saade deleted user ID regression, 2026-10-19
 
 `tests/test_joey.py` covers register -> delete -> register, unique historical welcome outbox keys, a higher replacement ID, rejection of the deleted user's token, and one-time seeding of a legacy database after the allocation table is absent. Final focused result: [7 passed](evidence/joey-id-reuse-pytest-2026-10-19.txt). A full verbose run passed 62 tests with 42 dependency deprecation warnings before the final test-only token assertion was added; the application code was unchanged after that run. The [nine-service Newman rerun](evidence/joey-postman-newman-2026-10-19-after-id-fix.txt) passed 27 requests and 29 assertions after the ID allocation change. No GUI or database screenshots were captured.
+
+### Karl Khouri update, 2026-10-20
+
+Karl's collection now has 46 requests (auditor setup plus screenshot-oriented checks). `python tests/postman_karl.py` → 46 requests, 62 assertions, 0 failures ([output](evidence/karl-postman-newman-2026-10-20.txt)). New regression tests `test_deleted_ids_are_never_reused` and `test_existing_database_is_upgraded_without_losing_rows` cover the playbook/action/audit ID-reuse defect found during screenshot capture. Full suite: 71 passed.

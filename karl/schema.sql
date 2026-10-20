@@ -1,7 +1,9 @@
 -- Karl Khouri: Security Audit Logging, Security Playbook and Response Automation.
 -- Applied after joey/schema.sql because users(id) is referenced. Reports store no tables.
+-- AUTOINCREMENT: a deleted log, playbook or action ID is never handed out again, because audit subjects,
+-- execution history and notification event IDs keep referring to it.
 CREATE TABLE IF NOT EXISTS audit_logs (
- id INTEGER PRIMARY KEY, event_id TEXT NOT NULL UNIQUE,
+ id INTEGER PRIMARY KEY AUTOINCREMENT, event_id TEXT NOT NULL UNIQUE,
  actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL, original_actor_user_id INTEGER, actor_label TEXT,
  action TEXT NOT NULL, description TEXT NOT NULL,
  severity TEXT NOT NULL CHECK(severity IN ('Information','Warning','Error','Critical')),
@@ -18,13 +20,13 @@ WHEN NOT (NEW.actor_user_id IS NULL AND NEW.id IS OLD.id AND NEW.event_id IS OLD
  AND NEW.recorded_at IS OLD.recorded_at AND NEW.source IS OLD.source)
 BEGIN SELECT RAISE(ABORT, 'Audit log entries are immutable'); END;
 CREATE TABLE IF NOT EXISTS playbooks (
- id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE UNIQUE, description TEXT NOT NULL,
+ id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE UNIQUE, description TEXT NOT NULL,
  category TEXT NOT NULL CHECK(category IN ('Malware','Phishing','Ransomware','Unauthorized Access','Data Breach','Denial of Service','Insider Threat','Vulnerability Remediation','Other')),
  severity TEXT NOT NULL CHECK(severity IN ('Low','Medium','High','Critical')),
  created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS response_actions (
- id INTEGER PRIMARY KEY, playbook_id INTEGER NOT NULL REFERENCES playbooks(id) ON DELETE CASCADE,
+ id INTEGER PRIMARY KEY AUTOINCREMENT, playbook_id INTEGER NOT NULL REFERENCES playbooks(id) ON DELETE CASCADE,
  step_order INTEGER NOT NULL CHECK(step_order >= 1), title TEXT NOT NULL, description TEXT NOT NULL,
  assigned_to INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
  status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','In Progress','Completed')),

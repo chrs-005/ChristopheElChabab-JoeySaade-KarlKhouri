@@ -1,0 +1,232 @@
+$ NODE_OPTIONS=--use-system-ca python tests/postman_karl.py  (2026-10-20, Python 3.11, Newman 6.2.1, nine real services, disposable database)
+Administrator created
+All nine real HTTP services are ready
+(node:39308) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Sprint I — Karl Khouri services
+
+□ Setup — Karl Khouri
+└ Login administrator
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 124ms]
+  √  Authenticated
+
+└ Get administrator profile
+  GET http://127.0.0.1:18001/api/Joey-Saade/users/karl_admin [200 OK, 385B, 5ms]
+  √  Found
+  √  Administrator role
+
+└ Register analyst account
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 395B, 111ms]
+  √  Created
+
+└ Promote to Security Analyst
+  PATCH http://127.0.0.1:18001/api/Joey-Saade/users/2/admin [200 OK, 390B, 12ms]
+  √  Promoted
+
+└ Login analyst
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 92ms]
+  √  Authenticated
+
+└ Register auditor account
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/register [201 Created, 402B, 92ms]
+  √  Created
+
+└ Promote to Security Auditor
+  PATCH http://127.0.0.1:18001/api/Joey-Saade/users/3/admin [200 OK, 397B, 12ms]
+  √  Promoted
+
+└ Login auditor
+  POST http://127.0.0.1:18001/api/Joey-Saade/users/login [200 OK, 300B, 89ms]
+  √  Authenticated
+
+□ Security Audit Logging — Karl Khouri
+└ Create log as service
+  POST http://127.0.0.1:18007/api/Karl-Khouri/logs [201 Created, 497B, 9ms]
+  √  Stored or deduplicated
+
+└ Repeat same event returns original
+  POST http://127.0.0.1:18007/api/Karl-Khouri/logs [200 OK, 492B, 5ms]
+  √  Deduplicated
+  √  Same stored entry
+
+└ Create manual log as administrator
+  POST http://127.0.0.1:18007/api/Karl-Khouri/logs [201 Created, 512B, 9ms]
+  √  Created
+  √  Actor comes from token
+
+└ List logs as auditor
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs [200 OK, 1.63kB, 4ms]
+  √  Listed
+
+└ Reject analyst log list
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs [403 Forbidden, 218B, 8ms]
+  √  Forbidden
+
+└ Get log
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/3 [200 OK, 492B, 15ms]
+  √  Found
+
+└ Reject unknown log ID
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/999999999 [404 Not Found, 182B, 4ms]
+  √  Missing resource
+
+└ Search logs
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=login_failed&severity=Warning [200 OK, 494B, 4ms]
+  √  Searched
+  √  Only matching entries
+
+└ Logs for user
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/user/1 [200 OK, 1.25kB, 4ms]
+  √  Listed
+
+└ Delete log
+  DELETE http://127.0.0.1:18007/api/Karl-Khouri/logs/3 [200 OK, 156B, 41ms]
+  √  Deleted
+
+└ Search deletion record
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?action=audit_log_deleted&subject_id=3 [200 OK, 522B, 3ms]
+  √  Searched
+  √  Deletion recorded
+
+└ Reject deleting deletion record
+  DELETE http://127.0.0.1:18007/api/Karl-Khouri/logs/9 [409 Conflict, 192B, 4ms]
+  √  Deletion records are permanent
+
+□ Security Playbook and Response Automation — Karl Khouri
+└ Create playbook
+  POST http://127.0.0.1:18008/api/Karl-Khouri/playbooks [201 Created, 952B, 41ms]
+  √  Created
+
+└ List playbooks
+  GET http://127.0.0.1:18008/api/Karl-Khouri/playbooks [200 OK, 949B, 4ms]
+  √  Listed
+
+└ Get playbook
+  GET http://127.0.0.1:18008/api/Karl-Khouri/playbooks/1 [200 OK, 947B, 4ms]
+  √  Found
+  √  Steps ordered
+
+└ Add response action
+  POST http://127.0.0.1:18008/api/Karl-Khouri/playbooks/1/actions [201 Created, 370B, 8ms]
+  √  Created
+  √  Appended as next step
+
+└ Reject skipping In Progress
+  PUT http://127.0.0.1:18008/api/Karl-Khouri/actions/1/status [409 Conflict, 248B, 4ms]
+  √  Transition rejected
+
+└ Reject starting step 2 before step 1
+  PUT http://127.0.0.1:18008/api/Karl-Khouri/actions/2/status [409 Conflict, 192B, 5ms]
+  √  Transition rejected
+
+└ Start action as assigned analyst
+  PUT http://127.0.0.1:18008/api/Karl-Khouri/actions/1/status [200 OK, 403B, 10ms]
+  √  Updated
+  √  Now In Progress
+
+└ Complete action as assigned analyst
+  PUT http://127.0.0.1:18008/api/Karl-Khouri/actions/1/status [200 OK, 428B, 9ms]
+  √  Updated
+  √  Now Completed
+
+└ Playbook execution history
+  GET http://127.0.0.1:18008/api/Karl-Khouri/playbooks/1/history [200 OK, 1.39kB, 5ms]
+  √  Listed
+  √  Three creations and two transitions recorded
+
+└ Delete playbook
+  DELETE http://127.0.0.1:18008/api/Karl-Khouri/playbooks/1 [200 OK, 186B, 11ms]
+  √  Deleted
+
+└ Confirm deleted playbook
+  GET http://127.0.0.1:18008/api/Karl-Khouri/playbooks/1 [404 Not Found, 181B, 6ms]
+  √  Gone
+
+□ Security Reports — Karl Khouri
+└ Summary report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/summary [200 OK, 1.23kB, 500ms]
+  √  Report generated
+  √  All sources available
+
+└ Incidents report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/incidents [200 OK, 338B, 14ms]
+  √  Report generated
+  √  Total present
+
+└ Assets report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/assets [200 OK, 374B, 17ms]
+  √  Report generated
+  √  Total present
+
+└ Threats report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/threats [200 OK, 310B, 18ms]
+  √  Report generated
+  √  Total present
+
+└ Vulnerabilities report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/vulnerabilities [200 OK, 349B, 47ms]
+  √  Report generated
+  √  Total present
+
+└ Activity report
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/activity [200 OK, 845B, 40ms]
+  √  Report generated
+  √  Events counted
+
+□ Negative checks — Karl Khouri
+└ Reject forged audit service key
+  POST http://127.0.0.1:18007/api/Karl-Khouri/logs [401 Unauthorized, 192B, 3ms]
+  √  Rejected
+
+└ Reject user-chosen log actor
+  POST http://127.0.0.1:18007/api/Karl-Khouri/logs [422 Unprocessable Entity, 231B, 4ms]
+  √  Rejected
+
+└ Reject invalid log date filter
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs/search?start_date=yesterday [422 Unprocessable Entity, 221B, 4ms]
+  √  Rejected
+
+└ Reject logs without token
+  GET http://127.0.0.1:18007/api/Karl-Khouri/logs [401 Unauthorized, 186B, 4ms]
+  √  Authentication required
+
+└ Reject playbook with gap in steps
+  POST http://127.0.0.1:18008/api/Karl-Khouri/playbooks [422 Unprocessable Entity, 245B, 4ms]
+  √  Rejected
+
+└ Reject invalid playbook category
+  POST http://127.0.0.1:18008/api/Karl-Khouri/playbooks [422 Unprocessable Entity, 190B, 17ms]
+  √  Rejected
+
+└ Reject missing playbook
+  GET http://127.0.0.1:18008/api/Karl-Khouri/playbooks/999999999 [404 Not Found, 181B, 5ms]
+  √  Missing resource
+
+└ Reject reports without token
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/summary [401 Unauthorized, 186B, 4ms]
+  √  Authentication required
+
+└ Reject analyst report access
+  GET http://127.0.0.1:18009/api/Karl-Khouri/reports/summary [403 Forbidden, 218B, 23ms]
+  √  Forbidden
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                46 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                46 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 2 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                62 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 4.8s                                       │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 15.08kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 31ms [min: 3ms, max: 500ms, s.d.: 76ms] │
+└────────────────────────────────────────────────────────────────┘
+PASS: Karl Khouri's exported Postman collection against nine actual servers; no server tracebacks

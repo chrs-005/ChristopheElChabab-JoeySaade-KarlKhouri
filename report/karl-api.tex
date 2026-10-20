@@ -1,0 +1,34 @@
+\subsection*{Karl Khouri API routes}
+All suffixes in this table follow \texttt{/api/Karl-Khouri}. Administrator, Analyst and Auditor refer to the corresponding Security roles; Employee means Regular Employee. The first 18 rows are the required routes. The last row documents an implemented supporting route.
+
+\begin{small}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.10\linewidth}>{\raggedright\arraybackslash}p{0.28\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}}
+\toprule
+\textbf{Method} & \textbf{Suffix} & \textbf{Function} & \textbf{Access} \\
+\midrule
+\endhead
+POST & /logs & Store an audit event; repeated event IDs return the original & Service key, Administrator \\
+GET & /logs & List audit entries, newest first & Administrator, Auditor \\
+GET & /logs/\{id\} & Retrieve an audit entry & Administrator, Auditor \\
+GET & /logs/search & Filter by actor, action, severity, service, subject and date range & Administrator, Auditor \\
+DELETE & /logs/\{id\} & Delete an entry and record the deletion & Administrator \\
+GET & /logs/user/\{user\_id\} & List one user's activity & Administrator, Auditor, self \\
+POST & /playbooks & Create a playbook with optional ordered steps & Administrator, Analyst \\
+GET & /playbooks & List playbooks with steps and progress & Administrator, Analyst, Auditor \\
+GET & /playbooks/\{id\} & Retrieve a playbook, steps and execution state & Administrator, Analyst, Auditor \\
+POST & /playbooks/\{id\}/actions & Add the next ordered response step & Administrator, Analyst \\
+PUT & /actions/\{id\}/status & Move a step Pending, In Progress, Completed & Assigned user, Administrator \\
+DELETE & /playbooks/\{id\} & Delete a playbook not in progress & Administrator \\
+GET & /reports/summary & Combined figures from all five sources & Administrator, Auditor \\
+GET & /reports/incidents & Incidents by status and severity, open, unassigned & Administrator, Auditor \\
+GET & /reports/assets & Assets by type, criticality, status, department & Administrator, Auditor \\
+GET & /reports/threats & Threats by type and severity & Administrator, Auditor \\
+GET & /reports/vulnerabilities & Vulnerabilities by severity and status, average CVSS & Administrator, Auditor \\
+GET & /reports/activity & Audit activity by action, severity, service and user & Administrator, Auditor \\
+\midrule
+GET & /playbooks/\{id\}/history & Read step creation and status history & Administrator, Analyst, Auditor \\
+\bottomrule
+\end{longtable}
+\end{small}
+
+Creation returns 201; successful reads, searches, status changes and deletions return 200, and a repeated audit event ID returns 200 with the stored entry. Missing or invalid authentication, or a wrong service key, returns 401. Insufficient permission returns 403, absent records return 404, and duplicate step numbers, invalid status transitions and protected deletions return 409. Invalid input, out-of-order steps and invalid date filters return 422. A report whose upstream service is unreachable returns 503, and one whose upstream replies with an error returns 502. Error bodies carry a status and message. The importable collection and credential-free template are \texttt{postman/karl.collection.json} and \texttt{postman/karl.environment.template.json}. The administrator's credentials and the audit service key are entered only in a private local environment.

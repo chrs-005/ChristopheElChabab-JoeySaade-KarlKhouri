@@ -1,0 +1,22 @@
+Karl Khouri's four tables are defined in \texttt{karl/schema.sql} and created after the users table they reference; the Reports service stores no tables. All use integer primary keys. \texttt{audit\_logs}, \texttt{playbooks} and \texttt{response\_actions} use AUTOINCREMENT, so a deleted entry's ID is never given to a new row. Deletion records, execution history and notification event IDs keep pointing at the right record. Databases created before this change are rebuilt on startup with their rows kept.
+
+\texttt{audit\_logs} stores one row per event with a unique \texttt{event\_id}. \texttt{actor\_user\_id} references \texttt{users.id} with ON DELETE SET NULL, while \texttt{original\_actor\_user\_id} and \texttt{actor\_label} keep the actor after the account is deleted. CHECK constraints limit severity to Information, Warning, Error and Critical and the source to service, user or audit. Indexes on the original actor and the occurrence time support user activity lookups and date-range searches. The \texttt{audit\_logs\_immutable} trigger aborts any UPDATE except that foreign-key nulling.
+
+\texttt{playbooks} has a case-insensitive unique name, category and severity CHECK constraints, and \texttt{created\_by} referencing \texttt{users.id}. \texttt{response\_actions} references \texttt{playbooks.id} with ON DELETE CASCADE and \texttt{users.id} through \texttt{assigned\_to} and \texttt{completed\_by}. Its status is limited to Pending, In Progress and Completed, and \texttt{UNIQUE(playbook\_id, step\_order)} prevents two steps sharing a number. \texttt{action\_history} references the action, playbook and changing user with ON DELETE SET NULL. It also stores the original action and playbook IDs, so the execution history survives deletion. One playbook has many response actions, one action has many history rows, and one user can create many playbooks, be assigned many actions and appear in many audit entries. A user who created a playbook or is assigned a step cannot be deleted while those references remain.
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[box/.style={draw,align=left,font=\small,text width=43mm,minimum height=13mm},>=Latex]
+\node[box] (u) {users\\PK id};
+\node[box,right=18mm of u] (l) {audit\_logs\\PK id\\FK actor\_user\_id\\UNIQUE event\_id};
+\node[box,below=14mm of u] (p) {playbooks\\PK id\\FK created\_by\\UNIQUE name};
+\node[box,below=14mm of l] (r) {response\_actions\\PK id\\FK playbook\_id\\FK assigned\_to\\FK completed\_by\\UNIQUE (playbook\_id, step\_order)};
+\node[box,below=14mm of r] (h) {action\_history\\PK id\\FK action\_id\\FK playbook\_id\\FK changed\_by};
+\draw[->] (l.west) -- (u.east);
+\draw[->] (p.north) -- (u.south);
+\draw[->] (r.west) -- (p.east);
+\draw[->] (r.north west) -- (u.south east);
+\draw[->] (h.north) -- (r.south);
+\draw[->] (h.west) -| (p.south);
+\end{tikzpicture}
+\caption{Karl Khouri - Audit and playbook schema - Arrows point from foreign-key tables to referenced tables. Users belong to Joey Saade's service.}
+\end{figure}

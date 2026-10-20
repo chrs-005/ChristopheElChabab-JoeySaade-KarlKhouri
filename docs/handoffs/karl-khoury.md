@@ -21,3 +21,13 @@ Changed: confirmed and fixed the three findings in Christophe's readiness check 
 Checks: Newman against nine real services → 37 requests, 51 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-18.txt)); `python -m pytest tests -q` → 60 passed; `python tests/live_smoke_karl.py` and `python tests/live_smoke_christophe.py` passed.
 
 Remaining: L/P/R-EVID-01 screenshots and database records. Joey's collection findings are his to fix and were not changed here.
+
+## 2026-10-20 — Karl Khouri: report sections, screenshots and ID-reuse fix
+
+Changed: added Karl's LaTeX sections (`report/karl-implementation.tex`, `karl-api.tex`, `karl-database.tex`, `karl-evidence.tex`) and wired them into `report/main.tex`. The Postman collection gained an auditor in Setup and nine screenshot-oriented requests: repeated event, auditor/analyst log access, unknown log ID, deletion record and its permanence, and analyst report access. Captured 43 screenshots on a nine-service demo database: 37 Postman requests and 6 database views. They are stored outside Git in `Karl-Khouri-Screenshots/`, next to the repository, as Christophe does.
+
+Bug found while capturing: deleting a playbook let SQLite reuse its step IDs. The next playbook's step notification event ID (`playbook-action-{id}-assigned`) collided with the retained outbox row, and creation returned 500. Execution history and audit deletion records would also have pointed at reused IDs. Fix: `AUTOINCREMENT` on `audit_logs`, `playbooks` and `response_actions`, and a startup migration in `karl/common.py` that rebuilds older tables without losing rows and seeds `sqlite_sequence` past every referenced ID. Two regression tests cover it; both fail on the old code.
+
+Checks: `python -m pytest tests -q` → 71 passed; Newman against nine services → 46 requests, 62 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed; the report compiles with all 43 images.
+
+Remaining: Karl's AI-use statement in the report References, and a final team review of the compiled PDF.

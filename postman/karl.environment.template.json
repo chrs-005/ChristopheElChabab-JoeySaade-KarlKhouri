@@ -74,6 +74,30 @@
       "type": "default"
     },
     {
+      "key": "auditorUsername",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditorId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "auditorToken",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "deletionLogId",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
       "key": "logId",
       "value": "",
       "enabled": true,

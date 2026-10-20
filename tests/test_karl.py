@@ -1,5 +1,6 @@
 """Karl Khouri: Security Audit Logging, Playbooks and Reports."""
 import os
+from pathlib import Path
 import sqlite3
 
 import httpx
@@ -274,3 +275,50 @@ def test_reports_use_upstream_records_for_peer_services(clients, monkeypatch):
     assert vulns["average_cvss"] == 7.4 and vulns["open"] == 1
     assert c["reports"].get(f"{PREFIX}/reports/threats", headers=admin_h).status_code == 502
     assert c["reports"].get(f"{PREFIX}/reports/assets", headers=admin_h).status_code == 502
+
+
+def test_deleted_ids_are_never_reused(clients):
+    c = clients
+    _, admin_h = make(c, "admin", "Security Administrator")
+    analyst, analyst_h = make(c, "analyst", "Security Analyst")
+    body = {"name": "First", "description": "d", "category": "Malware", "severity": "High", "steps": [{"title": "Step", "description": "d", "assigned_to": analyst["id"]}]}
+    first = c["playbooks"].post(f"{PREFIX}/playbooks", json=body, headers=admin_h).json()
+    c["playbooks"].put(f"{PREFIX}/actions/{first['actions'][0]['id']}/status", json={"status": "In Progress"}, headers=analyst_h)
+    c["playbooks"].put(f"{PREFIX}/actions/{first['actions'][0]['id']}/status", json={"status": "Completed"}, headers=analyst_h)
+    assert c["playbooks"].delete(f"{PREFIX}/playbooks/{first['id']}", headers=admin_h).status_code == 200
+    # Before AUTOINCREMENT this reused action ID 1, collided with its queued notification event and returned 500.
+    second = c["playbooks"].post(f"{PREFIX}/playbooks", json={**body, "name": "Second"}, headers=admin_h)
+    assert second.status_code == 201, second.text
+    second = second.json()
+    assert second["id"] > first["id"] and second["actions"][0]["id"] > first["actions"][0]["id"]
+    assert len(c["playbooks"].get(f"{PREFIX}/playbooks/{first['id']}/history", headers=admin_h).json()) == 3  # old history stays separate
+    assert len(c["playbooks"].get(f"{PREFIX}/playbooks/{second['id']}/history", headers=admin_h).json()) == 1
+    newest = c["logs"].post(f"{PREFIX}/logs", json={"action": "manual_note"}, headers=admin_h).json()
+    assert c["logs"].delete(f"{PREFIX}/logs/{newest['id']}", headers=admin_h).status_code == 200
+    record = c["logs"].get(f"{PREFIX}/logs/search?action=audit_log_deleted", headers=admin_h).json()[0]
+    assert record["id"] != newest["id"] and record["subject_id"] == str(newest["id"])
+
+
+def test_existing_database_is_upgraded_without_losing_rows(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "old.db"))
+    from joey.common import init_db as joey_init
+    from karl.common import init_db
+    joey_init()
+    old_schema = (Path(__file__).parent.parent / "karl" / "schema.sql").read_text(encoding="utf-8").replace(" AUTOINCREMENT", "")
+    with db() as conn:
+        conn.executescript(old_schema)
+        conn.execute("INSERT INTO users(id,full_name,username,email,password_hash,department,role,status,created_at) VALUES(1,'A','a','a@example.com','h','IT','Security Administrator','Active','now')")
+        conn.execute("INSERT INTO playbooks(id,name,description,category,severity,created_by,created_at,updated_at) VALUES(2,'P','d','Other','Low',1,'now','now')")
+        conn.execute("INSERT INTO action_history(original_action_id,original_playbook_id,to_status,changed_by_label,changed_at) VALUES(7,5,'Pending','a','now')")
+        conn.execute("INSERT INTO outbox(event_id,destination,payload_json,created_at) VALUES('playbook-action-9-assigned','notification','{}','now')")
+        conn.execute("INSERT INTO audit_logs(id,event_id,action,description,severity,related_service,occurred_at,recorded_at,source) VALUES(4,'e','x','x','Information','s','t','t','audit')")
+    init_db()
+    init_db()  # idempotent
+    with db() as conn:
+        for table in ("audit_logs", "playbooks", "response_actions"):
+            assert "AUTOINCREMENT" in conn.execute("SELECT sql FROM sqlite_master WHERE name=?", (table,)).fetchone()[0]
+        assert conn.execute("SELECT name FROM playbooks WHERE id=2").fetchone()[0] == "P"
+        seq = dict(conn.execute("SELECT name, seq FROM sqlite_sequence").fetchall())
+        assert seq["playbooks"] == 5 and seq["response_actions"] == 9 and seq["audit_logs"] == 4
+        with pytest.raises(sqlite3.IntegrityError, match="immutable"):
+            conn.execute("UPDATE audit_logs SET action='tampered' WHERE id=4")

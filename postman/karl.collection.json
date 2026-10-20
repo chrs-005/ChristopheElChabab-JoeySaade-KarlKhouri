@@ -186,6 +186,123 @@
               }
             }
           ]
+        },
+        {
+          "name": "Register auditor account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/register",
+            "description": "Karl Khouri \u2014 Register auditor account. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Karl Khouri Auditor\",\n  \"username\": \"{{auditorUsername}}\",\n  \"email\": \"{{auditorUsername}}@example.test\",\n  \"password\": \"{{userPassword}}\",\n  \"department\": \"Compliance\",\n  \"role\": \"Regular Employee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('auditorUsername', 'karl_auditor_' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('auditorId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Promote to Security Auditor",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/{{auditorId}}/admin",
+            "description": "Karl Khouri \u2014 Promote to Security Auditor. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Security Auditor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Promoted', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login auditor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{userUrl}}/api/Joey-Saade/users/login",
+            "description": "Karl Khouri \u2014 Login auditor. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username_or_email\": \"{{auditorUsername}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.environment.set('auditorToken', pm.response.json().access_token);"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -232,6 +349,45 @@
           ]
         },
         {
+          "name": "Repeat same event returns original",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Service-Key",
+                "value": "{{auditServiceKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Repeat same event returns original. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{eventId}}\",\n  \"actor_user_id\": null,\n  \"actor_label\": \"unknown_user\",\n  \"action\": \"login_failed\",\n  \"description\": \"Failed login attempt\",\n  \"severity\": \"Warning\",\n  \"related_service\": \"users\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Deduplicated', () => pm.response.to.have.status(200));",
+                  "pm.test('Same stored entry', () => pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get('logId'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Create manual log as administrator",
           "request": {
             "method": "POST",
@@ -271,17 +427,17 @@
           ]
         },
         {
-          "name": "List logs",
+          "name": "List logs as auditor",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{auditorToken}}"
               }
             ],
             "url": "{{auditUrl}}/api/Karl-Khouri/logs",
-            "description": "Karl Khouri \u2014 List logs. Run against your own backend and inspect the actual response."
+            "description": "Karl Khouri \u2014 List logs as auditor. Run against your own backend and inspect the actual response."
           },
           "event": [
             {
@@ -290,6 +446,31 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Listed', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst log list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Reject analyst log list. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Forbidden', () => pm.response.to.have.status(403));"
                 ]
               }
             }
@@ -315,6 +496,31 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Found', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject unknown log ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/999999999",
+            "description": "Karl Khouri \u2014 Reject unknown log ID. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing resource', () => pm.response.to.have.status(404));"
                 ]
               }
             }
@@ -391,6 +597,58 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Deleted', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search deletion record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?action=audit_log_deleted&subject_id={{logId}}",
+            "description": "Karl Khouri \u2014 Search deletion record. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Searched', () => pm.response.to.have.status(200));",
+                  "pm.test('Deletion recorded', () => pm.expect(pm.response.json().length).to.eql(1));",
+                  "if (pm.response.code === 200 && pm.response.json().length) pm.environment.set('deletionLogId', pm.response.json()[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject deleting deletion record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/{{deletionLogId}}",
+            "description": "Karl Khouri \u2014 Reject deleting deletion record. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Deletion records are permanent', () => pm.response.to.have.status(409));"
                 ]
               }
             }
@@ -1163,6 +1421,31 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Authentication required', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst report access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{reportUrl}}/api/Karl-Khouri/reports/summary",
+            "description": "Karl Khouri \u2014 Reject analyst report access. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Forbidden', () => pm.response.to.have.status(403));"
                 ]
               }
             }

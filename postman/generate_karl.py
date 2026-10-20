@@ -27,6 +27,7 @@ def request(name, method, base, path, body=None, headers=None, tests=None, prefi
 
 users = "/api/Joey-Saade"
 analyst_auth = [{"key": "Authorization", "value": "Bearer {{analystToken}}"}]
+auditor_auth = [{"key": "Authorization", "value": "Bearer {{auditorToken}}"}]
 # Setup creates its own analyst so the collection runs on a fresh database with only the administrator's credentials.
 setup = [
     request("Login administrator", "POST", "userUrl", "/users/login", {"username_or_email": "{{username}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('token', pm.response.json().access_token);"], prefix=users),
@@ -34,16 +35,24 @@ setup = [
     request("Register analyst account", "POST", "userUrl", "/users/register", {"full_name": "Karl Khouri Analyst", "username": "{{analystUsername}}", "email": "{{analystUsername}}@example.test", "password": "{{userPassword}}", "department": "SOC", "role": "Regular Employee"}, headers=[], tests=status(201, "Created") + ["if (pm.response.code === 201) pm.environment.set('analystId', pm.response.json().id);"], prefix=users, prerequest=["pm.environment.set('analystUsername', 'karl_analyst_' + Date.now());"]),
     request("Promote to Security Analyst", "PATCH", "userUrl", "/users/{{analystId}}/admin", {"role": "Security Analyst"}, tests=status(200, "Promoted"), prefix=users),
     request("Login analyst", "POST", "userUrl", "/users/login", {"username_or_email": "{{analystUsername}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('analystToken', pm.response.json().access_token);"], prefix=users),
+    request("Register auditor account", "POST", "userUrl", "/users/register", {"full_name": "Karl Khouri Auditor", "username": "{{auditorUsername}}", "email": "{{auditorUsername}}@example.test", "password": "{{userPassword}}", "department": "Compliance", "role": "Regular Employee"}, headers=[], tests=status(201, "Created") + ["if (pm.response.code === 201) pm.environment.set('auditorId', pm.response.json().id);"], prefix=users, prerequest=["pm.environment.set('auditorUsername', 'karl_auditor_' + Date.now());"]),
+    request("Promote to Security Auditor", "PATCH", "userUrl", "/users/{{auditorId}}/admin", {"role": "Security Auditor"}, tests=status(200, "Promoted"), prefix=users),
+    request("Login auditor", "POST", "userUrl", "/users/login", {"username_or_email": "{{auditorUsername}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('auditorToken', pm.response.json().access_token);"], prefix=users),
 ]
 log_event = {"event_id": "{{eventId}}", "actor_user_id": None, "actor_label": "unknown_user", "action": "login_failed", "description": "Failed login attempt", "severity": "Warning", "related_service": "users"}
 logs = [
     request("Create log as service", "POST", "auditUrl", "/logs", log_event, headers=service, tests=["pm.test('Stored or deduplicated', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));", "if (pm.response.code < 300) pm.environment.set('logId', pm.response.json().id);"]),
+    request("Repeat same event returns original", "POST", "auditUrl", "/logs", log_event, headers=service, tests=status(200, "Deduplicated") + ["pm.test('Same stored entry', () => pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get('logId'))));"]),
     request("Create manual log as administrator", "POST", "auditUrl", "/logs", {"action": "manual_review", "description": "Reviewed firewall changes", "severity": "Information"}, tests=status(201, "Created") + ["pm.test('Actor comes from token', () => pm.expect(pm.response.json().source).to.eql('user'));"]),
-    request("List logs", "GET", "auditUrl", "/logs", tests=status(200, "Listed")),
+    request("List logs as auditor", "GET", "auditUrl", "/logs", headers=auditor_auth, tests=status(200, "Listed")),
+    request("Reject analyst log list", "GET", "auditUrl", "/logs", headers=analyst_auth, tests=status(403, "Forbidden")),
     request("Get log", "GET", "auditUrl", "/logs/{{logId}}", tests=status(200, "Found")),
+    request("Reject unknown log ID", "GET", "auditUrl", "/logs/999999999", tests=status(404, "Missing resource")),
     request("Search logs", "GET", "auditUrl", "/logs/search?action=login_failed&severity=Warning", tests=status(200, "Searched") + ["pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"]),
     request("Logs for user", "GET", "auditUrl", "/logs/user/{{userId}}", tests=status(200, "Listed")),
     request("Delete log", "DELETE", "auditUrl", "/logs/{{logId}}", tests=status(200, "Deleted")),
+    request("Search deletion record", "GET", "auditUrl", "/logs/search?action=audit_log_deleted&subject_id={{logId}}", tests=status(200, "Searched") + ["pm.test('Deletion recorded', () => pm.expect(pm.response.json().length).to.eql(1));", "if (pm.response.code === 200 && pm.response.json().length) pm.environment.set('deletionLogId', pm.response.json()[0].id);"]),
+    request("Reject deleting deletion record", "DELETE", "auditUrl", "/logs/{{deletionLogId}}", tests=status(409, "Deletion records are permanent")),
 ]
 playbook_body = {"name": "Phishing containment {{$timestamp}}", "description": "Contain a reported phishing email", "category": "Phishing", "severity": "High", "steps": [
     {"title": "Block sender", "description": "Block the sender domain", "assigned_to": "{{analystId}}"},
@@ -79,8 +88,9 @@ negative = [
     request("Reject invalid playbook category", "POST", "playbookUrl", "/playbooks", {**playbook_body, "category": "Weather"}, tests=status(422, "Rejected")),
     request("Reject missing playbook", "GET", "playbookUrl", "/playbooks/999999999", tests=status(404, "Missing resource")),
     request("Reject reports without token", "GET", "reportUrl", "/reports/summary", headers=[], tests=status(401, "Authentication required")),
+    request("Reject analyst report access", "GET", "reportUrl", "/reports/summary", headers=analyst_auth, tests=status(403, "Forbidden")),
 ]
 collection = {"info": {"name": "Sprint I — Karl Khouri services", "description": "Security Audit Logging, Security Playbook and Response Automation, and Security Reports by Karl Khouri. Fill username, userPassword (an administrator) and auditServiceKey, start all nine services, then run the folders in order. Setup creates and logs in its own analyst.", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"}, "item": [{"name": label, "item": items} for label, items in [("Setup — Karl Khouri", setup), ("Security Audit Logging — Karl Khouri", logs), ("Security Playbook and Response Automation — Karl Khouri", playbooks), ("Security Reports — Karl Khouri", reports), ("Negative checks — Karl Khouri", negative)]]}
-environment = {"name": "Karl Khouri local template", "values": [{"key": key, "value": value, "enabled": True, "type": "default"} for key, value in [("userUrl", "http://127.0.0.1:8001"), ("auditUrl", "http://127.0.0.1:8007"), ("playbookUrl", "http://127.0.0.1:8008"), ("reportUrl", "http://127.0.0.1:8009"), ("username", ""), ("userPassword", ""), ("token", ""), ("auditServiceKey", ""), ("userId", ""), ("analystUsername", ""), ("analystId", ""), ("analystToken", ""), ("logId", ""), ("playbookId", ""), ("actionId", ""), ("action2Id", ""), ("eventId", "example-audit-event-1")]], "_postman_variable_scope": "environment"}
+environment = {"name": "Karl Khouri local template", "values": [{"key": key, "value": value, "enabled": True, "type": "default"} for key, value in [("userUrl", "http://127.0.0.1:8001"), ("auditUrl", "http://127.0.0.1:8007"), ("playbookUrl", "http://127.0.0.1:8008"), ("reportUrl", "http://127.0.0.1:8009"), ("username", ""), ("userPassword", ""), ("token", ""), ("auditServiceKey", ""), ("userId", ""), ("analystUsername", ""), ("analystId", ""), ("analystToken", ""), ("auditorUsername", ""), ("auditorId", ""), ("auditorToken", ""), ("deletionLogId", ""), ("logId", ""), ("playbookId", ""), ("actionId", ""), ("action2Id", ""), ("eventId", "example-audit-event-1")]], "_postman_variable_scope": "environment"}
 (root / "karl.collection.json").write_text(json.dumps(collection, indent=2) + "\n", encoding="utf-8")
 (root / "karl.environment.template.json").write_text(json.dumps(environment, indent=2) + "\n", encoding="utf-8")

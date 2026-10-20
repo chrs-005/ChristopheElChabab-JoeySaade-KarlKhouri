@@ -1,5 +1,6 @@
 """Shared helpers for Karl Khouri's services; authentication and the database come from the agreed joey.common contract."""
 import os
+import re
 from datetime import datetime, time as day_time, timezone
 from pathlib import Path
 
@@ -9,10 +10,39 @@ PREFIX = "/api/Karl-Khouri"
 SEVERITIES = ("Low", "Medium", "High", "Critical")
 
 
+# Tables whose IDs must never be handed out again after a deletion, with the highest ID that other
+# records (deletion entries, execution history, notification event IDs) already refer to.
+NEVER_REUSED = {
+    "audit_logs": "SELECT MAX(CAST(subject_id AS INTEGER)) FROM audit_logs WHERE action='audit_log_deleted'",
+    "playbooks": "SELECT MAX(original_playbook_id) FROM action_history",
+    "response_actions": "SELECT MAX(id) FROM (SELECT original_action_id AS id FROM action_history UNION ALL "
+                        "SELECT CAST(substr(event_id, 17, instr(substr(event_id, 17), '-') - 1) AS INTEGER) FROM outbox WHERE event_id LIKE 'playbook-action-%')",
+}
+
+
 def init_db():
     shared.init_db()
+    schema = (Path(__file__).parent / "schema.sql").read_text(encoding="utf-8")
     with shared.db() as conn:
-        conn.executescript((Path(__file__).parent / "schema.sql").read_text(encoding="utf-8"))
+        for table in NEVER_REUSED:
+            existing = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
+            if existing and "AUTOINCREMENT" not in existing["sql"].upper():
+                upgrade_to_autoincrement(conn, table, schema)
+        conn.executescript(schema)  # also recreates the trigger and indexes dropped by an upgrade
+        for table, referenced in NEVER_REUSED.items():
+            highest = max(conn.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table}").fetchone()[0], conn.execute(referenced).fetchone()[0] or 0)
+            conn.execute("INSERT INTO sqlite_sequence(name, seq) SELECT ?, 0 WHERE NOT EXISTS (SELECT 1 FROM sqlite_sequence WHERE name=?)", (table, table))
+            conn.execute("UPDATE sqlite_sequence SET seq=MAX(seq, ?) WHERE name=?", (highest, table))
+
+
+def upgrade_to_autoincrement(conn, table, schema):
+    """Rebuild a table created before AUTOINCREMENT was added, keeping its rows (SQLite cannot alter a primary key)."""
+    create = re.search(rf"CREATE TABLE IF NOT EXISTS {table} \(.*?\n\);", schema, re.S).group(0)
+    conn.commit()
+    conn.execute("PRAGMA foreign_keys=OFF")
+    conn.executescript(f"BEGIN; {create.replace(table, table + '_upgraded', 1)} INSERT INTO {table}_upgraded SELECT * FROM {table}; "
+                       f"DROP TABLE {table}; ALTER TABLE {table}_upgraded RENAME TO {table}; COMMIT;")
+    conn.execute("PRAGMA foreign_keys=ON")
 
 
 def audit_secret():

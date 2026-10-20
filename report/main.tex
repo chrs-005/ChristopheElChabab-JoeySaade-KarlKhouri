@@ -6,7 +6,7 @@
 \usetikzlibrary{positioning,arrows.meta}
 \usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={Sprint I Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab, Joey Saade}}
+\hypersetup{pdftitle={Sprint I Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab, Joey Saade, Karl Khouri}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 \setlength{\emergencystretch}{3em}
@@ -15,6 +15,14 @@
 \newcommand{\evidencefigure}[2]{%
 \clearpage\begin{figure}[p]\centering
 \IfFileExists{evidence/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{evidence/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../Christophe-ElChabab-Screenshots/#1}}
+\caption{#2}
+\end{figure}\clearpage}
+% Karl Khouri's captures: report/evidence/ or ../../Karl-Khouri-Screenshots/; a missing file shows a pending box.
+% Portrait pages like the rest of the report; each image spans the page width minus 7 mm on each side.
+\newcommand{\karlshot}[1]{\makebox[\linewidth][c]{\includegraphics[width=\dimexpr\paperwidth-14mm\relax,height=0.86\textheight,keepaspectratio]{#1}}}
+\newcommand{\karlevidence}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{evidence/#1}{\karlshot{evidence/#1}}{\IfFileExists{../../Karl-Khouri-Screenshots/#1}{\karlshot{../../Karl-Khouri-Screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Screenshot pending}\par\vspace{4mm}\normalsize\texttt{#1}}}}}
 \caption{#2}
 \end{figure}\clearpage}
 \begin{document}
@@ -32,7 +40,7 @@ Christophe ElChabab\par Joey Saade\par Karl Khouri\par
 Date of submission: to be confirmed\par
 \vfill
 \textbf{Draft for team completion}\par
-Christophe's service explanations and actual local execution evidence, and Joey's service explanations and recorded automated checks, are included. Joey's screenshots, Karl's section, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
+Christophe's service explanations and actual local execution evidence, and Joey's service explanations and recorded automated checks, are included. Joey's screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
 \end{titlepage}
 \tableofcontents
 \clearpage
@@ -64,8 +72,8 @@ Joey's three processes share signed-token verification and SQLite connections. T
 \subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
 \input{christophe-implementation.tex}
 \subsection{Audit Logging Playbooks and Reports (Karl Khouri)}
-\pending{Karl supplies his reviewed implementation explanations and actual execution evidence. Christophe's integration screenshots do not replace Karl's endpoint evidence.}
-\section{Database Design (Christophe ElChabab, Joey Saade)}
+\input{karl-implementation.tex}
+\section{Database Design (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Christophe's four owned tables use integer primary keys. Threats enforce uniqueness on (type, value). Vulnerabilities reference assets.id. Incidents reference users.id through reporter\_id and assigned\_to, and assets.id through asset\_id. Investigation notes reference incidents.id and users.id through analyst\_id. One asset can have many vulnerabilities and incidents; one reporter can submit many incidents; one analyst can have many assignments/notes; one incident can contain many notes.
 
 User/asset references restrict deletion while still referenced. Note rows specify ON DELETE CASCADE for their incident foreign key. Severity, CVSS and lifecycle CHECK constraints supplement API validation. Resolution dates are nullable until resolution. The schema captures below display the actual table definitions, including primary and foreign keys. The record captures were taken before the authorized threat/vulnerability Cleanup requests.
@@ -90,7 +98,8 @@ User/asset references restrict deletion while still referenced. Note rows specif
 The appendix contains actual SQL table definitions and rows with column labels for all four Christophe tables.
 
 Joey's \texttt{users} table has a unique username and email, password hash, role, status and timestamps. \texttt{assets.owner\_id} and \texttt{notifications.user\_id} reference users; both restrict deletion while referenced. The \texttt{asset\_history} table retains the original asset ID and before/after JSON snapshots when a live asset is deleted. Notification \texttt{event\_id} is unique for retry deduplication. The \texttt{outbox} table holds destination, payload, delivery attempts and delivery time. \texttt{user\_id\_allocations} retains issued account IDs, so deleting the highest numbered user cannot reuse its token subject or welcome-event key. Joey's schema and relationships are recorded in \texttt{joey/schema.sql}; real Joey database screenshots remain pending.
-\pending{Merge Karl's audit-log, playbook, response-action and history schema details and database evidence into the common schema documentation. Add Joey's real database captures.}
+\input{karl-database.tex}
+\pending{Add Joey's real database captures.}
 \section{Error Handling and Validation (Christophe ElChabab, Joey Saade)}
 The real API evidence covers successful calls, invalid formats/ranges/references, duplicates, unknown IDs, missing authentication, forbidden mutations, incident ownership and assignment, spoofed query scope, lifecycle skips and blank notes. The captured integration calls show the incident-assignment notification, threat audit events, assignment audit event and denied-access audit records.
 
@@ -100,7 +109,7 @@ Screenshots were captured by Christophe from his running local environment. Code
 
 Joey's routes reject missing or invalid tokens with 401 and disallowed roles or cross-user access with 403. Registration rejects an invalid email or privileged public role; asset creation rejects a malformed IP address or absent owner; notification creation rejects an absent recipient, invalid type or severity, or a service call without an event ID. Unique username/email and event-ID constraints back the API checks. Referenced user and asset deletion returns 409. Joey's regression tests also check that a new registration after deletion receives a different ID and that the deleted user's token remains unusable.
 
-\section{API Documentation (Christophe ElChabab, Joey Saade)}
+\section{API Documentation (Christophe ElChabab, Joey Saade, Karl Khouri)}
 All suffixes below follow \texttt{/api/Christophe-ElChabab}. Administrator, Analyst and Auditor mean the Security Administrator, Security Analyst and Security Auditor roles. Employee means Regular Employee.
 
 \begin{small}
@@ -137,23 +146,27 @@ The importable request collection is \texttt{postman/christophe.collection.json}
 
 Detailed real request and response examples appear in the captioned appendix. Import postman/christophe.collection.json with the credential-free environment template, then set private credentials locally. Do not publish access tokens or private environment files.
 \input{joey-api.tex}
-\pending{Merge Karl's complete API reference and Postman collection.}
+\input{karl-api.tex}
 \section{Authentication and Authorization (Christophe ElChabab, Joey Saade)}
 Joey's Users service issues signed bearer tokens. Protected calls verify the token and current account status, then apply role and object-level authorization. The four role names are Security Administrator, Security Analyst, Security Auditor and Regular Employee.
 The professor confirmed auditor access to threat searching and identity-scoped incident lists. These permissions are included in the endpoint reference and real tests. A supplied role, reporter or assignee query parameter cannot replace authenticated identity.
 The shared authentication appendix includes a successful administrator login and an incorrect-password request returning 401. Both use Joey's login route; Christophe captured them to demonstrate the authentication dependency. They are not additional Christophe APIs. Insufficient and correct permissions are demonstrated on Christophe's routes in the service evidence.
 Joey's login route verifies the password hash and signs a token containing the account ID and expiry. The verification helper checks the signature and loads the user's current role and status for each protected call. Public registration cannot grant a privileged role, and the separate administrator route controls role and status changes. Asset and notification routes apply the role checks described in the API table; recipient and self-profile checks also compare the authenticated ID to the requested record. A service key is separate from a user's bearer token and is used only for service-created notifications.
-\section{GitHub and Version Control (Christophe ElChabab, Joey Saade)}
+\section{GitHub and Version Control (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Repository: \url{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}.
 The original Christophe three-service implementation is recorded in commit \texttt{537e769}. Subsequent commits must describe actual changes and preserve genuine author identity and dates.
 Joey's earlier implementation and documentation commits are \texttt{5b067bb} and \texttt{8f8fa69}; these identifiers exist in the repository history. The contribution record distinguishes those commits from Codex-assisted generation and review. A final screenshot of per-member Git history and any later contribution claim must be taken from the actual repository state.
+Karl Khouri's implementation and Postman collection correction commits are \texttt{2cf2a2e} and \texttt{faea64f}.
 \pending{After final commits are pushed, insert actual commit-history and per-member contribution screenshots with captions. Do not create fictitious history or attribute generated code to unaided manual authorship.}
-\section{References (Christophe ElChabab, Joey Saade)}
+\section{References (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Requirements source: Final Project Fall 2026-2027-Sprint 1.docx, supplied by the instructor. Permission clarifications: the professor's answers supplied by Christophe on 19 October 2026 concerning auditor threat searching and identity-scoped incident lists. Implementation references: the owned source/schema files, docs/christophe-api.md and the importable Postman collection.
 
 Codex generated implementation, tests, documentation and Postman artifacts, assisted with local execution and review, and prepared this report section. Christophe captured the execution screenshots. This disclosure does not represent AI-generated code as independent manual student authorship or replace the course requirement to understand, review, adapt and explain the implementation.
 
 Joey's service explanation uses \path{joey/} source and schema, \path{docs/joey-api.md}, \path{tests/test_joey.py} and the saved local check outputs in \path{docs/evidence/}. Codex assisted with Joey's implementation, Postman collection, regression fix and report text. Joey's own Postman GUI and database screenshots have not yet been supplied; their absence is retained explicitly in this draft.
+
+Karl's service explanation uses \path{karl/} source and schema, \path{docs/karl-api.md}, \path{tests/test_karl.py} and the saved local check outputs in \path{docs/evidence/}.
+\pending{Karl adds his AI-use statement, as the other members have.}
 
 \subsection*{CREATES completion}
 \pending{Record the team's genuine CREATES session, received feedback and changes made. All three members must meet the timing and attendance requirements. No meeting or feedback is claimed here.}
@@ -165,4 +178,7 @@ Joey's automated evidence is retained in \path{docs/evidence/joey-id-reuse-pytes
 \begin{landscape}
 \input{evidence.tex}
 \end{landscape}
+\section{Actual Execution Evidence (Karl Khouri)}
+Karl Khouri's captures were taken on 20 October 2026 from his local environment: all nine services running against a demo SQLite database, with sample assets, threats, vulnerabilities and incidents added through the APIs. The Postman images come from running his exported collection in order. The database images show queries run through Python's sqlite3 module against the same database. Each caption names the member, the operation and what it demonstrates.
+\input{karl-evidence.tex}
 \end{document}

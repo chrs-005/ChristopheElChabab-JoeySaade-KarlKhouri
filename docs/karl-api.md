@@ -21,6 +21,7 @@ Integrity rules:
 
 - Service calls send `X-Service-Key: <AUDIT_SERVICE_AUTH_SECRET>`. This secret must differ from `SERVICE_AUTH_SECRET`, so a notification credential cannot write audit records.
 - A failed login has no authenticated actor: `actor_user_id` is null and `actor_label` holds the attempted username.
+- IDs use AUTOINCREMENT, so a deleted entry's ID is never reused (the same applies to playbooks and response actions; older databases are migrated on startup).
 - A database trigger rejects any UPDATE of an entry. The only allowed change is the foreign key nulling `actor_user_id` when a user is deleted; `original_actor_user_id` and `actor_label` keep the history.
 - An event for a user deleted before delivery is stored with the original ID only, instead of failing.
 - No recursion: this service's own denials and deletions are written straight to its table, never through HTTP or the outbox. Other services queue events in the `outbox` table, so audit downtime never blocks their requests; `python -m joey.outbox` retries pending events, and concurrent retries of the same `event_id` keep only the first copy.
