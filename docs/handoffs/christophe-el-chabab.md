@@ -1,5 +1,19 @@
 # Christophe ElChabab handoff
 
+## Report formatting repaired and packages refreshed, 2026-10-20
+
+At Christophe's explicit request, Codex made formatting-only changes to report/main.tex and report/joey-api.tex: loaded xurl, used breakable path formatting for references/evidence filenames, and reduced the route table's final column width by 0.01 linewidth. Joey's wording, permissions, endpoint content and pending evidence are preserved. No service code, API tests, database, Postman collection or original image changed.
+
+Both the repository sources and the independently extracted Overleaf ZIP compiled successfully. The report remains 106 pages with 94 screenshot pages. All pages were rendered; the four changed pages (9-12) were visually inspected, with the other 102 rendered pages SHA-256 identical to the pre-formatting build, including all 94 screenshot pages. No overfull boxes, undefined references, missing glyph warnings or out-of-page text remain. Two underfull paragraph warnings and the existing duplicate page-anchor warning are non-fatal.
+
+Rebuilt the local Sprint1-LaTeX.zip with all six current source/readme files, including Joey's two additions, and 94 screenshots: 100 entries, every entry verified byte-identical to its source. Replaced local Sprint1-Report-Draft.pdf and Sprint1-LaTeX.zip only after verification; the previous versions are recoverably backed up in the task's temporary previous-deliverables directory. Source/evidence images and PDF/ZIP remain unpushed; only report-formatting source and factual session notes are to be committed/pushed. No application tests rerun for this formatting-only task. Joey/Karl screenshots and remaining team report/CREATES evidence are still pending; the common submission is not DONE.
+
+## Joey report update safely pulled and reviewed, 2026-10-20
+
+At Christophe's request, fetched and inspected Joey's 6dbfeba report-only commit, then pulled it with --ff-only from a clean worktree. Confirmed no changes versus 85d357f to christophe/, owned tests, owned Postman files/generator, report/christophe-implementation.tex or report/evidence.tex. Joey added implementation/API text and shared explanations/attribution; his GUI/database screenshots remain explicitly pending. No application code changed, so existing screenshot evidence is not invalidated. No runtime tests were rerun for this documentation-only update.
+
+Compiled the pulled LaTeX into a temporary verification PDF, rendered its pages and inspected affected API and appendix pages. Compilation succeeds: 106 pages and the same 94 image pages. Found a real layout issue: long evidence paths on report/main.tex line 163 are unbreakable texttt strings; the appendix introduction on PDF page 12 runs beyond the right edge. The compiler reports 191.28528pt overfull there; smaller overfull warnings occur in Joey's route table and references. Report source was not edited; existing local Sprint1-Report-Draft.pdf and Sprint1-LaTeX.zip were not overwritten and still represent the earlier source revision. Next: obtain direction to fix only wrapping/table layout and rebuild deliverables. No commit or push in this review session; these factual session notes are local.
+
 ## LaTeX compile and teammate integration verified, 2026-10-20
 
 Actual owned commits: 2c8a917 (confirmed permissions and tests) and 380e048 (LaTeX/evidence documentation). Integrated Joey's newer 395e4c7 using a normal merge; shared documents merged cleanly. Verified no difference from origin/main in Joey's service files or tests/test_joey.py. The combined existing suite passed 69 tests, 43 dependency deprecation warnings, in 62.07 seconds using disposable test databases. Before merge, 67 tests passed. No live screenshot database was reset or replayed.
