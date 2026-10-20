@@ -9,11 +9,11 @@ Errors use `{status: "error", message: "..."}` like the other services. 401 miss
 | Method and suffix | Access | Body / behavior |
 |---|---|---|
 | `POST /logs` | Service key, or Administrator | Service: `event_id`, `action`, `related_service` required; optional `actor_user_id`, `actor_label`, `description`, `occurred_at`, `severity`, `subject_id`. Administrator: actor and time come from the token and clock; sending actor/time fields is rejected (422). 201 created; 200 with the original entry for a repeated `event_id` |
-| `GET /logs` | Administrator, Auditor | All entries, newest first |
-| `GET /logs/{id}` | Administrator, Auditor | One entry |
-| `GET /logs/search` | Administrator, Auditor | `actor_user_id`, `action`, `severity`, `related_service`, `subject_id`, `start_date`, `end_date` (AND-combined) |
+| `GET /logs` | Administrator, Analyst, Auditor | All entries, newest first |
+| `GET /logs/{id}` | Administrator, Analyst, Auditor | One entry |
+| `GET /logs/search` | Administrator, Analyst, Auditor | `actor_user_id`, `action`, `severity`, `related_service`, `subject_id`, `start_date`, `end_date` (AND-combined) |
 | `DELETE /logs/{id}` | Administrator | Removes the entry and writes a permanent `audit_log_deleted` entry naming it; deletion entries cannot be deleted (409) |
-| `GET /logs/user/{user_id}` | Administrator, Auditor, or the user themself | Entries by that actor, including after the user account is deleted; 404 if the user never existed and has no entries |
+| `GET /logs/user/{user_id}` | Administrator, Analyst, Auditor, or the user themself | Entries by that actor, including after the user account is deleted; 404 if the user never existed and has no entries |
 
 Event schema matches the outbox payload already produced by the users, assets and notifications services: `{event_id, actor_user_id|null, actor_label, action, description, occurred_at, severity, related_service, subject_id}`. `action` is lowercase (`login_failed`, `user_created`, `role_changed`, `asset_updated`, `unauthorized_access`, ...). Severity: Information, Warning, Error, Critical. `source` records how the entry arrived: `service`, `user` or `audit`.
 
@@ -30,7 +30,7 @@ Integrity rules:
 
 | Method and suffix | Access | Body / behavior |
 |---|---|---|
-| `POST /playbooks` | Administrator, Analyst | `name` (unique, case-insensitive), `description`, `category`, `severity`, optional ordered `steps` (`title`, `description`, `assigned_to`, optional `step_order`). Creator and timestamps come from the server |
+| `POST /playbooks` | Administrator | `name` (unique, case-insensitive), `description`, `category`, `severity`, optional ordered `steps` (`title`, `description`, `assigned_to`, optional `step_order`). Creator and timestamps come from the server |
 | `GET /playbooks` | Administrator, Analyst, Auditor | Optional `category`, `severity` filters; each playbook includes its actions and progress |
 | `GET /playbooks/{id}` | Administrator, Analyst, Auditor | Playbook, ordered `actions`, `execution_status` (Not Started, In Progress, Completed), `completed_steps`, `total_steps` |
 | `POST /playbooks/{id}/actions` | Administrator, Analyst | `title`, `description`, `assigned_to`, optional `step_order` (must be the next number) |

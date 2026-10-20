@@ -100,6 +100,7 @@ def test_log_reading_permissions_search_and_deletion(clients):
     c = clients
     admin, admin_h = make(c, "admin", "Security Administrator")
     _, auditor_h = make(c, "auditor", "Security Auditor")
+    _, analyst_h = make(c, "analyst", "Security Analyst")
     employee, employee_h = make(c, "employee")
     service = {"X-Service-Key": AUDIT_KEY}
     for i, (action, sev) in enumerate([("asset_created", "Information"), ("login_failed", "Warning"), ("login_success", "Information")]):
@@ -121,6 +122,12 @@ def test_log_reading_permissions_search_and_deletion(clients):
     assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=auditor_h).status_code == 200
     assert c["logs"].get(f"{PREFIX}/logs/999999", headers=auditor_h).status_code == 404
     assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=auditor_h).status_code == 403
+    # The handout lets analysts retrieve and search logs, but not delete them.
+    assert len(c["logs"].get(f"{PREFIX}/logs", headers=analyst_h).json()) >= 3
+    assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=analyst_h).status_code == 200
+    assert [x["action"] for x in c["logs"].get(f"{PREFIX}/logs/search?action=asset_created", headers=analyst_h).json()] == ["asset_created"]
+    assert c["logs"].get(f"{PREFIX}/logs/user/{employee['id']}", headers=analyst_h).status_code == 200
+    assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=analyst_h).status_code == 403
     assert c["logs"].delete(f"{PREFIX}/logs/{target}", headers=admin_h).status_code == 200
     assert c["logs"].get(f"{PREFIX}/logs/{target}", headers=admin_h).status_code == 404
     deletion = c["logs"].get(f"{PREFIX}/logs/search?action=audit_log_deleted", headers=admin_h).json()
@@ -143,7 +150,7 @@ def test_logs_are_immutable_and_survive_user_deletion(clients):
 
 def test_playbook_ordering_transitions_and_history(clients):
     c = clients
-    _, admin_h = make(c, "admin", "Security Administrator")
+    admin, admin_h = make(c, "admin", "Security Administrator")
     analyst, analyst_h = make(c, "analyst", "Security Analyst")
     other, other_h = make(c, "other", "Security Analyst")
     employee, employee_h = make(c, "employee")
@@ -158,10 +165,12 @@ def test_playbook_ordering_transitions_and_history(clients):
     assert c["playbooks"].post(f"{PREFIX}/playbooks", json={**body, "steps": [{**body["steps"][0], "assigned_to": employee["id"]}]}, headers=admin_h).status_code == 422
     assert c["playbooks"].post(f"{PREFIX}/playbooks", json={**body, "steps": [{**body["steps"][0], "assigned_to": 999999}]}, headers=admin_h).status_code == 422
     assert c["playbooks"].get(f"{PREFIX}/playbooks", headers=admin_h).json() == []  # Rejected creations left nothing behind.
-    created = c["playbooks"].post(f"{PREFIX}/playbooks", json=body, headers=analyst_h)
+    assert c["playbooks"].post(f"{PREFIX}/playbooks", json=body, headers=analyst_h).status_code == 403  # creation is administrator-only
+    assert c["playbooks"].post(f"{PREFIX}/playbooks", json=body, headers=auditor_h).status_code == 403
+    created = c["playbooks"].post(f"{PREFIX}/playbooks", json=body, headers=admin_h)
     assert created.status_code == 201, created.text
     playbook = created.json()
-    assert playbook["created_by"] == analyst["id"] and playbook["total_steps"] == 2 and playbook["execution_status"] == "Not Started"
+    assert playbook["created_by"] == admin["id"] and playbook["total_steps"] == 2 and playbook["execution_status"] == "Not Started"
     assert c["playbooks"].post(f"{PREFIX}/playbooks", json={**body, "name": "phishing RESPONSE"}, headers=admin_h).status_code == 409
     pid = playbook["id"]
     first, second = (a["id"] for a in playbook["actions"])

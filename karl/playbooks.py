@@ -86,7 +86,7 @@ def deliver_later(background_tasks):
 
 @app.post(f"{PREFIX}/playbooks", status_code=201)
 def create_playbook(data: PlaybookCreate, background_tasks: BackgroundTasks, actor=Depends(current_user)):
-    require_role(actor, *EDITORS)
+    require_role(actor, "Security Administrator")  # the handout lists playbook creation for administrators only
     if data.category not in CATEGORIES:
         error(422, "Invalid category")
     if data.severity not in SEVERITIES:

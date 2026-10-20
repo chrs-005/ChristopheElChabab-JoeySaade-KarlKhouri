@@ -7,15 +7,17 @@
 \karlevidence{07-Audit-Logging/05-Karl-Khouri-POST-Reject-User-Chosen-Actor-422.png}{Karl Khouri - POST Reject User-Chosen Actor - An administrator cannot attribute an entry to someone else; HTTP 422.}
 \karlevidence{07-Audit-Logging/06-Karl-Khouri-GET-List-Logs-as-Auditor-200.png}{Karl Khouri - GET List Logs as Auditor - The request carries the auditor's token (Headers tab) and every audit entry is returned with HTTP 200.}
 \karlevidence{07-Audit-Logging/07-Karl-Khouri-GET-Reject-Logs-Without-Token-401.png}{Karl Khouri - GET Reject Logs Without Token - An unauthenticated request is rejected with HTTP 401.}
-\karlevidence{07-Audit-Logging/08-Karl-Khouri-GET-Reject-Analyst-Log-List-403.png}{Karl Khouri - GET Reject Analyst Log List - The same request with the analyst's token is refused with HTTP 403.}
+\karlevidence{07-Audit-Logging/08-Karl-Khouri-GET-Search-Logs-as-Analyst-200.png}{Karl Khouri - GET Search Logs as Analyst - With the analyst's token (Headers tab) the search succeeds with HTTP 200, as the handout allows analysts to retrieve and search audit logs.}
 \karlevidence{07-Audit-Logging/09-Karl-Khouri-GET-Get-Log-by-ID-200.png}{Karl Khouri - GET Get Log by ID - One stored entry is returned with HTTP 200.}
 \karlevidence{07-Audit-Logging/10-Karl-Khouri-GET-Reject-Unknown-Log-ID-404.png}{Karl Khouri - GET Reject Unknown Log ID - An unknown entry returns HTTP 404.}
 \karlevidence{07-Audit-Logging/11-Karl-Khouri-GET-Search-Failed-Logins-200.png}{Karl Khouri - GET Search Logs by Action and Severity - Only failed-login warnings are returned; a failed login has a null actor ID and the attempted username as label.}
 \karlevidence{07-Audit-Logging/12-Karl-Khouri-GET-Reject-Invalid-Date-Filter-422.png}{Karl Khouri - GET Reject Invalid Date Filter - A malformed start date is rejected with HTTP 422.}
 \karlevidence{07-Audit-Logging/13-Karl-Khouri-GET-Logs-for-User-200.png}{Karl Khouri - GET Logs for User - One user's own activity is returned with HTTP 200.}
+\karlevidence{07-Audit-Logging/17-Karl-Khouri-DELETE-Reject-Analyst-Log-Deletion-403.png}{Karl Khouri - DELETE Reject Analyst Log Deletion - Analysts may read logs but not delete them; the analyst's token gets HTTP 403.}
 \karlevidence{07-Audit-Logging/14-Karl-Khouri-DELETE-Delete-Log-200.png}{Karl Khouri - DELETE Delete Log - An administrator deletes an entry with HTTP 200.}
 \karlevidence{07-Audit-Logging/15-Karl-Khouri-GET-Search-Deletion-Record-200.png}{Karl Khouri - GET Search Deletion Record - The deletion itself was recorded as audit\_log\_deleted, naming the removed entry.}
 \karlevidence{07-Audit-Logging/16-Karl-Khouri-DELETE-Reject-Deleting-Deletion-Record-409.png}{Karl Khouri - DELETE Reject Deleting Deletion Record - Deletion records are permanent; HTTP 409.}
+\karlevidence{08-Playbooks/14-Karl-Khouri-POST-Reject-Analyst-Playbook-Creation-403.png}{Karl Khouri - POST Reject Analyst Playbook Creation - Playbook creation is administrator-only; the analyst's token (Headers tab) gets HTTP 403.}
 \karlevidence{08-Playbooks/01-Karl-Khouri-POST-Create-Playbook-with-Two-Steps-201.png}{Karl Khouri - POST Create Playbook with Two Steps - A playbook and its ordered steps assigned to an analyst are created with HTTP 201.}
 \karlevidence{08-Playbooks/02-Karl-Khouri-POST-Reject-Gap-in-Steps-422.png}{Karl Khouri - POST Reject Gap in Steps - Steps that do not start at 1 or skip a number are rejected with HTTP 422.}
 \karlevidence{08-Playbooks/03-Karl-Khouri-POST-Reject-Invalid-Category-422.png}{Karl Khouri - POST Reject Invalid Category - An unsupported category is rejected with HTTP 422.}

@@ -12,7 +12,8 @@ from joey.common import api_error_handler, current_user, db, error, require_role
 from .common import PREFIX, audit_secret, date_range, init_db, parse_time, stored_time
 
 LOG_SEVERITIES = ("Information", "Warning", "Error", "Critical")
-READERS = ("Security Administrator", "Security Auditor")
+# The handout lets analysts retrieve and search audit logs; only administrators delete or add manual entries.
+READERS = ("Security Administrator", "Security Analyst", "Security Auditor")
 
 
 @asynccontextmanager

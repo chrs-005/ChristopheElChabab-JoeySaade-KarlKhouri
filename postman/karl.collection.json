@@ -452,7 +452,7 @@
           ]
         },
         {
-          "name": "Reject analyst log list",
+          "name": "Search logs as analyst",
           "request": {
             "method": "GET",
             "header": [
@@ -461,8 +461,8 @@
                 "value": "Bearer {{analystToken}}"
               }
             ],
-            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
-            "description": "Karl Khouri \u2014 Reject analyst log list. Run against your own backend and inspect the actual response."
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/search?action=login_failed",
+            "description": "Karl Khouri \u2014 Search logs as analyst. Run against your own backend and inspect the actual response."
           },
           "event": [
             {
@@ -470,7 +470,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Forbidden', () => pm.response.to.have.status(403));"
+                  "pm.test('Analysts may search logs', () => pm.response.to.have.status(200));",
+                  "pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"
                 ]
               }
             }
@@ -578,6 +579,31 @@
           ]
         },
         {
+          "name": "Reject analyst log deletion",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/{{logId}}",
+            "description": "Karl Khouri \u2014 Reject analyst log deletion. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Only administrators delete', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Delete log",
           "request": {
             "method": "DELETE",
@@ -659,6 +685,44 @@
     {
       "name": "Security Playbook and Response Automation \u2014 Karl Khouri",
       "item": [
+        {
+          "name": "Reject analyst playbook creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{playbookUrl}}/api/Karl-Khouri/playbooks",
+            "description": "Karl Khouri \u2014 Reject analyst playbook creation. Run against your own backend and inspect the actual response.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phishing containment {{$timestamp}}\",\n  \"description\": \"Contain a reported phishing email\",\n  \"category\": \"Phishing\",\n  \"severity\": \"High\",\n  \"steps\": [\n    {\n      \"title\": \"Block sender\",\n      \"description\": \"Block the sender domain\",\n      \"assigned_to\": \"{{analystId}}\"\n    },\n    {\n      \"title\": \"Purge messages\",\n      \"description\": \"Remove delivered copies\",\n      \"assigned_to\": \"{{analystId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Creation is administrator-only', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "Create playbook",
           "request": {

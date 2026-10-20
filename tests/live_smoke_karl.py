@@ -67,13 +67,13 @@ def main():
             assert {"user_created", "login_success", "login_failed", "role_changed", "asset_created"} <= actions, actions
             failed = check(httpx.get(url("audit_logs", "/logs/search"), params={"action": "login_failed"}, headers=admin, timeout=8), 200, "search failed logins")
             assert failed[0]["actor_user_id"] is None and failed[0]["actor_label"] == "nobody"
-            check(httpx.get(url("audit_logs", "/logs"), headers=analyst_h, timeout=8), 403, "analyst denied log list")
+            check(httpx.get(url("audit_logs", "/logs"), headers=analyst_h, timeout=8), 200, "analyst reads log list")
             check(httpx.get(url("audit_logs", f"/logs/user/{analyst['id']}"), headers=analyst_h, timeout=8), 200, "analyst reads own activity")
 
             print("playbooks")
             playbook = check(httpx.post(url("playbooks", "/playbooks"), json={"name": "Phishing containment", "description": "Contain a reported phishing email", "category": "Phishing", "severity": "High", "steps": [
                 {"title": "Block sender", "description": "Block the sender domain at the gateway", "assigned_to": analyst["id"]},
-                {"title": "Purge messages", "description": "Remove delivered copies", "assigned_to": analyst["id"]}]}, headers=analyst_h, timeout=8), 201, "create playbook with two steps")
+                {"title": "Purge messages", "description": "Remove delivered copies", "assigned_to": analyst["id"]}]}, headers=admin, timeout=8), 201, "create playbook with two steps")
             first, second = (a["id"] for a in playbook["actions"])
             check(httpx.post(url("playbooks", f"/playbooks/{playbook['id']}/actions"), json={"step_order": 4, "title": "Report", "description": "Write report", "assigned_to": analyst["id"]}, headers=admin, timeout=8), 422, "reject out-of-order step")
             check(httpx.put(url("playbooks", f"/actions/{second}/status"), json={"status": "In Progress"}, headers=analyst_h, timeout=8), 409, "reject starting step 2 first")

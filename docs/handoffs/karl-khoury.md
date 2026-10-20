@@ -31,3 +31,9 @@ Bug found while capturing: deleting a playbook let SQLite reuse its step IDs. Th
 Checks: `python -m pytest tests -q` → 71 passed; Newman against nine services → 46 requests, 62 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed; the report compiles with all 43 images.
 
 Remaining: a final team review of the compiled PDF.
+
+## 2026-10-20 — Karl Khouri: permissions aligned with the handout
+
+Changed: analysts may now retrieve and search audit logs (`GET /logs`, `GET /logs/{id}`, `GET /logs/search`, `GET /logs/user/{user_id}`), as the handout allows; deletion and manual entries stay administrator-only. `POST /playbooks` is now administrator-only, as the handout lists creation for administrators only; analysts still add response actions and move their assigned steps. Files: `karl/audit_logs.py`, `karl/playbooks.py`, tests, live smoke, Postman generator/collection, `docs/karl-api.md`, `docs/permissions.md`, report sections.
+
+Checks: `python -m pytest tests -q` → 71 passed (analyst read/search 200, analyst delete 403, analyst/auditor playbook creation 403); Newman against nine services → 48 requests, 65 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed. Screenshots: replaced the now-incorrect "Reject Analyst Log List 403" with "Search Logs as Analyst 200", and added "Reject Analyst Log Deletion 403" and "Reject Analyst Playbook Creation 403" (45 total).

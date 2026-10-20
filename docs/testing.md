@@ -90,3 +90,7 @@ Regenerate Joey's exported files with `python postman/generate.py`. Run `python 
 ### Karl Khouri update, 2026-10-20
 
 Karl's collection now has 46 requests (auditor setup plus screenshot-oriented checks). `python tests/postman_karl.py` → 46 requests, 62 assertions, 0 failures ([output](evidence/karl-postman-newman-2026-10-20.txt)). New regression tests `test_deleted_ids_are_never_reused` and `test_existing_database_is_upgraded_without_losing_rows` cover the playbook/action/audit ID-reuse defect found during screenshot capture. Full suite: 71 passed.
+
+### Karl Khouri permission update, 2026-10-20
+
+Following the handout, analysts can retrieve/search audit logs and only administrators create playbooks. Collection: 48 requests, 65 assertions, 0 failures ([output](evidence/karl-postman-newman-2026-10-20.txt)). Full suite: 71 passed.

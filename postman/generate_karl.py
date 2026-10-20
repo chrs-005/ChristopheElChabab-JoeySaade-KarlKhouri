@@ -45,11 +45,12 @@ logs = [
     request("Repeat same event returns original", "POST", "auditUrl", "/logs", log_event, headers=service, tests=status(200, "Deduplicated") + ["pm.test('Same stored entry', () => pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get('logId'))));"]),
     request("Create manual log as administrator", "POST", "auditUrl", "/logs", {"action": "manual_review", "description": "Reviewed firewall changes", "severity": "Information"}, tests=status(201, "Created") + ["pm.test('Actor comes from token', () => pm.expect(pm.response.json().source).to.eql('user'));"]),
     request("List logs as auditor", "GET", "auditUrl", "/logs", headers=auditor_auth, tests=status(200, "Listed")),
-    request("Reject analyst log list", "GET", "auditUrl", "/logs", headers=analyst_auth, tests=status(403, "Forbidden")),
+    request("Search logs as analyst", "GET", "auditUrl", "/logs/search?action=login_failed", headers=analyst_auth, tests=status(200, "Analysts may search logs") + ["pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"]),
     request("Get log", "GET", "auditUrl", "/logs/{{logId}}", tests=status(200, "Found")),
     request("Reject unknown log ID", "GET", "auditUrl", "/logs/999999999", tests=status(404, "Missing resource")),
     request("Search logs", "GET", "auditUrl", "/logs/search?action=login_failed&severity=Warning", tests=status(200, "Searched") + ["pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"]),
     request("Logs for user", "GET", "auditUrl", "/logs/user/{{userId}}", tests=status(200, "Listed")),
+    request("Reject analyst log deletion", "DELETE", "auditUrl", "/logs/{{logId}}", headers=analyst_auth, tests=status(403, "Only administrators delete")),
     request("Delete log", "DELETE", "auditUrl", "/logs/{{logId}}", tests=status(200, "Deleted")),
     request("Search deletion record", "GET", "auditUrl", "/logs/search?action=audit_log_deleted&subject_id={{logId}}", tests=status(200, "Searched") + ["pm.test('Deletion recorded', () => pm.expect(pm.response.json().length).to.eql(1));", "if (pm.response.code === 200 && pm.response.json().length) pm.environment.set('deletionLogId', pm.response.json()[0].id);"]),
     request("Reject deleting deletion record", "DELETE", "auditUrl", "/logs/{{deletionLogId}}", tests=status(409, "Deletion records are permanent")),
@@ -59,6 +60,7 @@ playbook_body = {"name": "Phishing containment {{$timestamp}}", "description": "
     {"title": "Purge messages", "description": "Remove delivered copies", "assigned_to": "{{analystId}}"}]}
 transition_rejected = ["pm.test('Transition rejected', () => pm.response.to.have.status(409));"]
 playbooks = [
+    request("Reject analyst playbook creation", "POST", "playbookUrl", "/playbooks", playbook_body, headers=analyst_auth, tests=status(403, "Creation is administrator-only")),
     request("Create playbook", "POST", "playbookUrl", "/playbooks", playbook_body, tests=status(201, "Created") + ["if (pm.response.code === 201) { const p = pm.response.json(); pm.environment.set('playbookId', p.id); pm.environment.set('actionId', p.actions[0].id); pm.environment.set('action2Id', p.actions[1].id); }"]),
     request("List playbooks", "GET", "playbookUrl", "/playbooks", tests=status(200, "Listed")),
     request("Get playbook", "GET", "playbookUrl", "/playbooks/{{playbookId}}", tests=status(200, "Found") + ["pm.test('Steps ordered', () => { const s = pm.response.json().actions.map(a => a.step_order); pm.expect(s).to.eql([...s].sort((a, b) => a - b)); });"]),
