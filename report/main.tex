@@ -40,7 +40,7 @@ Christophe ElChabab\par Joey Saade\par Karl Khouri\par
 Date of submission: to be confirmed\par
 \vfill
 \textbf{Draft for team completion}\par
-Christophe's service explanations and actual local execution evidence, and Joey's service explanations and recorded automated checks, are included. Joey's screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
+Service explanations for all three members, Christophe's 94 execution captures and Karl's 43 execution captures are included. Joey's screenshots, final GitHub evidence, Karl's AI-use statement and CREATES feedback remain to be completed. This is not the final common submission.\par
 \end{titlepage}
 \tableofcontents
 \clearpage
@@ -66,7 +66,7 @@ Nine FastAPI processes share a local SQLite database for identity and foreign-ke
 \end{figure}
 The arrows describe the implemented data flow, not independent student authorship of shared code. Users authenticate through Joey's service. Christophe's mutations queue events transactionally; delivery sends them to audit logging and notifications. Karl's reports call the relevant list APIs with the requesting user's token.
 Joey's three processes share signed-token verification and SQLite connections. They keep user, asset and notification tables in one database so owner and recipient foreign keys are checked at write time. Joey's transactional outbox stores welcome notifications and audit events before HTTP delivery; retries use event IDs to avoid duplicate notifications. Other services use the same user and asset identities rather than making separate copies.
-\section{Implementation Details}
+\section{Implementation Details (Christophe ElChabab, Joey Saade, Karl Khouri)}
 \subsection{Users Assets and Notifications (Joey Saade)}
 \input{joey-implementation.tex}
 \subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
@@ -110,6 +110,7 @@ Screenshots were captured by Christophe from his running local environment. Code
 Joey's routes reject missing or invalid tokens with 401 and disallowed roles or cross-user access with 403. Registration rejects an invalid email or privileged public role; asset creation rejects a malformed IP address or absent owner; notification creation rejects an absent recipient, invalid type or severity, or a service call without an event ID. Unique username/email and event-ID constraints back the API checks. Referenced user and asset deletion returns 409. Joey's regression tests also check that a new registration after deletion receives a different ID and that the deleted user's token remains unusable.
 
 \section{API Documentation (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
 All suffixes below follow \texttt{/api/Christophe-ElChabab}. Administrator, Analyst and Auditor mean the Security Administrator, Security Analyst and Security Auditor roles. Employee means Regular Employee.
 
 \begin{small}
@@ -142,9 +143,7 @@ POST & /incidents/\{id\}/notes & Add investigation note & Administrator, assigne
 
 Creation returns 201; successful reads, searches, updates and deletions return 200. Detail responses are objects, lists/searches return arrays, and deletions return a message. Unknown IDs return 404. Error responses contain status and message; validation responses can also contain field-specific errors. Missing authentication returns 401, insufficient permission returns 403, duplicates/invalid transitions return 409, and invalid input/references return 422. SQL values use bound parameters, and accepted filter fields are fixed server-side.
 
-The importable request collection is \texttt{postman/christophe.collection.json}. The public environment template is \texttt{postman/christophe.environment.template.json}. Credentials must be supplied privately; local secrets and access tokens are not submission material.
-
-Detailed real request and response examples appear in the captioned appendix. Import postman/christophe.collection.json with the credential-free environment template, then set private credentials locally. Do not publish access tokens or private environment files.
+Detailed real request and response examples appear in the captioned appendix. Import \path{postman/christophe.collection.json} with the credential-free environment template \path{postman/christophe.environment.template.json}, then set credentials privately. Local secrets, bearer tokens and private environment files are not submission material.
 \input{joey-api.tex}
 \input{karl-api.tex}
 \section{Authentication and Authorization (Christophe ElChabab, Joey Saade)}

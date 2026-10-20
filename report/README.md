@@ -6,6 +6,8 @@ Compile main.tex with XeLaTeX twice, or with Tectonic. The source uses only genu
 
 When building from this repository's report folder, screenshots are read from ../../Christophe-ElChabab-Screenshots. They remain outside Git by Christophe's choice. For an Overleaf upload, use the local ZIP prepared alongside the repository: it contains the same LaTeX source with an evidence folder. Do not upload the private .env, database secrets or Postman credential environment.
 
+The refreshed local ZIP also includes Karl's four report source files and karl-screenshots folder. It contains 94 Christophe/shared-authentication captures and 43 Karl captures, 137 images in total. Upload the ZIP as a new Overleaf project and select main.tex as the main document. Generated PDF and ZIP files are kept outside Git. The report remains a draft until the explicitly pending team evidence is supplied.
+
 main.tex contains the common outline and diagrams. christophe-implementation.tex and joey-implementation.tex contain the respective service explanations; joey-api.tex adds Joey's route table. evidence.tex contains captioned references to Christophe's unchanged images. karl-implementation.tex, karl-api.tex and karl-database.tex contain Karl Khouri's explanations, route table and schema. karl-evidence.tex lists Karl's 43 captioned screenshots, which are committed in report/karl-screenshots/ so the build finds them after a pull; a missing file prints a "Screenshot pending" box instead of failing the build. Joey's own Postman GUI/database screenshots and final Git evidence remain pending; automated CLI output does not replace screenshots.
 
 Tectonic setup source: https://tectonic-typesetting.github.io/book/latest/installation/

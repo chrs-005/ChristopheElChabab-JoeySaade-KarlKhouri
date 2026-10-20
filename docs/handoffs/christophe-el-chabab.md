@@ -1,5 +1,21 @@
 # Christophe ElChabab handoff
 
+## Report polished and local packages refreshed, 2026-10-20
+
+At Christophe's request, Codex made a light report-only pass: corrected the cover's team/evidence summary, named all three contributors in the implementation heading, made each owner's API section visible in the contents, nested Christophe's service explanations consistently, and removed repeated Postman setup text. Preserved teammate explanations, original screenshots and pending items. No application, test, database or Postman files changed.
+
+Compiled both repository sources and the independently extracted Overleaf ZIP successfully. The PDF has 154 pages, including 137 screenshot pages (94 Christophe/shared and 43 Karl). Rendered all pages; visually inspected the narrative/contents layouts and Karl appendix contact sheets. No overfull boxes, undefined references, missing glyph warnings or out-of-page text were found. Three underfull paragraph warnings and the existing duplicate page-anchor warning remain non-fatal. Original screenshots were not edited.
+
+Rebuilt the local PDF and Overleaf ZIP; all 147 ZIP entries (ten sources/readme plus 137 images) were SHA-256 verified against their originals. Prior deliverables were backed up before replacement. Generated deliverables and Christophe's screenshots remain outside Git. This session is for a local report/notes commit only, not a push; no application tests were rerun for these report-only edits (the preceding integrated run passed 71 tests). Joey's images, final Git evidence, Karl's AI-use statement and genuine CREATES completion remain pending; the report is not submission-complete.
+
+## Karl work pulled and regression checked, 2026-10-20
+
+At Christophe's request, inspected and safely fast-forwarded from f51acd9 to d28d2bc, preserving Karl's ee55ad5 implementation/report commit and d28d2bc screenshot commit. No differences in Christophe's service sources, owned tests/Postman artifacts, report/christophe-implementation.tex or report/evidence.tex. Karl's changes add four report sections, 43 committed screenshots, collection cases and AUTOINCREMENT/startup migration for audit-log/playbook/response-action IDs. No application files were edited in this pull/review session.
+
+Ran the existing full regression suite with disposable test databases: 71 passed, 43 dependency deprecation warnings, in 65.33 seconds. No persistent screenshot database was reset or servers restarted. Verified 43 karlevidence references and 43 actual PNG files under report/karl-screenshots, zero missing targets; this count/path check is not a visual review of every image. Karl's handoff reports his live/Newman checks, but those were not rerun here. His AI-use statement, Joey's images, final Git evidence and actual CREATES completion remain pending in the report.
+
+The existing local PDF and Overleaf ZIP were not rebuilt for this pull and remain at the previous formatting-fix revision; the next report packaging step must include Karl's source files and screenshot folder. No commit, push, history rewrite or teammate-source edit occurred. Only these required local session notes were updated after pulling.
+
 ## Report formatting repaired and packages refreshed, 2026-10-20
 
 At Christophe's explicit request, Codex made formatting-only changes to report/main.tex and report/joey-api.tex: loaded xurl, used breakable path formatting for references/evidence filenames, and reduced the route table's final column width by 0.01 linewidth. Joey's wording, permissions, endpoint content and pending evidence are preserved. No service code, API tests, database, Postman collection or original image changed.
