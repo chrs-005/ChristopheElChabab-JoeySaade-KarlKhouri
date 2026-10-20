@@ -1370,6 +1370,56 @@
           ]
         },
         {
+          "name": "Reject analyst full log list",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs",
+            "description": "Karl Khouri \u2014 Reject analyst full log list. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Full listing is administrator/auditor-only', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject analyst reading another user's logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analystToken}}"
+              }
+            ],
+            "url": "{{auditUrl}}/api/Karl-Khouri/logs/user/{{userId}}",
+            "description": "Karl Khouri \u2014 Reject analyst reading another user's logs. Run against your own backend and inspect the actual response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Other user histories are administrator/auditor-only', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Reject playbook with gap in steps",
           "request": {
             "method": "POST",

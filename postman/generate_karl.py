@@ -86,6 +86,8 @@ negative = [
     request("Reject user-chosen log actor", "POST", "auditUrl", "/logs", {"action": "manual_review", "actor_label": "someone_else"}, tests=status(422, "Rejected")),
     request("Reject invalid log date filter", "GET", "auditUrl", "/logs/search?start_date=yesterday", tests=status(422, "Rejected")),
     request("Reject logs without token", "GET", "auditUrl", "/logs", headers=[], tests=status(401, "Authentication required")),
+    request("Reject analyst full log list", "GET", "auditUrl", "/logs", headers=analyst_auth, tests=status(403, "Full listing is administrator/auditor-only")),
+    request("Reject analyst reading another user's logs", "GET", "auditUrl", "/logs/user/{{userId}}", headers=analyst_auth, tests=status(403, "Other user histories are administrator/auditor-only")),
     request("Reject playbook with gap in steps", "POST", "playbookUrl", "/playbooks", {**playbook_body, "steps": [{**playbook_body["steps"][0], "step_order": 2}]}, tests=status(422, "Rejected")),
     request("Reject invalid playbook category", "POST", "playbookUrl", "/playbooks", {**playbook_body, "category": "Weather"}, tests=status(422, "Rejected")),
     request("Reject missing playbook", "GET", "playbookUrl", "/playbooks/999999999", tests=status(404, "Missing resource")),

@@ -67,7 +67,8 @@ def main():
             assert {"user_created", "login_success", "login_failed", "role_changed", "asset_created"} <= actions, actions
             failed = check(httpx.get(url("audit_logs", "/logs/search"), params={"action": "login_failed"}, headers=admin, timeout=8), 200, "search failed logins")
             assert failed[0]["actor_user_id"] is None and failed[0]["actor_label"] == "nobody"
-            check(httpx.get(url("audit_logs", "/logs"), headers=analyst_h, timeout=8), 200, "analyst reads log list")
+            check(httpx.get(url("audit_logs", "/logs"), headers=analyst_h, timeout=8), 403, "analyst denied full log list")
+            check(httpx.get(url("audit_logs", "/logs/search"), params={"action": "login_failed"}, headers=analyst_h, timeout=8), 200, "analyst searches logs")
             check(httpx.get(url("audit_logs", f"/logs/user/{analyst['id']}"), headers=analyst_h, timeout=8), 200, "analyst reads own activity")
 
             print("playbooks")

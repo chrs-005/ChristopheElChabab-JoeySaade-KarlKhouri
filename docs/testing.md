@@ -94,3 +94,7 @@ Karl's collection now has 46 requests (auditor setup plus screenshot-oriented ch
 ### Karl Khouri permission update, 2026-10-20
 
 Following the handout, analysts can retrieve/search audit logs and only administrators create playbooks. Collection: 48 requests, 65 assertions, 0 failures ([output](evidence/karl-postman-newman-2026-10-20.txt)). Full suite: 71 passed.
+
+### Karl Khouri log-permission correction, 2026-10-20
+
+Analysts: `GET /logs/{id}` and `GET /logs/search` allowed; `GET /logs` and other users' `GET /logs/user/{user_id}` refused (403). Collection: 50 requests, 67 assertions, 0 failures. Full suite: 71 passed.
