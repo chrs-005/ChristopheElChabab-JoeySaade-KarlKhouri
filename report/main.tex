@@ -17,12 +17,12 @@
 \IfFileExists{evidence/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{evidence/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../Christophe-ElChabab-Screenshots/#1}}
 \caption{#2}
 \end{figure}\clearpage}
-% Karl Khouri's captures: report/evidence/ or ../../Karl-Khouri-Screenshots/; a missing file shows a pending box.
+% Karl Khouri's captures are committed in report/karl-screenshots/ (report/evidence/ is also checked); a missing file shows a pending box.
 % Portrait pages like the rest of the report; each image spans the page width minus 7 mm on each side.
 \newcommand{\karlshot}[1]{\makebox[\linewidth][c]{\includegraphics[width=\dimexpr\paperwidth-14mm\relax,height=0.86\textheight,keepaspectratio]{#1}}}
 \newcommand{\karlevidence}[2]{%
 \clearpage\begin{figure}[p]\centering
-\IfFileExists{evidence/#1}{\karlshot{evidence/#1}}{\IfFileExists{../../Karl-Khouri-Screenshots/#1}{\karlshot{../../Karl-Khouri-Screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Screenshot pending}\par\vspace{4mm}\normalsize\texttt{#1}}}}}
+\IfFileExists{karl-screenshots/#1}{\karlshot{karl-screenshots/#1}}{\IfFileExists{evidence/#1}{\karlshot{evidence/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Screenshot pending}\par\vspace{4mm}\normalsize\texttt{#1}}}}}
 \caption{#2}
 \end{figure}\clearpage}
 \begin{document}
