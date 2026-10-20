@@ -28,7 +28,7 @@ Karl Khouri \enspace / \enspace Audit Logging, Playbooks, Reports
 \vfill
 {\small\bfseries\color{teal}9 SERVICES \qquad 4 USER ROLES \qquad REST APIs + SQLITE\par}
 \vspace{5mm}
-{\small Review copy. The technical sections and available captures are included. Joey's 27 individual request screenshots, final Git screenshots, the team's handwritten References paragraph and the evidence gaps identified in the report must be completed before submission.\par}
+{\small Review copy. The technical sections and 180 supplied captures are included. The remaining database-structure and endpoint-specific evidence identified in the report must be completed before submission.\par}
 \end{titlepage}
 \hypersetup{pageanchor=true}
 \pagenumbering{roman}
@@ -252,8 +252,8 @@ Christophe ElChabab & \href{https://github.com/chrs-005/ChristopheElChabab-JoeyS
 Karl Khouri & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/ee55ad5}{\code{ee55ad5}} & Report sections, ID-reuse fix and regression tests.\\
 Joey Saade & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/b56ebf6}{\code{b56ebf6}} & Report screenshot manifest, guide and ten screenshots.\\\bottomrule
 \end{tabularx}\end{small}
-These links are useful for navigating the actual work, but they do not replace the handout's required screenshots of Git history and individual contributions.
-\pending{Insert genuine screenshots of the final pushed commit history and each member's contributions, with names and captions.}
+The captured Git history and author-filtered views identify \code{chrs-005} (Christophe ElChabab), \code{JS9872} (Joey Saade) and \code{karlkhoury} (Karl Khouri). These snapshots end at \code{e236431}; later updates are in the live repository history.
+\input{git-evidence.tex}
 
 \subsection{CREATES feedback (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Our team met with CREATES on Friday, 16 October 2026, at 11:30 AM. We discussed good and bad Git practices and how to correct repositories with README files that were too brief or too complicated, or with a missing \code{requirements.txt}. We also discussed how to structure a project report. The CREATES associate reviewed our repository and confirmed that it looked good. The session helped us check that the repository instructions were clear and that the report followed an organized structure.
@@ -262,7 +262,7 @@ Our team met with CREATES on Friday, 16 October 2026, at 11:30 AM. We discussed 
 \label{sec:references}
 We used the instructor's \emph{Final Project Fall 2026-2027--Sprint 1} Word handout to identify the required services, API operations, role permissions, database relationships, execution evidence and report sections. We also referred to the previous EECE 435L labs for database work, API testing with Postman, Git commands and project documentation. These materials helped us apply the practices covered in the labs to the common project.
 
-\pending{Add the team's own handwritten paragraph explaining where and why AI tools were used, as required by the handout.}
+We used Codex (GPT 6.1) and Claude Code (Opus 5.5) to help with coding and trouble shooting errors. We wrote a good chunk of the code and remain responsible for everything in our submission, given that it was all checked and overviewed humanly in the final submission form. AI tools also helped us create the Postman collections.
 
 \clearpage\appendix
 \section{Postman and Database Evidence (Christophe ElChabab)}
@@ -272,8 +272,8 @@ These 94 unchanged captures include two shared-authentication requests, 84 API/i
 
 \section{Postman and Database Evidence (Joey Saade)}
 \label{app:joey}
-Joey has supplied five Postman Runner summaries and five database views. The Runner summaries show methods, URLs, response codes and named assertions; they remain supporting evidence outside the individual image slots below. They do not show request/response JSON bodies. The database images show selected stored records; they do not contain full table definitions. The numbered slots below reserve one image for each of Joey's 27 requests and load the five existing database captures under numbered filenames.
-\pending{Add Joey's detailed request/response views and table-structure captures. Keep the current Runner summaries as supporting evidence.}
+Joey's 32 supplied captures include 27 individual Postman request/response views and five database record queries. They cover the three services, validation and missing-authentication errors, and ordered cleanup. The API captures use sample user 4, while the earlier database queries show sample user 2; they are separate runs and should not be treated as one continuous execution. The asset-history response also includes retained entries from earlier runs. The queued-event image has blank delivery times and does not establish successful audit delivery.
+\pending{Add table-definition screenshots for Users, Assets and Notifications; multiple assets and different asset/notification searches; forbidden user/asset/notification deletions; an unknown username; an empty notification list; an invalid notification ID; and database views before/after marking a notification Read. These are explicit evidence requirements in the handout, not additional endpoints.}
 \begin{landscape}\pagestyle{plain}\input{joey-evidence.tex}\end{landscape}
 
 \section{Postman and Database Evidence (Karl Khouri)}

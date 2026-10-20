@@ -3,7 +3,7 @@
 % Existing folder-run screenshots remain supplementary evidence.
 
 \joeyevidence{01-Users/11.png}{Joey Saade - Register employee - POST creates a regular employee and omits the password hash from the response.}
-\joeyevidence{01-Users/12.png}{Joey Saade - Login - POST authenticates the administrator. Hide the password and access token in the screenshot.}
+\joeyevidence{01-Users/12.png}{Joey Saade - Login - POST authenticates the administrator and returns HTTP 200 with a bearer token and expiry.}
 \joeyevidence{01-Users/13.png}{Joey Saade - Update profile - PUT changes the employee department.}
 \joeyevidence{01-Users/14.png}{Joey Saade - List users - GET returns the user records.}
 \joeyevidence{01-Users/15.png}{Joey Saade - Get user by username - GET returns the registered employee.}
@@ -16,7 +16,7 @@
 \joeyevidence{02-Assets/25.png}{Joey Saade - Search assets - GET filters by name.}
 \joeyevidence{02-Assets/26.png}{Joey Saade - Asset history - GET returns the asset's recorded changes.}
 
-\joeyevidence{03-Notifications/31.png}{Joey Saade - Create notification as service - POST creates an assignment notification. Hide the service key.}
+\joeyevidence{03-Notifications/31.png}{Joey Saade - Create notification as service - POST stores an Unread assignment notification for user 4 with HTTP 201.}
 \joeyevidence{03-Notifications/32.png}{Joey Saade - List user notifications - GET includes the automatic Welcome record.}
 \joeyevidence{03-Notifications/33.png}{Joey Saade - Get notification - GET returns the created assignment.}
 \joeyevidence{03-Notifications/34.png}{Joey Saade - Mark notification read - PUT updates its status.}

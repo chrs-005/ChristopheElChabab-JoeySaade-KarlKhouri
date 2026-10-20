@@ -1,5 +1,13 @@
 # Christophe ElChabab handoff
 
+## Latest report and Joey evidence integration, 2026-10-20
+
+Pulled `2713b52` with a fast-forward. Integrated all 32 numbered Joey captures, four actual Git snapshots, the supplied References paragraph and approved Postman sentence into the report; kept the date, CREATES account and official logo. Corrected stale counts, collection-URL wording and captions. The earlier database screenshots and newer Postman calls are identified as separate runs, not falsely reconciled by ID. Removed the reintroduced root coordination file under Christophe's earlier cleanup instruction; a recovery copy is outside the repository and committed history is preserved.
+
+Checks on the pulled source: 71 tests passed with 43 dependency warnings; nine-service live HTTP check passed, using temporary data only. Report build/audit: 204 pages, 180 actual screenshot pages, 66 valid link destinations, no missing references or out-of-page text; all embedded screenshots pixel-match their originals. No owned or teammate service source, persistent data or original screenshot changed.
+
+Remaining: the report is a review copy until Joey supplies the explicit schema and endpoint-specific cases listed in its appendix and the local `Report-Before-Submission.txt`. The new literal-port Joey collection also needs its isolated runner's ports aligned before a fresh Newman result can be claimed. Next: obtain those genuine captures, rebuild, then package common source, database/scripts, collections, report and repository link for all three students.
+
 ## Report review copy updated, 2026-10-20
 
 Integrated Joey's screenshot push while preserving local commits and teammate history. Revised the common report with a styled cover, linked contents/source/commit references, five architecture/schema/workflow diagrams, complete endpoint/input-output descriptions and three explanations tied to actual captures. Corrected Joey's after-cleanup image path and captions: his five Runner summaries show status/assertions, not JSON bodies, and his five database queries show records rather than table definitions. Blank outbox delivery times are not described as confirmed delivery.

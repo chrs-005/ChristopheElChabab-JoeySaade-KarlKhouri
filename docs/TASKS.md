@@ -1,5 +1,13 @@
 # Canonical task board
 
+## Latest evidence integration, 2026-10-20
+
+Fast-forwarded to Joey's `2713b52`. His 27 individual request/response images and five record queries now resolve and were visually reviewed. Integrated four supplied Git snapshots and the team's References paragraph with its approved Postman sentence; preserved the AUB logo, 20/10/2026 date, CREATES account and teammate service sources. Report source now distinguishes the old database run (sample user 2) from the newer API run (sample user 4).
+
+Actual checks: the pulled revision passed 71 tests (43 dependency warnings) and the nine-service real HTTP integration check in a disposable copy. The rebuilt report has 204 pages, 180 screenshot pages and 66 checked link destinations; all embedded captures pixel-match their originals. No application code, persistent database or source screenshot was edited. The old report/package counts elsewhere below are historical.
+
+Still below DONE: Joey's table-definition views; multiple assets/different asset searches; forbidden user/asset/notification deletions; unknown username; empty notification list; invalid notification ID; additional notification search cases; database before/after marking a notification Read. These are handout evidence requirements, not new APIs. The local `Report-Before-Submission.txt` lists exact requests. Joey's newly literal collection ports and disposable runner ports differ; its earlier successful Newman transcript is historical, not a fresh check of the new export. Next: Joey supplies the missing real cases, then rebuild and assemble the common submission.
+
 ## Report review copy updated, 2026-10-20
 
 Integrated Joey's screenshot push while preserving local commits and teammate history. Revised the common report with a styled cover, linked contents/source/commit references, five architecture/schema/workflow diagrams, complete endpoint/input-output descriptions and three explanations tied to actual captures. Corrected Joey's after-cleanup image path and captions: his five Runner summaries show status/assertions, not JSON bodies, and his five database queries show records rather than table definitions. Blank outbox delivery times are not described as confirmed delivery.

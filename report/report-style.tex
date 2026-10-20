@@ -40,6 +40,10 @@
 \newcommand{\pending}[1]{\par\noindent\begin{minipage}{\linewidth}\color{warm}\textbf{To complete before submission:} #1\end{minipage}\par}
 \newcommand{\repolink}[2]{\href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/blob/main/#1}{#2}}
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\gitevidence}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{git-screenshots/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{git-screenshots/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../GitHub-Screenshots/#1}}
+\caption{#2}\end{figure}\clearpage}
 \tikzset{reportbox/.style={draw=navy!50,fill=ice,rounded corners=2pt,align=center,font=\small,text width=43mm,minimum height=15mm,inner sep=5pt},reportarrow/.style={-{Latex[length=2mm]},draw=teal,thick}}
 \newcommand{\evidencefigure}[2]{%
 \clearpage\begin{figure}[p]\centering
