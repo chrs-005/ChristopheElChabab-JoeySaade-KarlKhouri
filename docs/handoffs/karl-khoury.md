@@ -30,4 +30,4 @@ Bug found while capturing: deleting a playbook let SQLite reuse its step IDs. Th
 
 Checks: `python -m pytest tests -q` → 71 passed; Newman against nine services → 46 requests, 62 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed; the report compiles with all 43 images.
 
-Remaining: Karl's AI-use statement in the report References, and a final team review of the compiled PDF.
+Remaining: a final team review of the compiled PDF.

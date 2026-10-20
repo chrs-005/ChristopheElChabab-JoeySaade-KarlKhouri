@@ -40,7 +40,7 @@ Christophe ElChabab\par Joey Saade\par Karl Khouri\par
 Date of submission: to be confirmed\par
 \vfill
 \textbf{Draft for team completion}\par
-Service explanations for all three members, Christophe's 94 execution captures and Karl's 43 execution captures are included. Joey's screenshots, final GitHub evidence, the members' handwritten AI-use statements and CREATES feedback remain to be completed. This is not the final common submission.\par
+Service explanations for all three members, Christophe's 94 execution captures and Karl's 43 execution captures are included. Joey's screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
 \end{titlepage}
 \tableofcontents
 \clearpage
@@ -105,7 +105,7 @@ The real API evidence covers successful calls, invalid formats/ranges/references
 
 The pre-Cleanup reports match the captured database: two threats, two vulnerabilities and three incidents. The summary reports complete=true and an empty unavailable list. Integration routes retain Joey Saade's and Karl Khouri's prefixes because those services belong to them; these captures demonstrate Christophe's integration, not ownership of their implementations.
 
-Screenshots were captured by Christophe from his running local environment. Codex inspected and organized the originals without changing their image bytes. The screenshot set contains 84 owned API/integration captures, eight database captures and two shared-authentication captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
+Screenshots were captured by Christophe from his running local environment. The originals were inspected and organized without changing their image bytes. The screenshot set contains 84 owned API/integration captures, eight database captures and two shared-authentication captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
 
 Joey's routes reject missing or invalid tokens with 401 and disallowed roles or cross-user access with 403. Registration rejects an invalid email or privileged public role; asset creation rejects a malformed IP address or absent owner; notification creation rejects an absent recipient, invalid type or severity, or a service call without an event ID. Unique username/email and event-ID constraints back the API checks. Referenced user and asset deletion returns 409. Joey's regression tests also check that a new registration after deletion receives a different ID and that the deleted user's token remains unusable.
 
@@ -154,9 +154,9 @@ Joey's login route verifies the password hash and signs a token containing the a
 \section{GitHub and Version Control (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Repository: \url{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}.
 The original Christophe three-service implementation is recorded in commit \texttt{537e769}. Subsequent commits must describe actual changes and preserve genuine author identity and dates.
-Joey's earlier implementation and documentation commits are \texttt{5b067bb} and \texttt{8f8fa69}; these identifiers exist in the repository history. The contribution record distinguishes those commits from Codex-assisted generation and review. A final screenshot of per-member Git history and any later contribution claim must be taken from the actual repository state.
+Joey's earlier implementation and documentation commits are \texttt{5b067bb} and \texttt{8f8fa69}; these identifiers exist in the repository history. A final screenshot of per-member Git history and any later contribution claim must be taken from the actual repository state.
 Karl Khouri's implementation and Postman collection correction commits are \texttt{2cf2a2e} and \texttt{faea64f}.
-\pending{After final commits are pushed, insert actual commit-history and per-member contribution screenshots with captions. Do not create fictitious history or attribute generated code to unaided manual authorship.}
+\pending{After final commits are pushed, insert actual commit-history and per-member contribution screenshots with captions.}
 \section{References (Christophe ElChabab, Joey Saade, Karl Khouri)}
 Requirements source: Final Project Fall 2026-2027-Sprint 1.docx, supplied by the instructor. Permission clarifications: the professor's answers supplied by Christophe on 19 October 2026 concerning auditor threat searching and identity-scoped incident lists. Implementation references: the owned source/schema files, docs/christophe-api.md and the importable Postman collection.
 

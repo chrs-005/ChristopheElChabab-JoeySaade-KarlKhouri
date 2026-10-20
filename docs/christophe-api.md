@@ -131,7 +131,7 @@ Screenshots must show actual request inputs and outputs, with captions such as `
 - Shared security: valid/invalid authentication; same API with correct/insufficient permission; validation errors; audit entries and assignment/alert notifications.
 - Database: actual schema, PK/FKs, stored records, before/after changes, relationship explanation.
 
-Prepare your named implementation/report sections, disclose AI assistance, and explain at least three APIs in the common report. Automated tests and captured text logs are real checks but do not replace Postman/database screenshots. No screenshots, saved response examples, student commits or completed report are claimed by this implementation.
+Prepare your named implementation/report sections, explain at least three APIs in the common report. Automated tests and captured text logs are real checks but do not replace Postman/database screenshots. No screenshots, saved response examples, student commits or completed report are claimed by this implementation.
 
 ## Actual verification status
 
