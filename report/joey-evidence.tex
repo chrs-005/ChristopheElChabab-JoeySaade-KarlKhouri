@@ -7,10 +7,10 @@
 \joeyevidence{03-Notifications/Notification-Management-Runner.png}{Joey Saade - Notification and Alert Management collection run - Service creation, recipient list, detail, read update and search requests pass.}
 \joeyevidence{04-Negative/Negative-Checks-Runner.png}{Joey Saade - Negative checks collection run - Invalid input, missing authentication and missing resources return the expected 401, 403, 404 and 422 responses.}
 
-\joeyevidence{05-Database/Users-Database.png}{Joey Saade - Users database evidence - SQLite shows the users schema and stored administrator/sample user records without exposing password hashes.}
-\joeyevidence{05-Database/Assets-Database.png}{Joey Saade - Assets database evidence - SQLite shows the asset owner relationship, stored asset and create/update history.}
-\joeyevidence{05-Database/Notifications-Database.png}{Joey Saade - Notifications database evidence - SQLite shows recipient and event-ID fields plus the stored Welcome and Assigned notifications.}
-\joeyevidence{05-Database/Outbox-and-User-IDs-Database.png}{Joey Saade - Outbox and user ID evidence - SQLite shows retained event IDs, delivery status and issued user IDs.}
+\joeyevidence{05-Database/Users-Database.png}{Joey Saade - Users database records - Selected columns show the active administrator and sample account, whose role has been changed to Security Analyst. Password hashes are not displayed.}
+\joeyevidence{05-Database/Assets-Database.png}{Joey Saade - Asset records and history - Asset 1 belongs to user 2, is Under Maintenance, and has create/update history entries. This is a record query, not a schema capture.}
+\joeyevidence{05-Database/Notifications-Database.png}{Joey Saade - Notification records - User 2 has an Unread Welcome notification and a Read incident-assignment notification, with retained event IDs.}
+\joeyevidence{05-Database/Outbox-and-User-IDs-Database.png}{Joey Saade - Queued events and issued user IDs - The selected outbox rows have blank delivery times; this image shows queued events, not confirmed audit delivery. User IDs 1 and 2 remain allocated.}
 
 \joeyevidence{06-Cleanup/Cleanup-Runner.png}{Joey Saade - Cleanup collection run - Asset, created notification, Welcome notification and user deletion all return HTTP 200 in dependency order.}
-\joeyevidence{05-Database/After-Cleanup-Database.png}{Joey Saade - Database after Cleanup - The sample user and asset are gone while asset history and allocated user IDs remain.}
+\joeyevidence{06-Cleanup/After-Cleanup-Database.png}{Joey Saade - Database after Cleanup - Only the administrator remains, the asset query is empty, and create/update/delete asset history plus allocated IDs 1 and 2 are retained.}

@@ -1,0 +1,56 @@
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=22mm,headheight=15pt]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{graphicx,array,longtable,booktabs,caption,pdflscape,tikz,float,tabularx}
+\usepackage{titlesec,fancyhdr,listings,enumitem}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\usepackage{xurl}
+\definecolor{navy}{HTML}{17324D}
+\definecolor{teal}{HTML}{126E75}
+\definecolor{ice}{HTML}{EDF4F7}
+\definecolor{ink}{HTML}{243444}
+\definecolor{muted}{HTML}{526371}
+\definecolor{warm}{HTML}{935B21}
+\usepackage[colorlinks=true,linkcolor=navy,urlcolor=teal,citecolor=teal,bookmarksnumbered=true]{hyperref}
+\hypersetup{pdftitle={Sprint I - Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab, Joey Saade, Karl Khouri}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.2}
+\setcounter{tocdepth}{2}
+\raggedbottom
+\titleformat{\section}{\Large\bfseries\raggedright\color{navy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\raggedright\color{teal}}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\raggedright\color{navy}}{\thesubsubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{17pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{5pt}
+\titlespacing*{\subsubsection}{0pt}{10pt}{3pt}
+\captionsetup{font=small,labelfont={bf,color=navy},labelsep=period,justification=raggedright,singlelinecheck=false}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{muted}EECE 435L \quad Sprint I}
+\fancyhead[R]{\small\color{muted}Security Incident Management}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlist[itemize]{leftmargin=16pt,itemsep=2pt,topsep=3pt}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,backgroundcolor=\color{ice},frame=single,rulecolor=\color{ice},framesep=7pt,aboveskip=8pt,belowskip=8pt}
+\newcommand{\pending}[1]{\par\noindent\begin{minipage}{\linewidth}\color{warm}\textbf{To complete before submission:} #1\end{minipage}\par}
+\newcommand{\repolink}[2]{\href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/blob/main/#1}{#2}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\tikzset{reportbox/.style={draw=navy!50,fill=ice,rounded corners=2pt,align=center,font=\small,text width=43mm,minimum height=15mm,inner sep=5pt},reportarrow/.style={-{Latex[length=2mm]},draw=teal,thick}}
+\newcommand{\evidencefigure}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{evidence/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{evidence/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../Christophe-ElChabab-Screenshots/#1}}
+\caption{#2}\label{evidence:#1}\end{figure}\clearpage}
+\newcommand{\karlshot}[1]{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{#1}}
+\newcommand{\karlevidence}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{karl-screenshots/#1}{\karlshot{karl-screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering Screenshot pending: \path{#1}}}}
+\caption{#2}\end{figure}\clearpage}
+\newcommand{\joeyevidence}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{joey-screenshots/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{joey-screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering Screenshot pending: \path{#1}}}}
+\caption{#2}\end{figure}\clearpage}

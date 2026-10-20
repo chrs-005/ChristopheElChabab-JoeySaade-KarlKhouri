@@ -1,5 +1,13 @@
 # Contribution record
 
+## Report review copy updated, 2026-10-20
+
+Integrated Joey's screenshot push while preserving local commits and teammate history. Revised the common report with a styled cover, linked contents/source/commit references, five architecture/schema/workflow diagrams, complete endpoint/input-output descriptions and three explanations tied to actual captures. Corrected Joey's after-cleanup image path and captions: his five Runner summaries show status/assertions, not JSON bodies, and his five database queries show records rather than table definitions. Blank outbox delivery times are not described as confirmed delivery.
+
+Checks: repository and extracted portable ZIP compile successfully; PDF has 170 pages, 147 screenshot pages and 70 valid local link targets. All 147 embedded images pixel-match the originals in manifest order; all 161 ZIP entries (14 sources/readme plus 147 images) match source hashes. All pages rendered, critical narrative/diagram/table/evidence layouts visually reviewed; no overfull boxes, missing references or out-of-page text found. Five underfull paragraph warnings and the local fontconfig message are non-fatal. No application/test/Postman code, persistent database or screenshot originals changed, and no runtime tests rerun for this report-only work.
+
+Remaining: actual submission date, handwritten References paragraph, genuine final Git/contribution screenshots, CREATES date/attendance/feedback, Joey's detailed request-response/schema evidence and his queued-event delivery review. Christophe explicitly assigned the audit Analyst read/search and playbook-create permission differences to Karl; those fixes remain pending and his code is untouched. The polished PDF is a review copy, not a completed submission. The reference-paragraph example and remaining-checks list are local files outside Git.
+
 ## Repository coordination-file cleanup, 2026-10-20
 
 At Christophe's explicit request, removed the root coordination file from the current tracked tree and removed its link from CONTRIBUTING.md. Kept a recovery copy outside the repository; the prior committed version remains recoverable through Git. This housekeeping did not change application sources, tests, screenshots or report contents. No Git history rewrite, remote merge or push. Existing local screenshot-audit notes are preserved. Checks: current tracked-file references and diff whitespace review. No runtime tests required for documentation-only deletion. These changes remain uncommitted pending the next requested Git step.

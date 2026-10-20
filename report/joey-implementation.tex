@@ -1,4 +1,4 @@
-Joey Saade's three FastAPI processes run on ports 8001--8003 and expose the required routes under \texttt{/api/Joey-Saade}. They share a SQLite database and authentication code. The source files are \texttt{joey/users.py}, \texttt{joey/assets.py}, \texttt{joey/notifications.py}, \texttt{joey/common.py} and \texttt{joey/schema.sql}. Their request and response contract is documented in \texttt{docs/joey-api.md}.
+The Users, Assets and Notifications services run on ports 8001--8003 under \path{/api/Joey-Saade}. They share authentication code and SQLite storage. The implementation is in \repolink{joey/users.py}{users.py}, \repolink{joey/assets.py}{assets.py}, \repolink{joey/notifications.py}{notifications.py} and \repolink{joey/common.py}{common.py}; \repolink{joey/schema.sql}{schema.sql} defines the tables.
 
 \subsubsection{Users and Identity (Joey Saade)}
 
@@ -20,6 +20,6 @@ Notifications store recipient ID, title, message, type, severity, read status an
 
 Registration queues a Welcome notification in the same database transaction as the new user. User, asset and notification mutations also queue audit events. After commit, the outbox worker sends notification and audit events over HTTP to the respective services. Failed deliveries stay in the outbox for retry. The ordered Postman collection reads records before cleanup and deletes the sample asset and its notifications before deleting the sample user, preserving foreign-key integrity.
 
-\subsubsection{Recorded checks and remaining evidence (Joey Saade)}
+\subsubsection{Recorded checks and captured results (Joey Saade)}
 
-The saved Joey focused test output records seven passing tests, including the deleted-user ID regression. A saved Newman run of Joey's exported collection against nine actual local service processes records 27 requests, 29 assertions and zero failures. These are automated execution records, not Postman GUI or database screenshots. Joey's own real screenshots and their captions must be added to the evidence appendix after capture.
+The saved focused test output records seven passing tests, including the deleted-user ID regression. A saved Newman run of Joey's exported collection against nine local service processes records 27 requests, 29 assertions and zero failures. His ten supplied images are included in Appendix~\ref{app:joey}: five Postman Runner summaries and five database views. The Runner images show response codes and named tests, while the database images show the updated user role, asset history, notification state and cleanup results. Detailed request/response bodies and table-definition captures are still needed to match the handout's evidence requirements. The outbox image shows queued audit events with blank delivery times, so it is not presented as proof of successful delivery.

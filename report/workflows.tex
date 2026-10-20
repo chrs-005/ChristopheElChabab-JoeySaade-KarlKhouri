@@ -1,0 +1,28 @@
+\subsection{Incident, remediation and response workflows (Christophe ElChabab, Karl Khouri)}
+The handout gives different lifecycles to incidents and vulnerabilities. In particular, an incident is Mitigated, while a vulnerability moves to In Progress. We keep those values separate instead of using one shared status list. Response actions have their own shorter sequence. A request cannot skip a state or move backwards.
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[state/.style={draw=navy!50,fill=ice,rounded corners=2pt,align=center,font=\small,text width=24mm,minimum height=11mm,inner sep=3pt},>=Latex]
+\node[anchor=west,font=\small\bfseries,text=navy] at (-1.4,0.9) {Incidents};
+\node[state] (i1) at (0,0) {Open};
+\node[state] (i2) at (3.1,0) {Under\\Investigation};
+\node[state] (i3) at (6.2,0) {Mitigated};
+\node[state] (i4) at (9.3,0) {Resolved};
+\node[state] (i5) at (12.4,0) {Closed};
+\node[anchor=west,font=\small\bfseries,text=navy] at (-1.4,-1.1) {Vulnerabilities};
+\node[state] (v1) at (0,-2) {Open};
+\node[state] (v2) at (3.1,-2) {Under\\Investigation};
+\node[state] (v3) at (6.2,-2) {In Progress};
+\node[state] (v4) at (9.3,-2) {Resolved};
+\node[state] (v5) at (12.4,-2) {Closed};
+\node[anchor=west,font=\small\bfseries,text=navy] at (-1.4,-3.1) {Response actions};
+\node[state] (p1) at (0,-4) {Pending};
+\node[state] (p2) at (3.1,-4) {In Progress};
+\node[state] (p3) at (6.2,-4) {Completed};
+\foreach \a/\b in {i1/i2,i2/i3,i3/i4,i4/i5,v1/v2,v2/v3,v3/v4,v4/v5,p1/p2,p2/p3}{\draw[reportarrow] (\a) -- (\b);}
+\end{tikzpicture}
+\caption{Christophe ElChabab - Required status workflows - Incident and vulnerability updates follow every arrow. Karl Khouri's response actions also require all earlier steps to be completed before the next step starts.}
+\label{fig:workflows}
+\end{figure}
+
+For incidents, the server records the resolution time at Resolved and retains it at Closed. Vulnerabilities follow the same default, but also accept a valid timezone-aware resolution date between creation and the current time on a Resolved/Closed record. Response actions record start/completion times and who made each change.

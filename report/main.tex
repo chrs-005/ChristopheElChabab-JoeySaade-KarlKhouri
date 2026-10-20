@@ -1,191 +1,282 @@
 \documentclass[11pt,a4paper]{article}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[margin=23mm]{geometry}
-\usepackage{graphicx,array,longtable,booktabs,caption,pdflscape,tikz,float}
-\usetikzlibrary{positioning,arrows.meta}
-\usepackage{xurl}
-\usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={Sprint I Security Incident Detection and Response Management System},pdfauthor={Christophe ElChabab, Joey Saade, Karl Khouri}}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt}
-\setlength{\emergencystretch}{3em}
-\captionsetup{font=small,labelfont=bf}
-\newcommand{\pending}[1]{\par\textbf{Pending team input:} #1\par}
-\newcommand{\evidencefigure}[2]{%
-\clearpage\begin{figure}[p]\centering
-\IfFileExists{evidence/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{evidence/#1}}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{../../Christophe-ElChabab-Screenshots/#1}}
-\caption{#2}
-\end{figure}\clearpage}
-% Karl Khouri's captures are committed in report/karl-screenshots/ (report/evidence/ is also checked); a missing file shows a pending box.
-% Portrait pages like the rest of the report; each image spans the page width minus 7 mm on each side.
-\newcommand{\karlshot}[1]{\makebox[\linewidth][c]{\includegraphics[width=\dimexpr\paperwidth-14mm\relax,height=0.86\textheight,keepaspectratio]{#1}}}
-\newcommand{\karlevidence}[2]{%
-\clearpage\begin{figure}[p]\centering
-\IfFileExists{karl-screenshots/#1}{\karlshot{karl-screenshots/#1}}{\IfFileExists{evidence/#1}{\karlshot{evidence/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Screenshot pending}\par\vspace{4mm}\normalsize\texttt{#1}}}}}
-\caption{#2}
-\end{figure}\clearpage}
-% Joey's PNGs load from report/joey-screenshots/. Missing captures show a named box.
-\newcommand{\joeyevidence}[2]{%
-\clearpage\begin{figure}[p]\centering
-\IfFileExists{joey-screenshots/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{joey-screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Joey screenshot pending}\par\vspace{4mm}\normalsize\texttt{joey-screenshots/\detokenize{#1}}}}}
-\caption{#2}
-\end{figure}\clearpage}
+\input{report-style.tex}
 \begin{document}
+\hypersetup{pageanchor=false}
 \begin{titlepage}
-\centering
-{\Large American University of Beirut\par}
-{\large EECE 435L\par}
-\vspace{15mm}
-{\LARGE\bfseries Security Incident Detection and Response Management System\par}
-\vspace{8mm}
-{\Large Sprint I Report\par}
-\vspace{12mm}
-Christophe ElChabab\par Joey Saade\par Karl Khouri\par
+\color{ink}
+{\large American University of Beirut\par}
+{\color{muted}EECE 435L \enspace / \enspace Software Tools Lab\par}
+\vspace{22mm}
+{\small\bfseries\color{teal}FINAL PROJECT \quad SPRINT I\par}
+\vspace{5mm}
+{\fontsize{28}{33}\selectfont\bfseries\color{navy}Security Incident Detection\par and Response\par Management System\par}
+\vspace{7mm}
+{\Large Backend implementation and testing\par}
+\vspace{16mm}
+\begingroup\setlength{\fboxsep}{12pt}
+\colorbox{ice}{\begin{minipage}{\dimexpr\textwidth-24pt\relax}
+{\bfseries\color{navy}Project team}\par\vspace{4pt}
+Christophe ElChabab \enspace / \enspace Threats, Vulnerabilities, Incidents\par
+Joey Saade \enspace / \enspace Users, Assets, Notifications\par
+Karl Khouri \enspace / \enspace Audit Logging, Playbooks, Reports
+\end{minipage}}\endgroup
 \vspace{10mm}
-Date of submission: to be confirmed\par
+\textbf{Submission date:} to be completed before upload\par
 \vfill
-\textbf{Draft for team completion}\par
-Service explanations for all three members, Christophe's 94 execution captures and Karl's 43 execution captures are included. Joey's screenshots, final GitHub evidence and CREATES feedback remain to be completed. This is not the final common submission.\par
+{\small\bfseries\color{teal}9 SERVICES \qquad 4 USER ROLES \qquad REST APIs + SQLITE\par}
+\vspace{5mm}
+{\small Review copy. The technical sections and 147 supplied captures are included. Final Git screenshots, the team's References paragraph, CREATES feedback and the evidence gaps identified in the report must be completed before submission.\par}
 \end{titlepage}
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
 \tableofcontents
 \clearpage
+\pagenumbering{arabic}
+
 \section{Introduction (Christophe ElChabab, Joey Saade)}
-The system organizes security incident reporting, investigation and response. It links affected assets to vulnerabilities and incidents, maintains threat indicators, records security activity, notifies users and generates reports.
-Sprint I implements backend APIs and persistent storage rather than a graphical interface. The goals are validated input, authenticated role-based access, traceable investigation workflows and API integration across the nine services.
-Joey's services provide the identity, asset and notification records used by the rest of the backend. Identity establishes the caller and current role, assets give incidents and vulnerabilities a concrete affected resource, and notifications deliver assignments and alerts to recipients.
-\section{System Architecture (Christophe ElChabab, Joey Saade)}
-Nine FastAPI processes share a local SQLite database for identity and foreign-key relationships. Services expose owner-prefixed routes. Audit and notification events are delivered over HTTP using service credentials; reports retrieve data through service APIs.
-\begin{figure}[H]\centering
-\begin{tikzpicture}[box/.style={draw,rounded corners,align=center,font=\small,text width=43mm,minimum height=13mm},>=Latex]
-\node[box] (j) {Joey Saade\\Users 8001\\Assets 8002\\Notifications 8003};
-\node[box,right=10mm of j] (c) {Christophe ElChabab\\Threats 8004\\Vulnerabilities 8005\\Incidents 8006};
-\node[box,right=10mm of c] (k) {Karl Khouri\\Audit logs 8007\\Playbooks 8008\\Reports 8009};
-\node[box,below=23mm of c,text width=75mm] (d) {Shared SQLite database\\Primary and foreign key constraints};
-\draw[<->] (j) -- node[above,font=\scriptsize]{HTTP} (c);
-\draw[<->] (c) -- node[above,font=\scriptsize]{HTTP} (k);
-\draw[->] (j.south) |- (d.west);
-\draw[->] (c.south) -- (d.north);
-\draw[->] (k.south) |- (d.east);
-\end{tikzpicture}
-\caption{Christophe ElChabab - System architecture - Shows service ownership, ports, HTTP integration and shared storage.}
-\end{figure}
-The arrows describe the implemented data flow, not independent student authorship of shared code. Users authenticate through Joey's service. Christophe's mutations queue events transactionally; delivery sends them to audit logging and notifications. Karl's reports call the relevant list APIs with the requesting user's token.
-Joey's three processes share signed-token verification and SQLite connections. They keep user, asset and notification tables in one database so owner and recipient foreign keys are checked at write time. Joey's transactional outbox stores welcome notifications and audit events before HTTP delivery; retries use event IDs to avoid duplicate notifications. Other services use the same user and asset identities rather than making separate copies.
-\section{Implementation Details (Christophe ElChabab, Joey Saade, Karl Khouri)}
-\subsection{Users Assets and Notifications (Joey Saade)}
-\input{joey-implementation.tex}
-\subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
-\input{christophe-implementation.tex}
-\subsection{Audit Logging Playbooks and Reports (Karl Khouri)}
-\input{karl-implementation.tex}
-\section{Database Design (Christophe ElChabab, Joey Saade, Karl Khouri)}
-Christophe's four owned tables use integer primary keys. Threats enforce uniqueness on (type, value). Vulnerabilities reference assets.id. Incidents reference users.id through reporter\_id and assigned\_to, and assets.id through asset\_id. Investigation notes reference incidents.id and users.id through analyst\_id. One asset can have many vulnerabilities and incidents; one reporter can submit many incidents; one analyst can have many assignments/notes; one incident can contain many notes.
+\label{sec:introduction}
+\textbf{Project overview.} A reported security problem needs more than a description: the team must know which asset is affected, who is investigating it, what has already been done and whether the issue is resolved. Our backend keeps those records together and controls who can read or change them.
 
-User/asset references restrict deletion while still referenced. Note rows specify ON DELETE CASCADE for their incident foreign key. Severity, CVSS and lifecycle CHECK constraints supplement API validation. Resolution dates are nullable until resolution. The schema captures below display the actual table definitions, including primary and foreign keys. The record captures were taken before the authorized threat/vulnerability Cleanup requests.
+The system covers the nine services in the Sprint I handout. Employees report incidents, analysts investigate assigned incidents, administrators manage records and assignments, and auditors review the information without changing it. Threat indicators and vulnerabilities give context to investigations. Notifications, audit records and reports make the resulting activity visible to the appropriate users.
+
+\textbf{Scope and objectives.} This sprint is backend-only; there is no frontend application. It extends the API, database, documentation and Git work from the earlier labs into a team project. Our main objectives are to:
+\begin{itemize}
+\item provide the required REST endpoints with each owner's full name in the route;
+\item store related records with primary keys, foreign keys and validation checks;
+\item authenticate callers and enforce both role and record-level permissions;
+\item test valid requests, invalid input and forbidden operations in Postman;
+\item demonstrate service integration and record each member's work in Git.
+\end{itemize}
+
+\section{System Architecture (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:architecture}
+\textbf{Overall design.} Each service is a separate FastAPI process with its own HTTP port. The local implementation uses one SQLite file so references to users and assets remain consistent across the services. Services also communicate over HTTP: they deliver audit events and notifications, and the Reports service calls the other services' list APIs. This is a shared-database local design, not nine independently deployed databases.
 
 \begin{figure}[H]\centering
-\begin{tikzpicture}[box/.style={draw,align=left,font=\small,text width=43mm,minimum height=13mm},>=Latex]
-\node[box] (u) {users\\PK id};
-\node[box,right=18mm of u] (a) {assets\\PK id\\FK owner\_id};
-\node[box,below=14mm of u] (i) {incidents\\PK id\\FK reporter\_id\\FK assigned\_to\\FK asset\_id};
-\node[box,below=14mm of a] (v) {vulnerabilities\\PK id\\FK asset\_id};
-\node[box,below=18mm of i] (n) {investigation\_notes\\PK id\\FK incident\_id, analyst\_id};
-\node[box,below=18mm of v] (t) {threats\\PK id\\UNIQUE type, value};
-\draw[->] (a.west) -- (u.east);
-\draw[->] (i.north) -- (u.south);
-\draw[->] (i.east) -- ++(5mm,0) |- (a.south west);
-\draw[->] (v.north) -- (a.south);
-\draw[->] (n.north) -- (i.south);
-\draw[->] (n.west) -- ++(-9mm,0) |- (u.west);
+\begin{tikzpicture}[>=Latex]
+\node[reportbox] (j) {\textbf{Joey Saade}\\Users :8001\\Assets :8002\\Notifications :8003};
+\node[reportbox,right=8mm of j] (c) {\textbf{Christophe ElChabab}\\Threats :8004\\Vulnerabilities :8005\\Incidents :8006};
+\node[reportbox,right=8mm of c] (k) {\textbf{Karl Khouri}\\Audit logs :8007\\Playbooks :8008\\Reports :8009};
+\node[reportbox,below=24mm of c,text width=92mm] (d) {\textbf{Shared SQLite storage}\\User and asset references; service-owned tables; queued events};
+\draw[<->,draw=teal,thick] (j) -- node[above,font=\scriptsize]{HTTP} (c);
+\draw[<->,draw=teal,thick] (c) -- node[above,font=\scriptsize]{HTTP} (k);
+\draw[<->,draw=teal,thick] (j.north) to[bend left=25] node[above,font=\scriptsize]{Audit delivery / report requests over HTTP} (k.north);
+\draw[reportarrow] (j.south) |- (d.west);
+\draw[reportarrow] (c.south) -- (d.north);
+\draw[reportarrow] (k.south) |- (d.east);
 \end{tikzpicture}
-\caption{Christophe ElChabab - Owned service schema - Arrows point from foreign-key tables to referenced tables. Users and Assets belong to Joey's services.}
+\caption{Christophe ElChabab - System architecture - Nine service processes communicate through APIs and share local storage. The ports identify the process; the route prefix identifies its owner.}
+\label{fig:architecture}
 \end{figure}
-The appendix contains actual SQL table definitions and rows with column labels for all four Christophe tables.
-
-Joey's \texttt{users} table has a unique username and email, password hash, role, status and timestamps. \texttt{assets.owner\_id} and \texttt{notifications.user\_id} reference users; both restrict deletion while referenced. The \texttt{asset\_history} table retains the original asset ID and before/after JSON snapshots when a live asset is deleted. Notification \texttt{event\_id} is unique for retry deduplication. The \texttt{outbox} table holds destination, payload, delivery attempts and delivery time. \texttt{user\_id\_allocations} retains issued account IDs, so deleting the highest numbered user cannot reuse its token subject or welcome-event key. Joey's schema and relationships are recorded in \texttt{joey/schema.sql}; real Joey database screenshots remain pending.
-\input{karl-database.tex}
-\pending{Add Joey's real database captures.}
-\section{Error Handling and Validation (Christophe ElChabab, Joey Saade)}
-The real API evidence covers successful calls, invalid formats/ranges/references, duplicates, unknown IDs, missing authentication, forbidden mutations, incident ownership and assignment, spoofed query scope, lifecycle skips and blank notes. The captured integration calls show the incident-assignment notification, threat audit events, assignment audit event and denied-access audit records.
-
-The pre-Cleanup reports match the captured database: two threats, two vulnerabilities and three incidents. The summary reports complete=true and an empty unavailable list. Integration routes retain Joey Saade's and Karl Khouri's prefixes because those services belong to them; these captures demonstrate Christophe's integration, not ownership of their implementations.
-
-Screenshots were captured by Christophe from his running local environment. The originals were inspected and organized without changing their image bytes. The screenshot set contains 84 owned API/integration captures, eight database captures and two shared-authentication captures. Cleanup shows four successful deletions and two expected 404 confirmations; the database record screenshots document the earlier populated state.
-
-Joey's routes reject missing or invalid tokens with 401 and disallowed roles or cross-user access with 403. Registration rejects an invalid email or privileged public role; asset creation rejects a malformed IP address or absent owner; notification creation rejects an absent recipient, invalid type or severity, or a service call without an event ID. Unique username/email and event-ID constraints back the API checks. Referenced user and asset deletion returns 409. Joey's regression tests also check that a new registration after deletion receives a different ID and that the deleted user's token remains unusable.
-
-\section{API Documentation (Christophe ElChabab, Joey Saade, Karl Khouri)}
-\subsection{Threats Vulnerabilities and Incidents (Christophe ElChabab)}
-All suffixes below follow \texttt{/api/Christophe-ElChabab}. Administrator, Analyst and Auditor mean the Security Administrator, Security Analyst and Security Auditor roles. Employee means Regular Employee.
 
 \begin{small}
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.25\linewidth}}
-\toprule
-\textbf{Method} & \textbf{Suffix} & \textbf{Function} & \textbf{Authorized roles} \\
-\midrule
-\endhead
-POST & /threats & Create indicator & Administrator \\
-GET & /threats & List indicators & Administrator, Analyst, Auditor \\
-GET & /threats/\{id\} & Retrieve indicator & Administrator, Analyst, Auditor \\
-GET & /threats/search & Filter type, value, severity, source & Administrator, Analyst, Auditor \\
-PUT & /threats/\{id\} & Update description, severity, source & Administrator \\
-DELETE & /threats/\{id\} & Delete indicator & Administrator \\
-POST & /vulnerabilities & Create vulnerability & Administrator \\
-GET & /vulnerabilities & List vulnerabilities & Administrator, Analyst, Auditor \\
-GET & /vulnerabilities/\{id\} & Retrieve vulnerability & Administrator, Analyst, Auditor \\
-GET & /vulnerabilities/search & Filter CVE, severity, asset, status & Administrator, Analyst, Auditor \\
-PUT & /vulnerabilities/\{id\} & Update vulnerability and remediation state & Administrator, Analyst \\
-DELETE & /vulnerabilities/\{id\} & Delete vulnerability & Administrator \\
-POST & /incidents & Report incident & Administrator, Employee \\
-GET & /incidents & List within authenticated scope & All four roles with restrictions \\
-GET & /incidents/\{id\} & Retrieve incident & Administrator, Auditor, assigned Analyst, original Employee \\
-PUT & /incidents/\{id\}/assign & Assign analyst & Administrator \\
-PUT & /incidents/\{id\}/status & Change lifecycle state & Administrator, assigned Analyst \\
-POST & /incidents/\{id\}/notes & Add investigation note & Administrator, assigned Analyst \\
-\bottomrule
-\end{longtable}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{38mm}>{\raggedright\arraybackslash}Xp{55mm}@{}}
+\toprule\textbf{Owner} & \textbf{Responsibility} & \textbf{Route prefix}\\\midrule
+Joey Saade & Account identity, organizational assets and user notifications & \path{/api/Joey-Saade}\\
+Christophe ElChabab & Threat indicators, asset vulnerabilities and incident investigations & \path{/api/Christophe-ElChabab}\\
+Karl Khouri & Security audit records, ordered response actions and security reports & \path{/api/Karl-Khouri}\\\bottomrule
+\end{tabularx}
 \end{small}
 
-Creation returns 201; successful reads, searches, updates and deletions return 200. Detail responses are objects, lists/searches return arrays, and deletions return a message. Unknown IDs return 404. Error responses contain status and message; validation responses can also contain field-specific errors. Missing authentication returns 401, insufficient permission returns 403, duplicates/invalid transitions return 409, and invalid input/references return 422. SQL values use bound parameters, and accepted filter fields are fixed server-side.
+\textbf{Communication between services.} Users log in through Joey's Users service. The returned bearer token is sent with protected requests. A change that needs an audit entry or notification first saves that event in the \code{outbox} table together with the record change. After the transaction commits, delivery calls the destination API. If delivery fails, the saved event can be retried. A unique event ID prevents a retry from creating a second logical event.
 
-Detailed real request and response examples appear in the captioned appendix. Import \path{postman/christophe.collection.json} with the credential-free environment template \path{postman/christophe.environment.template.json}, then set credentials privately. Local secrets, bearer tokens and private environment files are not submission material.
+Karl's reports request lists from the owning APIs using the caller's token. For example, the vulnerability report uses Christophe's vulnerability list rather than directly counting his table. This keeps access checks at the service boundary and makes a failed source visible instead of reporting a misleading zero.
+
+\section{Implementation Details (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:implementation}
+The service explanations below follow the handout's responsibilities and required operations. Section~\ref{sec:api} gives the endpoint reference and input/output contracts. The linked evidence appendices contain the actual Postman and database captures.
+\subsection{Users, Assets and Notifications (Joey Saade)}
+\input{joey-implementation.tex}
+\subsection{Threats, Vulnerabilities and Incidents (Christophe ElChabab)}
+\input{christophe-implementation.tex}
+\subsection{Audit Logging, Playbooks and Reports (Karl Khouri)}
+\input{karl-implementation.tex}
+\input{workflows.tex}
+
+\section{Database Design (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:database}
+\textbf{Design decisions.} One shared SQLite file holds identity and asset records referenced by the other services. Every main entity has an integer primary key. Foreign keys stop a record from referring to a missing user, asset, incident or playbook. CHECK constraints limit status/severity values and CVSS ranges; unique constraints prevent duplicate usernames, threat indicators and playbook step numbers.
+
+The three schema diagrams below divide the database by service ownership while repeating shared tables where necessary. Arrows point from the table holding a foreign key to the table it references. The actual field definitions are available in the linked \repolink{joey/schema.sql}{Joey schema}, \repolink{christophe/schema.sql}{Christophe schema} and \repolink{karl/schema.sql}{Karl schema}.
+
+\subsection{Identity, assets and notifications (Joey Saade)}
+\begin{small}
+\begin{tabularx}{\linewidth}{@{}p{37mm}>{\raggedright\arraybackslash}X@{}}
+\toprule\textbf{Table} & \textbf{Main fields and relationships}\\\midrule
+\code{users} & ID, full name, username, email, password hash, department, role, account status, creation/last-login times. Username and email are unique.\\
+\code{assets} & ID, name, type, IP address, operating system, department, location, criticality, status, creation/update times. \code{owner_id} references Users.\\
+\code{notifications} & ID, recipient, title, message, type, severity, Unread/Read status, creation/read times and optional unique event ID. \code{user_id} references Users.\\
+\code{asset_history} & Original asset ID, nullable live asset ID, actor, time, action and before/after snapshots. The history survives asset deletion.\\
+\code{outbox} & Unique event ID, destination, payload, creation/delivery times, attempts and last error. Stores events waiting for HTTP delivery.\\
+\code{user_id_allocations} & Retains every issued user ID after deletion so a later account cannot inherit an old token's identity.\\\bottomrule
+\end{tabularx}
+\end{small}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[box/.style={reportbox,align=left,text width=43mm},>=Latex]
+\node[box] (u) {\textbf{users}\\PK id\\UNIQUE username, email};
+\node[box,right=17mm of u] (a) {\textbf{assets}\\PK id\\FK owner\_id};
+\node[box,below=15mm of u] (n) {\textbf{notifications}\\PK id\\FK user\_id\\UNIQUE event\_id};
+\node[box,below=15mm of a] (h) {\textbf{asset\_history}\\PK id\\FK asset\_id, changed\_by};
+\draw[reportarrow] (a.west) -- (u.east);
+\draw[reportarrow] (n.north) -- (u.south);
+\draw[reportarrow] (h.north) -- (a.south);
+\draw[reportarrow] (h.north west) -- (u.south east);
+\end{tikzpicture}
+\caption{Christophe ElChabab - Identity and asset relationships - Joey Saade's Users table is referenced by owned assets, notifications and asset-history actors. Outbox and issued-ID tables have no foreign-key arrows.}
+\label{fig:joey-schema}
+\end{figure}
+One user can own many assets and receive many notifications. Deleting a referenced user is restricted. Deleting an asset sets its live history reference to null, while the original ID and snapshots remain available. Joey's database captures are in Appendix~\ref{app:joey}.
+
+\subsection{Threats, vulnerabilities and incidents (Christophe ElChabab)}
+\begin{small}
+\begin{tabularx}{\linewidth}{@{}p{37mm}>{\raggedright\arraybackslash}X@{}}
+\toprule\textbf{Table} & \textbf{Main fields and relationships}\\\midrule
+\code{threats} & ID, type, value, description, severity, source, creation/update times. The pair (type, value) is unique.\\
+\code{vulnerabilities} & ID, title, description, CVE, CVSS, severity, source, status, creation/update/resolution times; \code{asset_id} references Assets.\\
+\code{incidents} & ID, title, description, category, severity, status, creation/update/resolution times; reporter, assignee and affected asset reference Users/Assets.\\
+\code{investigation_notes} & ID, content, incident, analyst and creation time. One incident has many notes; each note has one authenticated author.\\\bottomrule
+\end{tabularx}
+\end{small}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[box/.style={reportbox,align=left,text width=43mm},>=Latex]
+\node[box] (u) {\textbf{users}\\PK id};
+\node[box,right=18mm of u] (a) {\textbf{assets}\\PK id\\FK owner\_id};
+\node[box,below=14mm of u] (i) {\textbf{incidents}\\PK id\\FK reporter\_id, assigned\_to\\FK asset\_id};
+\node[box,below=14mm of a] (v) {\textbf{vulnerabilities}\\PK id\\FK asset\_id};
+\node[box,below=18mm of i] (n) {\textbf{investigation\_notes}\\PK id\\FK incident\_id, analyst\_id};
+\node[box,below=18mm of v] (t) {\textbf{threats}\\PK id\\UNIQUE type, value};
+\draw[reportarrow] (a.west) -- (u.east);
+\draw[reportarrow] (i.north) -- (u.south);
+\draw[reportarrow] (i.east) -- ++(5mm,0) |- (a.south west);
+\draw[reportarrow] (v.north) -- (a.south);
+\draw[reportarrow] (n.north) -- (i.south);
+\draw[reportarrow] (n.west) -- ++(-9mm,0) |- (u.west);
+\end{tikzpicture}
+\caption{Christophe ElChabab - Incident and vulnerability schema - Shared users and assets link investigations to their reporter, analyst and affected asset. Threat indicators are independent records.}
+\label{fig:christophe-schema}
+\end{figure}
+One asset can have several vulnerabilities and incidents. Users/assets cannot be deleted while these records reference them. Investigation notes use ON DELETE CASCADE for their incident reference. Severity, CVSS and status checks also run at database level. Actual table definitions and populated records appear in Appendix~\ref{app:christophe}.
+
+\subsection{Audit and response records (Karl Khouri)}
+\input{karl-database.tex}
+
+\section{Error Handling and Validation (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:validation}
+\textbf{Error handling approach.} Requests are checked before a change is written. A failed operation returns a useful status and JSON message rather than a successful response with missing data. The shared response format is:
+\begin{lstlisting}
+{"status": "error", "message": "..."}
+\end{lstlisting}
+This is the response format, not a captured execution. Field-validation errors can also include an \code{errors} array. Actual rejected requests are shown in the evidence appendices.
+
+\begin{small}\begin{tabularx}{\linewidth}{@{}p{16mm}p{35mm}X@{}}
+\toprule\textbf{HTTP} & \textbf{Meaning} & \textbf{Example handled by the backend}\\\midrule
+401 & Authentication required & Incorrect password; absent, invalid or expired token; invalid audit service key.\\
+403 & Permission refused & Employee reading threats; auditor updating a vulnerability; unassigned analyst changing an incident.\\
+404 & Record not found & Unknown user, asset, threat, vulnerability, incident, audit entry or playbook.\\
+409 & Conflicting operation & Duplicate indicator, referenced deletion, duplicate step number or skipped lifecycle state.\\
+422 & Invalid input & Invalid email/IP/CVE/CVSS, missing fields, unknown asset, invalid assignee or malformed date.\\
+502/503 & Report source failure & An upstream API returns unusable data or cannot be reached.\\\bottomrule
+\end{tabularx}\end{small}
+
+\textbf{Validation rules.} Users require a valid email, unique username and a password meeting the configured length/content rules. Assets require valid IP, type, criticality and status values. Threats validate their value according to indicator type and reject duplicate normalized indicators. Vulnerabilities validate CVE syntax, CVSS in 0--10 and the affected asset. Boolean CVSS/IDs, empty updates and unknown body fields are rejected in Christophe's services. Incidents and response actions enforce the workflows in Figure~\ref{fig:workflows}.
+
+\textbf{Security checks.} SQL values are passed as bound parameters, not joined into query text. The server chooses permitted filter columns and checks role/ownership before returning a record. Role changes cannot be requested through public registration or ordinary profile updates. Audit actors and investigation-note authors come from authenticated identity, so a request cannot simply name another author. Forbidden requests are recorded by the audit integration.
+
+\textbf{Checking the result against the database.} In Christophe's populated run, the stored records and reports agree on two Critical threats, two vulnerabilities and three incidents. One vulnerability is Closed/Critical at 9.1 and the other is Open/Medium at 5.0, giving mean CVSS 7.05. Incident 1 is Closed/High; the other two are Open/Critical and Open/Medium. Later Cleanup screenshots show deletion of the test threats/vulnerabilities, so those later responses are not inconsistent with the earlier populated database images.
+
+\section{API Documentation (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:api}
+The tables retain the handout's HTTP methods and endpoint suffixes. Prefix each suffix with the named owner's route prefix and use the port in Figure~\ref{fig:architecture}. Unless stated otherwise, protected requests send \code{Authorization: Bearer <token>}; JSON requests use \code{Content-Type: application/json}.
+\subsection{Threats, Vulnerabilities and Incidents (Christophe ElChabab)}
+Prefix: \path{/api/Christophe-ElChabab}. Administrator, Analyst, Auditor and Employee refer to the four roles explained in Section~\ref{sec:authorization}.
+\begin{small}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.25\linewidth}}
+\toprule\textbf{Method} & \textbf{Suffix} & \textbf{Purpose} & \textbf{Authorized roles}\\\midrule\endhead
+POST & /threats & Create indicator & Administrator\\
+GET & /threats & List indicators & Administrator, Analyst, Auditor\\
+GET & /threats/\{id\} & Retrieve indicator & Administrator, Analyst, Auditor\\
+GET & /threats/search & Search indicators & Administrator, Analyst, Auditor\\
+PUT & /threats/\{id\} & Update threat information & Administrator\\
+DELETE & /threats/\{id\} & Delete indicator & Administrator\\
+POST & /vulnerabilities & Create vulnerability & Administrator\\
+GET & /vulnerabilities & List vulnerabilities & Administrator, Analyst, Auditor\\
+GET & /vulnerabilities/\{id\} & Retrieve vulnerability & Administrator, Analyst, Auditor\\
+GET & /vulnerabilities/search & Search vulnerabilities & Administrator, Analyst, Auditor\\
+PUT & /vulnerabilities/\{id\} & Update fields/remediation state & Administrator, Analyst\\
+DELETE & /vulnerabilities/\{id\} & Delete vulnerability & Administrator\\
+POST & /incidents & Report incident & Administrator, Employee\\
+GET & /incidents & List within authenticated scope & All four roles, restricted\\
+GET & /incidents/\{id\} & Retrieve incident & Administrator, Auditor, assigned Analyst, original Employee\\
+PUT & /incidents/\{id\}/assign & Assign analyst & Administrator\\
+PUT & /incidents/\{id\}/status & Change lifecycle state & Administrator, assigned Analyst\\
+POST & /incidents/\{id\}/notes & Add investigation note & Administrator, assigned Analyst\\\bottomrule
+\end{longtable}\end{small}
+New threats, vulnerabilities, incidents and notes return 201. Reads, searches, updates and deletions return 200. List/search results are JSON arrays; detail responses are objects, and deletions return a message. An empty valid search is \code{[]}. See Section~\ref{sec:validation} for errors and Appendix~\ref{app:christophe} for actual request/response captures.
 \input{joey-api.tex}
 \input{karl-api.tex}
-\section{Authentication and Authorization (Christophe ElChabab, Joey Saade)}
-Joey's Users service issues signed bearer tokens. Protected calls verify the token and current account status, then apply role and object-level authorization. The four role names are Security Administrator, Security Analyst, Security Auditor and Regular Employee.
-The professor confirmed auditor access to threat searching and identity-scoped incident lists. These permissions are included in the endpoint reference and real tests. A supplied role, reporter or assignee query parameter cannot replace authenticated identity.
-The shared authentication appendix includes a successful administrator login and an incorrect-password request returning 401. Both use Joey's login route; Christophe captured them to demonstrate the authentication dependency. They are not additional Christophe APIs. Insufficient and correct permissions are demonstrated on Christophe's routes in the service evidence.
-Joey's login route verifies the password hash and signs a token containing the account ID and expiry. The verification helper checks the signature and loads the user's current role and status for each protected call. Public registration cannot grant a privileged role, and the separate administrator route controls role and status changes. Asset and notification routes apply the role checks described in the API table; recipient and self-profile checks also compare the authenticated ID to the requested record. A service key is separate from a user's bearer token and is used only for service-created notifications.
+\input{api-contracts.tex}
+
+\section{Authentication and Authorization (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\label{sec:authorization}
+\textbf{Authentication mechanism.} Passwords are stored as salted PBKDF2-SHA256 hashes, not plaintext. Login verifies the password and issues a signed bearer token valid for one hour. Each protected request verifies the signature/expiry and reloads the current user, so a deleted, inactive or suspended account loses access. Service-to-service audit/notification calls use distinct private keys instead of a user's password.
+
+\begin{small}\begin{tabularx}{\linewidth}{@{}p{34mm}X@{}}
+\toprule\textbf{Role} & \textbf{Access in the implementation}\\\midrule
+Security Administrator & Manages users, assets, assignments, threats and vulnerabilities; reviews audits/reports and manages response playbooks. Destructive operations still respect referenced-record and workflow checks.\\
+Security Analyst & Investigates assigned incidents and adds notes; reads threat information and updates vulnerabilities; works on permitted response actions. Does not gain administrator deletion rights.\\
+Regular Employee & Manages their own profile, reports incidents, views only their submitted incidents and handles their own notifications. Cannot browse threat/vulnerability records or organizational assets.\\
+Security Auditor & Reads permitted users, assets, incidents, threats, vulnerabilities, audit records and reports without mutating them.\\\bottomrule
+\end{tabularx}\end{small}
+
+\textbf{Record-level permissions.} The professor clarified that auditors may search threats and that all four roles may call \code{GET /incidents}. Administrators/auditors see all incidents, analysts see their assignments and employees see their submissions. These restrictions use the token's user ID even if a request supplies misleading reporter, assignee or role query parameters. The same principle limits notifications to their recipient where required.
+
+The shared login evidence in Appendix~\ref{app:christophe} shows both a valid administrator login and an incorrect password returning 401. Employee threat access returns 403 while an allowed reader succeeds; auditor vulnerability updates and unauthorized incident changes are rejected. Joey's runner summary and Karl's protected API captures provide additional access-control evidence. The handout's two permission clarifications are applied in the endpoint tables above.
+\pending{Karl's audit detail/search and playbook-creation permissions await his update.}
+
 \section{GitHub and Version Control (Christophe ElChabab, Joey Saade, Karl Khouri)}
-Repository: \url{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}.
-The original Christophe three-service implementation is recorded in commit \texttt{537e769}. Subsequent commits must describe actual changes and preserve genuine author identity and dates.
-Joey's earlier implementation and documentation commits are \texttt{5b067bb} and \texttt{8f8fa69}; these identifiers exist in the repository history. A final screenshot of per-member Git history and any later contribution claim must be taken from the actual repository state.
-Karl Khouri's implementation and Postman collection correction commits are \texttt{2cf2a2e} and \texttt{faea64f}.
-\pending{After final commits are pushed, insert actual commit-history and per-member contribution screenshots with captions.}
+\label{sec:git}
+\href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}{Team repository: ChristopheElChabab-JoeySaade-KarlKhouri}.
+
+The ownership table in Section~\ref{sec:architecture} describes the three-service split. The repository keeps source code, schemas, Postman collections, tests and report sources together. Later fixes are recorded as new commits, and teammate updates are merged without replacing their commits.
+
+\begin{small}\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{38mm}p{23mm}>{\raggedright\arraybackslash}X@{}}
+\toprule\textbf{Member} & \textbf{Commit} & \textbf{Recorded work}\\\midrule
+Joey Saade & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/5b067bb}{\code{5b067bb}} & Users, Assets and Notifications implementation.\\
+Christophe ElChabab & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/537e769}{\code{537e769}} & Threats, Vulnerabilities and Incidents implementation.\\
+Karl Khouri & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/2cf2a2e}{\code{2cf2a2e}} & Audit Logging, Playbooks and Reports implementation.\\
+Christophe ElChabab & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/2c8a917}{\code{2c8a917}} & Professor-confirmed permissions, regression checks and collection updates.\\
+Karl Khouri & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/ee55ad5}{\code{ee55ad5}} & Report sections, ID-reuse fix and regression tests.\\
+Joey Saade & \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/commit/b56ebf6}{\code{b56ebf6}} & Report screenshot manifest, guide and ten screenshots.\\\bottomrule
+\end{tabularx}\end{small}
+These links are useful for navigating the actual work, but they do not replace the handout's required screenshots of Git history and individual contributions.
+\pending{Insert genuine screenshots of the final pushed commit history and each member's contributions, with names and captions.}
+
+\subsection{CREATES feedback (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\pending{Add the real coaching-session date, attendance, feedback and changes made. All three members must attend after the interim memos and at least three days before the final deadline.}
+
 \section{References (Christophe ElChabab, Joey Saade, Karl Khouri)}
-Requirements source: Final Project Fall 2026-2027-Sprint 1.docx, supplied by the instructor. Permission clarifications: the professor's answers supplied by Christophe on 19 October 2026 concerning auditor threat searching and identity-scoped incident lists. Implementation references: the owned source/schema files, docs/christophe-api.md and the importable Postman collection.
+\label{sec:references}
+\begin{itemize}
+\item Instructor's \emph{Final Project Fall 2026-2027--Sprint 1} handout, supplied to the team.
+\item Professor's permission clarifications supplied by Christophe on 19 October 2026: auditor threat searching and identity-scoped incident lists.
+\item Project source/schema and request definitions: \repolink{docs/joey-api.md}{Joey's API reference}, \repolink{docs/christophe-api.md}{Christophe's API reference}, \repolink{docs/karl-api.md}{Karl's API reference}, and the \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/tree/main/postman}{Postman collection files}.
+\end{itemize}
+\pending{Add the team's own handwritten References paragraph and any other resources actually used.}
 
-Joey's service explanation uses \path{joey/} source and schema, \path{docs/joey-api.md}, \path{tests/test_joey.py} and the saved local check outputs in \path{docs/evidence/}. Joey's own Postman GUI and database screenshots have not yet been supplied; their absence is retained explicitly in this draft.
+\clearpage\appendix
+\section{Postman and Database Evidence (Christophe ElChabab)}
+\label{app:christophe}
+These 94 unchanged captures include two shared-authentication requests, 84 API/integration requests and eight database views. Database records were captured before Cleanup. Shared login and integration calls retain Joey Saade's and Karl Khouri's routes because those APIs demonstrate dependencies, not additional Christophe services.
+\begin{landscape}\pagestyle{plain}\input{evidence.tex}\end{landscape}
 
-Karl's service explanation uses \path{karl/} source and schema, \path{docs/karl-api.md}, \path{tests/test_karl.py} and the saved local check outputs in \path{docs/evidence/}.
+\section{Postman and Database Evidence (Joey Saade)}
+\label{app:joey}
+The ten supplied images comprise five Postman Runner summaries and five database views. The Runner summaries show methods, URLs, response codes and named assertions. They do not show request/response JSON bodies. The database images show selected stored records; they do not contain full table definitions. These limits matter because the handout asks for detailed API-call input/output and database-structure evidence.
+\pending{Add Joey's detailed request/response views and table-structure captures. Keep the current Runner summaries as supporting evidence.}
+\begin{landscape}\pagestyle{plain}\input{joey-evidence.tex}\end{landscape}
 
-\subsection*{CREATES completion}
-\pending{Record the team's genuine CREATES session, received feedback and changes made. All three members must meet the timing and attendance requirements. No meeting or feedback is claimed here.}
-\clearpage
-\appendix
-\section{Actual Execution Evidence (Christophe ElChabab, Joey Saade)}
-Captures are retained unchanged. Schema and stored-record screenshots precede Cleanup; later successful deletions therefore do not contradict the earlier populated state. Each caption identifies the capturer, operation and purpose. Shared login and integration screenshots retain their real service owners' routes.
-Joey's automated evidence is retained in \path{docs/evidence/joey-id-reuse-pytest-2026-10-19.txt} and \path{docs/evidence/joey-postman-newman-2026-10-19-after-id-fix.txt}. These records show seven focused tests and 27 requests with 29 assertions, respectively. They do not substitute for his own required Postman GUI and database images.
-\begin{landscape}
-\input{evidence.tex}
-\end{landscape}
-\subsection*{Joey Saade -- Postman and database captures}
-The following named slots are reserved for Joey's real Postman and SQLite screenshots. A missing image displays its expected filename. No placeholder is presented as executed evidence.
-\begin{landscape}
-\input{joey-evidence.tex}
-\end{landscape}
-\section{Actual Execution Evidence (Karl Khouri)}
-Karl Khouri's captures were taken on 20 October 2026 from his local environment: all nine services running against a demo SQLite database, with sample assets, threats, vulnerabilities and incidents added through the APIs. The Postman images come from running his exported collection in order. The database images show queries run through Python's sqlite3 module against the same database. Each caption names the member, the operation and what it demonstrates.
-\input{karl-evidence.tex}
+\section{Postman and Database Evidence (Karl Khouri)}
+\label{app:karl}
+Karl's 43 captures cover Audit Logging, Playbooks, Reports and database queries from his local nine-service run. Each image is retained unchanged. Captures from different members describe their respective local runs; record IDs and totals should not be pooled as one shared execution.
+\begin{landscape}\pagestyle{plain}\input{karl-evidence.tex}\end{landscape}
 \end{document}
