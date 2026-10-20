@@ -1,0 +1,25 @@
+Joey Saade's three FastAPI processes run on ports 8001--8003 and expose the required routes under \texttt{/api/Joey-Saade}. They share a SQLite database and authentication code. The source files are \texttt{joey/users.py}, \texttt{joey/assets.py}, \texttt{joey/notifications.py}, \texttt{joey/common.py} and \texttt{joey/schema.sql}. Their request and response contract is documented in \texttt{docs/joey-api.md}.
+
+\subsubsection{Users and Identity (Joey Saade)}
+
+Public registration accepts a name, username, email, password and department. The public route creates only a Regular Employee; an attempt to submit an administrator or other privileged role is rejected. Usernames and emails are unique without regard to case. Passwords are checked for length and letter/digit content, then stored as PBKDF2-SHA256 hashes with individual random salts. Responses exclude the hash.
+
+Login accepts a username or email and password, then returns a signed bearer token with a one-hour expiry. Protected requests verify the signature and expiration and reload the current account, so deleting, suspending or deactivating an account removes its access without waiting for the token to expire. Administrators and auditors can list users. A user may inspect and update their own profile; administrator-only role and status changes use the extra \texttt{PATCH /users/\{id\}/admin} route. The administrator cannot delete their own account. Foreign-key references from assets and notifications prevent deletion of a user still in use.
+
+Registration and administrator bootstrap reserve IDs in \texttt{user\_id\_allocations}. Issued IDs remain reserved after a user is deleted. This prevents both reuse of an old token subject and collision with the retained \texttt{welcome-user-\{id\}} outbox event. Initialization seeds an older database from current users and historical welcome and user-audit events. A regression test covers register, delete and register again, plus rejection of the deleted account's token.
+
+\subsubsection{Asset Management (Joey Saade)}
+
+An asset records a name, type, IP address, department, owner, location, criticality, status and optional operating system. Creation requires an existing owner and validates the type, IP address and enumerated values before insertion. Administrators create, update and delete assets. Administrators and auditors list assets; administrators, analysts and auditors can retrieve and search them. Employees have no asset read access in the implemented permission policy.
+
+Search combines supplied filters for name, type, IP address, department and criticality. The name filter matches a substring. Each create, update and delete writes an \texttt{asset\_history} snapshot with the original asset ID, change timestamp and actor. History remains available after asset deletion. The database restricts deletion while an incident or vulnerability still references the asset; the API returns 409 for a referenced asset.
+
+\subsubsection{Notification and Alert Management (Joey Saade)}
+
+Notifications store recipient ID, title, message, type, severity, read status and timestamps. Administrators and authenticated peer services can create them; a peer uses \texttt{X-Service-Key} and supplies an event ID. Repeating the same event ID returns the existing notification, which makes delivery retries idempotent. The recipient can retrieve and mark their own notification read. Administrators can search and delete notifications, auditors have read-only access, and analyst searches are confined to the analyst's own records.
+
+Registration queues a Welcome notification in the same database transaction as the new user. User, asset and notification mutations also queue audit events. After commit, the outbox worker sends notification and audit events over HTTP to the respective services. Failed deliveries stay in the outbox for retry. The ordered Postman collection reads records before cleanup and deletes the sample asset and its notifications before deleting the sample user, preserving foreign-key integrity.
+
+\subsubsection{Recorded checks and remaining evidence (Joey Saade)}
+
+The saved Joey focused test output records seven passing tests, including the deleted-user ID regression. A saved Newman run of Joey's exported collection against nine actual local service processes records 27 requests, 29 assertions and zero failures. These are automated execution records, not Postman GUI or database screenshots. Joey's own real screenshots and their captions must be added to the evidence appendix after capture.

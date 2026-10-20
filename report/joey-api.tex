@@ -1,0 +1,35 @@
+\subsection*{Joey Saade API routes}
+All suffixes in this table follow \texttt{/api/Joey-Saade}. Administrator, Analyst and Auditor refer to the corresponding Security roles; Employee means Regular Employee. The first 18 rows are the required routes. The last two document implemented supporting routes.
+
+\begin{small}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.10\linewidth}>{\raggedright\arraybackslash}p{0.28\linewidth}>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.20\linewidth}}
+\toprule
+\textbf{Method} & \textbf{Suffix} & \textbf{Function} & \textbf{Access} \\
+\midrule
+\endhead
+POST & /users/register & Register an Employee & Public \\
+POST & /users/login & Issue a bearer token & Public \\
+PUT & /users/\{id\} & Update permitted profile fields & Administrator, self \\
+DELETE & /users/\{id\} & Delete an unreferenced user & Administrator \\
+GET & /users & List users & Administrator, Auditor \\
+GET & /users/\{username\} & Retrieve a permitted profile & Administrator, Auditor, self \\
+POST & /assets & Create an asset & Administrator \\
+PUT & /assets/\{id\} & Update an asset & Administrator \\
+DELETE & /assets/\{id\} & Delete an unreferenced asset & Administrator \\
+GET & /assets & List assets & Administrator, Auditor \\
+GET & /assets/\{id\} & Retrieve an asset & Administrator, Analyst, Auditor \\
+GET & /assets/search & Filter assets & Administrator, Analyst, Auditor \\
+POST & /notifications & Create a notification & Administrator, service key \\
+GET & /notifications/user/\{user\_id\} & List a recipient's notifications & Recipient, Administrator, Auditor \\
+GET & /notifications/\{id\} & Retrieve a notification & Recipient, Administrator, Auditor \\
+PUT & /notifications/\{id\}/read & Mark notification read & Recipient, Administrator \\
+GET & /notifications/search & Filter notifications & Administrator, Auditor, Analyst (own) \\
+DELETE & /notifications/\{id\} & Delete a notification & Administrator \\
+\midrule
+PATCH & /users/\{id\}/admin & Change role or status & Administrator \\
+GET & /assets/\{id\}/history & Read asset history & Administrator, Auditor \\
+\bottomrule
+\end{longtable}
+\end{small}
+
+Creation returns 201; successful reads, updates and deletions return 200. Missing or invalid authentication returns 401, insufficient permission returns 403, absent records return 404, duplicate or referenced records return 409, and invalid input returns 422. Error bodies carry a status and message, with field errors for request-shape validation. The importable collection and credential-free template are \texttt{postman/joey.collection.json} and \texttt{postman/joey.environment.template.json}. Credentials and bearer tokens are entered only in a private local environment.
