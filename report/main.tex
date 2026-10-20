@@ -21,11 +21,11 @@ Joey Saade \enspace / \enspace Users, Assets, Notifications\par
 Karl Khouri \enspace / \enspace Audit Logging, Playbooks, Reports
 \end{minipage}}\endgroup
 \vspace{10mm}
-\textbf{Submission date:} to be completed before upload\par
+\textbf{Submission date:} 20/10/2026\par
 \vfill
 {\small\bfseries\color{teal}9 SERVICES \qquad 4 USER ROLES \qquad REST APIs + SQLITE\par}
 \vspace{5mm}
-{\small Review copy. The technical sections and 147 supplied captures are included. Final Git screenshots, the team's References paragraph, CREATES feedback and the evidence gaps identified in the report must be completed before submission.\par}
+{\small Review copy. The technical sections and 154 supplied captures are included. Final Git screenshots, the team's handwritten References paragraph and the evidence gaps identified in the report must be completed before submission.\par}
 \end{titlepage}
 \hypersetup{pageanchor=true}
 \pagenumbering{roman}
@@ -232,6 +232,8 @@ Security Auditor & Reads permitted users, assets, incidents, threats, vulnerabil
 
 The shared login evidence in Appendix~\ref{app:christophe} shows both a valid administrator login and an incorrect password returning 401. Employee threat access returns 403 while an allowed reader succeeds; auditor vulnerability updates and unauthorized incident changes are rejected. Joey's runner summary and Karl's protected API captures provide additional access-control evidence. The handout's two permission clarifications are applied in the endpoint tables above.
 
+For audit records, analysts may retrieve an entry or search, but only administrators and auditors may list all entries or retrieve a user's history. There is no own-history exception: an analyst or employee requesting their own history still receives 403. Playbook creation and deletion are administrator-only; analysts may add response actions and update their status or assignment. Karl's updated captures in Appendix~\ref{app:karl} show these permission checks.
+
 \section{GitHub and Version Control (Christophe ElChabab, Joey Saade, Karl Khouri)}
 \label{sec:git}
 \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri}{Team repository: ChristopheElChabab-JoeySaade-KarlKhouri}.
@@ -251,16 +253,13 @@ These links are useful for navigating the actual work, but they do not replace t
 \pending{Insert genuine screenshots of the final pushed commit history and each member's contributions, with names and captions.}
 
 \subsection{CREATES feedback (Christophe ElChabab, Joey Saade, Karl Khouri)}
-\pending{Add the real coaching-session date, attendance, feedback and changes made. All three members must attend after the interim memos and at least three days before the final deadline.}
+Our team met with CREATES on Friday, 16 October 2026, at 11:30 AM. We discussed good and bad Git practices and how to correct repositories with README files that were too brief or too complicated, or with a missing \code{requirements.txt}. We also discussed how to structure a project report. The CREATES associate reviewed our repository and confirmed that it looked good. The session helped us check that the repository instructions were clear and that the report followed an organized structure.
 
 \section{References (Christophe ElChabab, Joey Saade, Karl Khouri)}
 \label{sec:references}
-\begin{itemize}
-\item Instructor's \emph{Final Project Fall 2026-2027--Sprint 1} handout, supplied to the team.
-\item Professor's permission clarifications supplied by Christophe on 19 October 2026: auditor threat searching and identity-scoped incident lists.
-\item Project source/schema and request definitions: \repolink{docs/joey-api.md}{Joey's API reference}, \repolink{docs/christophe-api.md}{Christophe's API reference}, \repolink{docs/karl-api.md}{Karl's API reference}, and the \href{https://github.com/chrs-005/ChristopheElChabab-JoeySaade-KarlKhouri/tree/main/postman}{Postman collection files}.
-\end{itemize}
-\pending{Add the team's own handwritten References paragraph and any other resources actually used.}
+We used the instructor's \emph{Final Project Fall 2026-2027--Sprint 1} Word handout to identify the required services, API operations, role permissions, database relationships, execution evidence and report sections. We also referred to the previous EECE 435L labs for database work, API testing with Postman, Git commands and project documentation. These materials helped us apply the practices covered in the labs to the common project.
+
+\pending{Add the team's own handwritten paragraph explaining where and why AI tools were used, as required by the handout.}
 
 \clearpage\appendix
 \section{Postman and Database Evidence (Christophe ElChabab)}
