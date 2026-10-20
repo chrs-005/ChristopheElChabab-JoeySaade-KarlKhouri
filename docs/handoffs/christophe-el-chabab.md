@@ -1,5 +1,11 @@
 # Christophe ElChabab handoff
 
+## References reserved for handwritten disclosures, 2026-10-20
+
+At Christophe's explicit request, removed the generated Christophe/Joey AI-use wording and Karl AI-statement placeholder from report/main.tex's References section, preserving its actual source references. The user reports that the professor requires students to write the disclosures by hand. The cover now correctly marks all members' handwritten statements pending; no replacement disclosure was generated. Existing factual assistance records and attribution elsewhere are preserved. Students must supply their own accurate statements before submission.
+
+Recompiled the report successfully: 154 pages, including the same 137 screenshot pages. Checked all text bounds and visually inspected the changed cover, references and following page; no out-of-page text found. Rebuilt the local Overleaf ZIP and SHA-256 verified all 147 entries. Previous PDF/ZIP versions were backed up before replacement. No application code, tests, Postman requests, databases or original screenshots changed; no application tests rerun. Commit message requested: fix: rferences. Local commit only; no push authorized. Other pending report evidence and CREATES requirements remain unchanged.
+
 ## Report polished and local packages refreshed, 2026-10-20
 
 At Christophe's request, Codex made a light report-only pass: corrected the cover's team/evidence summary, named all three contributors in the implementation heading, made each owner's API section visible in the contents, nested Christophe's service explanations consistently, and removed repeated Postman setup text. Preserved teammate explanations, original screenshots and pending items. No application, test, database or Postman files changed.
