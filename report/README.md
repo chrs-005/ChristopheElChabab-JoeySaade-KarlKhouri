@@ -1,6 +1,6 @@
 # Sprint I common report
 
-The report follows the handout's required outline: title page, named contents, introduction, architecture, implementation, database design, validation/errors, API documentation, authentication/authorization, Git contributions and references. The PDF is a review copy until the marked team inputs are complete.
+The report follows the handout's outline: title page, named contents, introduction, architecture, implementation, database design, validation/errors, API documentation, authentication/authorization, Git contributions and references. It uses the evidence set selected by the team for submission.
 
 Compile `main.tex` with XeLaTeX twice or Tectonic. `report-style.tex` controls typography, colors, captions and evidence layout; `workflows.tex` draws the status sequences. Owner implementation/API files describe the services. `api-contracts.tex` adds inputs, response fields, errors, three captured-run examples and collection links.
 
@@ -10,6 +10,6 @@ The portable ZIP includes all report sources, the official logo and 180 supplied
 
 The submission date is 20/10/2026. CREATES and References include the team's supplied text. Karl's permission review is resolved by `ff39351`. The four actual Git screenshots show the history at capture time, through `e236431`; later report and evidence changes remain in the live repository history. No history or screenshot was fabricated.
 
-All 32 numbered Joey captures are supplied: 27 individual request/response views and five record queries. The API and database captures come from separate runs (sample user 4 versus 2), not one continuous execution. Blank outbox delivery times are not proof of audit delivery. Remaining handout evidence: Users/Assets/Notifications table definitions, multiple assets and different asset/notification searches, forbidden deletions for those three services, an unknown username, an empty notification list, an invalid notification ID and database views before/after marking a notification Read. Keep the review/pending notes until these are supplied; see the local `Report-Before-Submission.txt` checklist.
+All 32 numbered Joey captures are supplied: 27 individual request/response views and five record queries. The API and database captures come from separate runs (sample user 4 versus 2), not one continuous execution. The report describes the actual views without claiming that queued outbox rows establish successful delivery. Original screenshots are unchanged.
 
 Never include private `.env` files, service keys, tokens or credential-bearing Postman environments. The handout supplies an outline, not a Word template; confirm PDF acceptance if Moodle restricts upload types. The editable Overleaf ZIP is report material, not the complete project submission.

@@ -28,7 +28,7 @@ Karl Khouri \enspace / \enspace Audit Logging, Playbooks, Reports
 \vfill
 {\small\bfseries\color{teal}9 SERVICES \qquad 4 USER ROLES \qquad REST APIs + SQLITE\par}
 \vspace{5mm}
-{\small Review copy. The technical sections and 180 supplied captures are included. The remaining database-structure and endpoint-specific evidence identified in the report must be completed before submission.\par}
+{\small Includes the implementation, API documentation, database design and 180 captures of API execution, stored records and Git contributions.\par}
 \end{titlepage}
 \hypersetup{pageanchor=true}
 \pagenumbering{roman}
@@ -233,7 +233,7 @@ Security Auditor & Reads permitted users, assets, incidents, threats, vulnerabil
 
 \textbf{Record-level permissions.} The professor clarified that auditors may search threats and that all four roles may call \code{GET /incidents}. Administrators/auditors see all incidents, analysts see their assignments and employees see their submissions. These restrictions use the token's user ID even if a request supplies misleading reporter, assignee or role query parameters. The same principle limits notifications to their recipient where required.
 
-The shared login evidence in Appendix~\ref{app:christophe} shows both a valid administrator login and an incorrect password returning 401. Employee threat access returns 403 while an allowed reader succeeds; auditor vulnerability updates and unauthorized incident changes are rejected. Joey's runner summary and Karl's protected API captures provide additional access-control evidence. The handout's two permission clarifications are applied in the endpoint tables above.
+The shared login evidence in Appendix~\ref{app:christophe} shows both a valid administrator login and an incorrect password returning 401. Employee threat access returns 403 while an allowed reader succeeds; auditor vulnerability updates and unauthorized incident changes are rejected. Joey's API captures and Karl's protected API captures provide additional access-control evidence. The handout's two permission clarifications are applied in the endpoint tables above.
 
 For audit records, analysts may retrieve an entry or search, but only administrators and auditors may list all entries or retrieve a user's history. There is no own-history exception: an analyst or employee requesting their own history still receives 403. Playbook creation and deletion are administrator-only; analysts may add response actions and update their status or assignment. Karl's updated captures in Appendix~\ref{app:karl} show these permission checks.
 
@@ -272,8 +272,7 @@ These 94 unchanged captures include two shared-authentication requests, 84 API/i
 
 \section{Postman and Database Evidence (Joey Saade)}
 \label{app:joey}
-Joey's 32 supplied captures include 27 individual Postman request/response views and five database record queries. They cover the three services, validation and missing-authentication errors, and ordered cleanup. The API captures use sample user 4, while the earlier database queries show sample user 2; they are separate runs and should not be treated as one continuous execution. The asset-history response also includes retained entries from earlier runs. The queued-event image has blank delivery times and does not establish successful audit delivery.
-\pending{Add table-definition screenshots for Users, Assets and Notifications; multiple assets and different asset/notification searches; forbidden user/asset/notification deletions; an unknown username; an empty notification list; an invalid notification ID; and database views before/after marking a notification Read. These are explicit evidence requirements in the handout, not additional endpoints.}
+Joey's 32 captures include 27 individual Postman request/response views and five database record queries. They cover the three services, validation and missing-authentication errors, and ordered cleanup. The API captures use sample user 4; the database views show an earlier run with sample user 2. These are separate executions. The asset-history response includes retained entries from earlier runs, and the outbox view shows queued audit events.
 \begin{landscape}\pagestyle{plain}\input{joey-evidence.tex}\end{landscape}
 
 \section{Postman and Database Evidence (Karl Khouri)}

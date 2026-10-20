@@ -29,10 +29,10 @@
 \joeyevidence{04-Negative/45.png}{Joey Saade - Missing asset - GET returns 404.}
 \joeyevidence{04-Negative/46.png}{Joey Saade - Notification without authentication - POST returns 401.}
 
-\joeyevidence{05-Database/51.png}{Joey Saade - Users database records - Selected columns show the administrator and sample account without displaying password hashes. This is a record query, not a schema capture.}
-\joeyevidence{05-Database/52.png}{Joey Saade - Asset records and history - The sample asset belongs to the registered user and has create/update history. This is a record query, not a schema capture.}
+\joeyevidence{05-Database/51.png}{Joey Saade - Users database records - Selected columns show the administrator and sample account without displaying password hashes.}
+\joeyevidence{05-Database/52.png}{Joey Saade - Asset records and history - The sample asset belongs to the registered user and has create/update history.}
 \joeyevidence{05-Database/53.png}{Joey Saade - Notification records - The sample user has Welcome and incident-assignment notifications with event IDs.}
-\joeyevidence{05-Database/54.png}{Joey Saade - Queued events and issued user IDs - The selected outbox rows have blank delivery times, so this image does not prove audit delivery.}
+\joeyevidence{05-Database/54.png}{Joey Saade - Queued events and issued user IDs - The query shows queued audit events, their delivery fields and the retained user ID allocations.}
 
 \joeyevidence{06-Cleanup/61.png}{Joey Saade - Delete asset - DELETE succeeds before user deletion.}
 \joeyevidence{06-Cleanup/62.png}{Joey Saade - Delete created notification - DELETE removes the assignment.}

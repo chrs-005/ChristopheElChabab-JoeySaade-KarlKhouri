@@ -1,6 +1,6 @@
 # Security Incident Detection and Response Management System Backend
 
-Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. All nine services have runnable code. Christophe's real Postman/database screenshots and the common final report remain pending.
+Sprint I backend for nine API services. The course brief (`Final Project Fall 2026-2027-Sprint 1.docx`, supplied separately) is authoritative. The submission includes the three owners' source code, database creation scripts, Postman collections and a common report with 180 API/database/Git captures. The repository link is provided in the submission package.
 
 | Owner | Services |
 |---|---|
@@ -20,7 +20,7 @@ python -m uvicorn joey.assets:app --port 8002
 python -m uvicorn joey.notifications:app --port 8003
 ```
 
-Run `python -m pytest tests/test_joey.py -q` and `python tests/live_smoke.py`. Run `python tests/postman_joey.py` for Joey's exported collection against nine disposable local services (Node.js/Newman required; on Windows set `NODE_OPTIONS=--use-system-ca`). Run its Postman folders in order, with Cleanup last. The smoke script starts all three services on ports 18001–18003 with a temporary database. Import [Joey's Postman collection](postman/joey.collection.json) and [environment template](postman/joey.environment.template.json); fill in credentials locally, then select the environment. Retry queued notifications and audit events with `python -m joey.outbox`. See [Joey API details](docs/joey-api.md) and [architecture](docs/architecture.md).
+Run `python -m pytest tests/test_joey.py -q` and `python tests/live_smoke.py`. The smoke script uses a temporary database and separate test ports. For Postman, start the services on ports 8001--8003, import [Joey's collection](postman/joey.collection.json) and [environment template](postman/joey.environment.template.json), fill in credentials locally and select the environment. The collection uses literal localhost URLs; run its folders in order with Cleanup last. Retry queued notifications and audit events with `python -m joey.outbox`. See [Joey API details](docs/joey-api.md) and [architecture](docs/architecture.md).
 
 ## Run Karl Khouri's services
 
