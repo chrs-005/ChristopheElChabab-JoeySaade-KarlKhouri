@@ -25,6 +25,12 @@
 \IfFileExists{karl-screenshots/#1}{\karlshot{karl-screenshots/#1}}{\IfFileExists{evidence/#1}{\karlshot{evidence/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Screenshot pending}\par\vspace{4mm}\normalsize\texttt{#1}}}}}
 \caption{#2}
 \end{figure}\clearpage}
+% Joey's PNGs load from report/joey-screenshots/. Missing captures show a named box.
+\newcommand{\joeyevidence}[2]{%
+\clearpage\begin{figure}[p]\centering
+\IfFileExists{joey-screenshots/#1}{\includegraphics[width=\linewidth,height=0.84\textheight,keepaspectratio]{joey-screenshots/#1}}{\fbox{\parbox[c][0.55\textheight][c]{0.85\linewidth}{\centering\Large\textbf{Joey screenshot pending}\par\vspace{4mm}\normalsize\texttt{joey-screenshots/\detokenize{#1}}}}}
+\caption{#2}
+\end{figure}\clearpage}
 \begin{document}
 \begin{titlepage}
 \centering
@@ -173,6 +179,11 @@ Captures are retained unchanged. Schema and stored-record screenshots precede Cl
 Joey's automated evidence is retained in \path{docs/evidence/joey-id-reuse-pytest-2026-10-19.txt} and \path{docs/evidence/joey-postman-newman-2026-10-19-after-id-fix.txt}. These records show seven focused tests and 27 requests with 29 assertions, respectively. They do not substitute for his own required Postman GUI and database images.
 \begin{landscape}
 \input{evidence.tex}
+\end{landscape}
+\subsection*{Joey Saade -- Postman and database captures}
+The following named slots are reserved for Joey's real Postman and SQLite screenshots. A missing image displays its expected filename. No placeholder is presented as executed evidence.
+\begin{landscape}
+\input{joey-evidence.tex}
 \end{landscape}
 \section{Actual Execution Evidence (Karl Khouri)}
 Karl Khouri's captures were taken on 20 October 2026 from his local environment: all nine services running against a demo SQLite database, with sample assets, threats, vulnerabilities and incidents added through the APIs. The Postman images come from running his exported collection in order. The database images show queries run through Python's sqlite3 module against the same database. Each caption names the member, the operation and what it demonstrates.

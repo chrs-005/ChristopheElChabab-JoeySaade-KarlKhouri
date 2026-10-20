@@ -1,0 +1,16 @@
+% One real screenshot per Postman folder and one per SQLite evidence category.
+% Save each PNG under report/joey-screenshots/ with this exact relative path.
+% Missing images display named pending boxes. Older individual captures are retained.
+
+\joeyevidence{01-Users/Users-and-Identity-Runner.png}{Joey Saade - Users and Identity collection run - Six ordered user and role requests return their expected statuses and pass their assertions.}
+\joeyevidence{02-Assets/Asset-Management-Runner.png}{Joey Saade - Asset Management collection run - Asset creation, update, list, detail, search and history requests pass before Cleanup.}
+\joeyevidence{03-Notifications/Notification-Management-Runner.png}{Joey Saade - Notification and Alert Management collection run - Service creation, recipient list, detail, read update and search requests pass.}
+\joeyevidence{04-Negative/Negative-Checks-Runner.png}{Joey Saade - Negative checks collection run - Invalid input, missing authentication and missing resources return the expected 401, 403, 404 and 422 responses.}
+
+\joeyevidence{05-Database/Users-Database.png}{Joey Saade - Users database evidence - SQLite shows the users schema and stored administrator/sample user records without exposing password hashes.}
+\joeyevidence{05-Database/Assets-Database.png}{Joey Saade - Assets database evidence - SQLite shows the asset owner relationship, stored asset and create/update history.}
+\joeyevidence{05-Database/Notifications-Database.png}{Joey Saade - Notifications database evidence - SQLite shows recipient and event-ID fields plus the stored Welcome and Assigned notifications.}
+\joeyevidence{05-Database/Outbox-and-User-IDs-Database.png}{Joey Saade - Outbox and user ID evidence - SQLite shows retained event IDs, delivery status and issued user IDs.}
+
+\joeyevidence{06-Cleanup/Cleanup-Runner.png}{Joey Saade - Cleanup collection run - Asset, created notification, Welcome notification and user deletion all return HTTP 200 in dependency order.}
+\joeyevidence{05-Database/After-Cleanup-Database.png}{Joey Saade - Database after Cleanup - The sample user and asset are gone while asset history and allocated user IDs remain.}
