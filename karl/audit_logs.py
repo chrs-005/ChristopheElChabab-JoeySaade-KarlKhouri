@@ -12,7 +12,10 @@ from joey.common import api_error_handler, current_user, db, error, require_role
 from .common import PREFIX, audit_secret, date_range, init_db, parse_time, stored_time
 
 LOG_SEVERITIES = ("Information", "Warning", "Error", "Critical")
+# Full listing and other users' histories stay with administrators and auditors. The handout also lets analysts
+# retrieve one entry and search; only administrators delete or add manual entries.
 READERS = ("Security Administrator", "Security Auditor")
+DETAIL_READERS = (*READERS, "Security Analyst")
 
 
 @asynccontextmanager
@@ -110,7 +113,7 @@ def list_logs(actor=Depends(current_user)):
 
 @app.get(f"{PREFIX}/logs/search")
 def search_logs(actor_user_id: int | None = None, action: str | None = None, severity: str | None = None, related_service: str | None = None, subject_id: str | None = None, start_date: str | None = None, end_date: str | None = None, actor=Depends(current_user)):
-    require_role(actor, *READERS)
+    require_role(actor, *DETAIL_READERS)
     if severity is not None and severity not in LOG_SEVERITIES:
         error(422, "Invalid severity")
     start, end = date_range(start_date, end_date)
@@ -130,18 +133,15 @@ def search_logs(actor_user_id: int | None = None, action: str | None = None, sev
 
 @app.get(f"{PREFIX}/logs/user/{{user_id}}")
 def logs_for_user(user_id: int, actor=Depends(current_user)):
-    if actor["role"] not in READERS and actor["id"] != user_id:
-        error(403, "Users may view only their own activity")
+    require_role(actor, *READERS)  # no self-access exception: a user's history is Administrator/Auditor-only
     with db() as conn:
         rows = conn.execute("SELECT * FROM audit_logs WHERE original_actor_user_id=? ORDER BY occurred_at DESC, id DESC", (user_id,)).fetchall()
-        if not rows and not conn.execute("SELECT 1 FROM users WHERE id=?", (user_id,)).fetchone():
-            error(404, "User not found")
-    return [row_dict(x) for x in rows]
+    return [row_dict(x) for x in rows]  # empty list when the user has no available logs
 
 
 @app.get(f"{PREFIX}/logs/{{id}}")
 def read_log(id: int, actor=Depends(current_user)):
-    require_role(actor, *READERS)
+    require_role(actor, *DETAIL_READERS)
     with db() as conn:
         return row_dict(get_log(conn, id))
 

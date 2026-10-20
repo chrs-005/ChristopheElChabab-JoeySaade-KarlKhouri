@@ -32,7 +32,7 @@ def main():
                    NOTIFICATION_SERVICE_URL='http://127.0.0.1:18003', AUDIT_SERVICE_URL='http://127.0.0.1:18007',
                    BOOTSTRAP_ADMIN_NAME='Christophe ElChabab', BOOTSTRAP_ADMIN_USERNAME='christophe_admin', BOOTSTRAP_ADMIN_EMAIL='christophe@example.test',
                    BOOTSTRAP_ADMIN_PASSWORD=PASSWORD, BOOTSTRAP_ADMIN_DEPARTMENT='SOC')
-        for name, variable in [('assets','ASSET_REPORT_SOURCE'), ('threats','THREAT_REPORT_SOURCE'), ('vulnerabilities','VULNERABILITY_REPORT_SOURCE'), ('incidents','INCIDENT_REPORT_SOURCE'), ('audit_logs','AUDIT_REPORT_SOURCE')]:
+        for name, variable in [('users','USER_REPORT_SOURCE'), ('assets','ASSET_REPORT_SOURCE'), ('threats','THREAT_REPORT_SOURCE'), ('vulnerabilities','VULNERABILITY_REPORT_SOURCE'), ('incidents','INCIDENT_REPORT_SOURCE'), ('audit_logs','AUDIT_REPORT_SOURCE')]:
             env[variable] = url(name, '/logs' if name == 'audit_logs' else '/' + name)
         subprocess.run([sys.executable, '-c', 'from christophe.common import init_db; init_db(); from karl.common import init_db; init_db()'], env=env, check=True)
         subprocess.run([sys.executable, '-m', 'joey.bootstrap_admin'], env=env, check=True)

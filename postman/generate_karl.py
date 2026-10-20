@@ -28,6 +28,7 @@ def request(name, method, base, path, body=None, headers=None, tests=None, prefi
 users = "/api/Joey-Saade"
 analyst_auth = [{"key": "Authorization", "value": "Bearer {{analystToken}}"}]
 auditor_auth = [{"key": "Authorization", "value": "Bearer {{auditorToken}}"}]
+employee_auth = [{"key": "Authorization", "value": "Bearer {{employeeToken}}"}]
 # Setup creates its own analyst so the collection runs on a fresh database with only the administrator's credentials.
 setup = [
     request("Login administrator", "POST", "userUrl", "/users/login", {"username_or_email": "{{username}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('token', pm.response.json().access_token);"], prefix=users),
@@ -38,6 +39,8 @@ setup = [
     request("Register auditor account", "POST", "userUrl", "/users/register", {"full_name": "Karl Khouri Auditor", "username": "{{auditorUsername}}", "email": "{{auditorUsername}}@example.test", "password": "{{userPassword}}", "department": "Compliance", "role": "Regular Employee"}, headers=[], tests=status(201, "Created") + ["if (pm.response.code === 201) pm.environment.set('auditorId', pm.response.json().id);"], prefix=users, prerequest=["pm.environment.set('auditorUsername', 'karl_auditor_' + Date.now());"]),
     request("Promote to Security Auditor", "PATCH", "userUrl", "/users/{{auditorId}}/admin", {"role": "Security Auditor"}, tests=status(200, "Promoted"), prefix=users),
     request("Login auditor", "POST", "userUrl", "/users/login", {"username_or_email": "{{auditorUsername}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('auditorToken', pm.response.json().access_token);"], prefix=users),
+    request("Register employee account", "POST", "userUrl", "/users/register", {"full_name": "Karl Khouri Employee", "username": "{{employeeUsername}}", "email": "{{employeeUsername}}@example.test", "password": "{{userPassword}}", "department": "Finance", "role": "Regular Employee"}, headers=[], tests=status(201, "Created") + ["if (pm.response.code === 201) pm.environment.set('employeeId', pm.response.json().id);"], prefix=users, prerequest=["pm.environment.set('employeeUsername', 'karl_employee_' + Date.now());"]),
+    request("Login employee", "POST", "userUrl", "/users/login", {"username_or_email": "{{employeeUsername}}", "password": "{{userPassword}}"}, headers=[], tests=status(200, "Authenticated") + ["if (pm.response.code === 200) pm.environment.set('employeeToken', pm.response.json().access_token);"], prefix=users),
 ]
 log_event = {"event_id": "{{eventId}}", "actor_user_id": None, "actor_label": "unknown_user", "action": "login_failed", "description": "Failed login attempt", "severity": "Warning", "related_service": "users"}
 logs = [
@@ -45,11 +48,13 @@ logs = [
     request("Repeat same event returns original", "POST", "auditUrl", "/logs", log_event, headers=service, tests=status(200, "Deduplicated") + ["pm.test('Same stored entry', () => pm.expect(pm.response.json().id).to.eql(Number(pm.environment.get('logId'))));"]),
     request("Create manual log as administrator", "POST", "auditUrl", "/logs", {"action": "manual_review", "description": "Reviewed firewall changes", "severity": "Information"}, tests=status(201, "Created") + ["pm.test('Actor comes from token', () => pm.expect(pm.response.json().source).to.eql('user'));"]),
     request("List logs as auditor", "GET", "auditUrl", "/logs", headers=auditor_auth, tests=status(200, "Listed")),
-    request("Reject analyst log list", "GET", "auditUrl", "/logs", headers=analyst_auth, tests=status(403, "Forbidden")),
+    request("Search logs as analyst", "GET", "auditUrl", "/logs/search?action=login_failed", headers=analyst_auth, tests=status(200, "Analysts may search logs") + ["pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"]),
     request("Get log", "GET", "auditUrl", "/logs/{{logId}}", tests=status(200, "Found")),
     request("Reject unknown log ID", "GET", "auditUrl", "/logs/999999999", tests=status(404, "Missing resource")),
     request("Search logs", "GET", "auditUrl", "/logs/search?action=login_failed&severity=Warning", tests=status(200, "Searched") + ["pm.test('Only matching entries', () => pm.response.json().forEach(x => pm.expect(x.action).to.eql('login_failed')));"]),
-    request("Logs for user", "GET", "auditUrl", "/logs/user/{{userId}}", tests=status(200, "Listed")),
+    request("Logs for user", "GET", "auditUrl", "/logs/user/{{userId}}", tests=status(200, "Listed") + ["pm.test('Only that user', () => pm.response.json().forEach(x => pm.expect(x.original_actor_user_id).to.eql(Number(pm.environment.get('userId')))));"]),
+    request("Logs for user with no activity", "GET", "auditUrl", "/logs/user/999999999", tests=status(200, "Listed") + ["pm.test('Empty list when the user has no logs', () => pm.expect(pm.response.json()).to.eql([]));"]),
+    request("Reject analyst log deletion", "DELETE", "auditUrl", "/logs/{{logId}}", headers=analyst_auth, tests=status(403, "Only administrators delete")),
     request("Delete log", "DELETE", "auditUrl", "/logs/{{logId}}", tests=status(200, "Deleted")),
     request("Search deletion record", "GET", "auditUrl", "/logs/search?action=audit_log_deleted&subject_id={{logId}}", tests=status(200, "Searched") + ["pm.test('Deletion recorded', () => pm.expect(pm.response.json().length).to.eql(1));", "if (pm.response.code === 200 && pm.response.json().length) pm.environment.set('deletionLogId', pm.response.json()[0].id);"]),
     request("Reject deleting deletion record", "DELETE", "auditUrl", "/logs/{{deletionLogId}}", tests=status(409, "Deletion records are permanent")),
@@ -59,16 +64,20 @@ playbook_body = {"name": "Phishing containment {{$timestamp}}", "description": "
     {"title": "Purge messages", "description": "Remove delivered copies", "assigned_to": "{{analystId}}"}]}
 transition_rejected = ["pm.test('Transition rejected', () => pm.response.to.have.status(409));"]
 playbooks = [
+    request("Reject analyst playbook creation", "POST", "playbookUrl", "/playbooks", playbook_body, headers=analyst_auth, tests=status(403, "Creation is administrator-only")),
     request("Create playbook", "POST", "playbookUrl", "/playbooks", playbook_body, tests=status(201, "Created") + ["if (pm.response.code === 201) { const p = pm.response.json(); pm.environment.set('playbookId', p.id); pm.environment.set('actionId', p.actions[0].id); pm.environment.set('action2Id', p.actions[1].id); }"]),
     request("List playbooks", "GET", "playbookUrl", "/playbooks", tests=status(200, "Listed")),
     request("Get playbook", "GET", "playbookUrl", "/playbooks/{{playbookId}}", tests=status(200, "Found") + ["pm.test('Steps ordered', () => { const s = pm.response.json().actions.map(a => a.step_order); pm.expect(s).to.eql([...s].sort((a, b) => a - b)); });"]),
-    request("Add response action", "POST", "playbookUrl", "/playbooks/{{playbookId}}/actions", {"title": "Notify staff", "description": "Warn affected users", "assigned_to": "{{analystId}}"}, tests=status(201, "Created") + ["pm.test('Appended as next step', () => pm.expect(pm.response.json().step_order).to.eql(3));"]),
+    # The handout's required information for a response action: description and step number; the assignee can be set later.
+    request("Add response action", "POST", "playbookUrl", "/playbooks/{{playbookId}}/actions", {"step_order": 3, "description": "Warn affected users about the phishing email"}, tests=status(201, "Created") + ["pm.test('Stored as step 3, not yet assigned', () => { const a = pm.response.json(); pm.expect(a.step_order).to.eql(3); pm.expect(a.assigned_to).to.eql(null); });", "if (pm.response.code === 201) pm.environment.set('action3Id', pm.response.json().id);"]),
+    request("Assign response action", "PUT", "playbookUrl", "/actions/{{action3Id}}/status", {"assigned_to": "{{analystId}}"}, headers=analyst_auth, tests=status(200, "Assigned") + ["pm.test('Assigned user updated', () => pm.expect(pm.response.json().assigned_to).to.eql(Number(pm.environment.get('analystId'))));"]),
     # Invalid transitions run while the actions still exist and are Pending.
     request("Reject skipping In Progress", "PUT", "playbookUrl", "/actions/{{actionId}}/status", {"status": "Completed"}, headers=analyst_auth, tests=transition_rejected),
     request("Reject starting step 2 before step 1", "PUT", "playbookUrl", "/actions/{{action2Id}}/status", {"status": "In Progress"}, headers=analyst_auth, tests=transition_rejected),
     request("Start action as assigned analyst", "PUT", "playbookUrl", "/actions/{{actionId}}/status", {"status": "In Progress", "note": "Started"}, headers=analyst_auth, tests=status(200, "Updated") + ["pm.test('Now In Progress', () => pm.expect(pm.response.json().status).to.eql('In Progress'));"]),
-    request("Complete action as assigned analyst", "PUT", "playbookUrl", "/actions/{{actionId}}/status", {"status": "Completed", "note": "Done"}, headers=analyst_auth, tests=status(200, "Updated") + ["pm.test('Now Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));"]),
-    request("Playbook execution history", "GET", "playbookUrl", "/playbooks/{{playbookId}}/history", tests=status(200, "Listed") + ["pm.test('Three creations and two transitions recorded', () => pm.expect(pm.response.json().length).to.eql(5));"]),
+    request("Complete action as assigned analyst", "PUT", "playbookUrl", "/actions/{{actionId}}/status", {"status": "Completed", "completion_date": "{{$isoTimestamp}}", "note": "Done"}, headers=analyst_auth, tests=status(200, "Updated") + ["pm.test('Now Completed with a completion date', () => { const a = pm.response.json(); pm.expect(a.status).to.eql('Completed'); pm.expect(a.completed_at).to.be.a('string'); });"]),
+    request("Playbook execution history", "GET", "playbookUrl", "/playbooks/{{playbookId}}/history", tests=status(200, "Listed") + ["pm.test('Three creations, one assignment and two transitions recorded', () => pm.expect(pm.response.json().length).to.eql(6));"]),
+    request("Reject analyst playbook deletion", "DELETE", "playbookUrl", "/playbooks/{{playbookId}}", headers=analyst_auth, tests=status(403, "Only administrators delete playbooks")),
     request("Delete playbook", "DELETE", "playbookUrl", "/playbooks/{{playbookId}}", tests=status(200, "Deleted")),
     request("Confirm deleted playbook", "GET", "playbookUrl", "/playbooks/{{playbookId}}", tests=status(404, "Gone")),
 ]
@@ -84,6 +93,10 @@ negative = [
     request("Reject user-chosen log actor", "POST", "auditUrl", "/logs", {"action": "manual_review", "actor_label": "someone_else"}, tests=status(422, "Rejected")),
     request("Reject invalid log date filter", "GET", "auditUrl", "/logs/search?start_date=yesterday", tests=status(422, "Rejected")),
     request("Reject logs without token", "GET", "auditUrl", "/logs", headers=[], tests=status(401, "Authentication required")),
+    request("Reject analyst full log list", "GET", "auditUrl", "/logs", headers=analyst_auth, tests=status(403, "Full listing is administrator/auditor-only")),
+    request("Reject analyst reading own logs", "GET", "auditUrl", "/logs/user/{{analystId}}", headers=analyst_auth, tests=status(403, "No self-access exception for analysts")),
+    request("Reject employee reading own logs", "GET", "auditUrl", "/logs/user/{{employeeId}}", headers=employee_auth, tests=status(403, "No self-access exception for employees")),
+    request("Reject analyst reading another user's logs", "GET", "auditUrl", "/logs/user/{{userId}}", headers=analyst_auth, tests=status(403, "Other user histories are administrator/auditor-only")),
     request("Reject playbook with gap in steps", "POST", "playbookUrl", "/playbooks", {**playbook_body, "steps": [{**playbook_body["steps"][0], "step_order": 2}]}, tests=status(422, "Rejected")),
     request("Reject invalid playbook category", "POST", "playbookUrl", "/playbooks", {**playbook_body, "category": "Weather"}, tests=status(422, "Rejected")),
     request("Reject missing playbook", "GET", "playbookUrl", "/playbooks/999999999", tests=status(404, "Missing resource")),
@@ -91,6 +104,6 @@ negative = [
     request("Reject analyst report access", "GET", "reportUrl", "/reports/summary", headers=analyst_auth, tests=status(403, "Forbidden")),
 ]
 collection = {"info": {"name": "Sprint I — Karl Khouri services", "description": "Security Audit Logging, Security Playbook and Response Automation, and Security Reports by Karl Khouri. Fill username, userPassword (an administrator) and auditServiceKey, start all nine services, then run the folders in order. Setup creates and logs in its own analyst.", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"}, "item": [{"name": label, "item": items} for label, items in [("Setup — Karl Khouri", setup), ("Security Audit Logging — Karl Khouri", logs), ("Security Playbook and Response Automation — Karl Khouri", playbooks), ("Security Reports — Karl Khouri", reports), ("Negative checks — Karl Khouri", negative)]]}
-environment = {"name": "Karl Khouri local template", "values": [{"key": key, "value": value, "enabled": True, "type": "default"} for key, value in [("userUrl", "http://127.0.0.1:8001"), ("auditUrl", "http://127.0.0.1:8007"), ("playbookUrl", "http://127.0.0.1:8008"), ("reportUrl", "http://127.0.0.1:8009"), ("username", ""), ("userPassword", ""), ("token", ""), ("auditServiceKey", ""), ("userId", ""), ("analystUsername", ""), ("analystId", ""), ("analystToken", ""), ("auditorUsername", ""), ("auditorId", ""), ("auditorToken", ""), ("deletionLogId", ""), ("logId", ""), ("playbookId", ""), ("actionId", ""), ("action2Id", ""), ("eventId", "example-audit-event-1")]], "_postman_variable_scope": "environment"}
+environment = {"name": "Karl Khouri local template", "values": [{"key": key, "value": value, "enabled": True, "type": "default"} for key, value in [("userUrl", "http://127.0.0.1:8001"), ("auditUrl", "http://127.0.0.1:8007"), ("playbookUrl", "http://127.0.0.1:8008"), ("reportUrl", "http://127.0.0.1:8009"), ("username", ""), ("userPassword", ""), ("token", ""), ("auditServiceKey", ""), ("userId", ""), ("analystUsername", ""), ("analystId", ""), ("analystToken", ""), ("auditorUsername", ""), ("auditorId", ""), ("auditorToken", ""), ("employeeUsername", ""), ("employeeId", ""), ("employeeToken", ""), ("deletionLogId", ""), ("logId", ""), ("playbookId", ""), ("actionId", ""), ("action2Id", ""), ("action3Id", ""), ("eventId", "example-audit-event-1")]], "_postman_variable_scope": "environment"}
 (root / "karl.collection.json").write_text(json.dumps(collection, indent=2) + "\n", encoding="utf-8")
 (root / "karl.environment.template.json").write_text(json.dumps(environment, indent=2) + "\n", encoding="utf-8")

@@ -2,7 +2,7 @@
 
 Latest follow-up, 2026-10-19: the professor's two permission decisions are now implemented and verified: auditor threat search is allowed and incident-list query parameters cannot override authenticated-user scope. Full checks passed **67 tests** and **229 collection assertions over 97 items** against nine real servers. See [pytest](evidence/christophe-professor-permissions-pytest-2026-10-19.txt) and [live HTTP](evidence/christophe-professor-permissions-live-2026-10-19.txt). Older dated check counts and Git status below describe their original review session, not current submission completeness. The separate shared registration-reuse defect and real screenshot/report requirements remain outstanding.
 
-Source: the supplied Sprint I brief, especially Services 3, 4 and 7 plus its authentication, validation, error, documentation and evidence requirements. Scope is Christophe's own services and their integration contracts. This is a technical pass/fail assessment, not the instructor's marking scheme or a prediction of an AI grader's score; no numerical rubric was supplied.
+Source: the supplied Sprint I brief, especially Services 3, 4 and 7 plus its authentication, validation, error, documentation and evidence requirements. Scope is Christophe's own services and their integration contracts. This is a technical pass/fail assessment, not the instructor's marking scheme or a prediction of the final grade; no numerical rubric was supplied.
 
 ## Teammate evidence status
 
@@ -76,4 +76,4 @@ python tests/live_smoke_christophe.py --postman
 
 Use the repository's ignored virtual environment and README setup. Newman needs Node.js/npm only for the optional collection check. On this machine Node used the existing Windows system CA trust; certificate verification stayed enabled. Pinned dependencies emit deprecation warnings; final tests have no failures.
 
-Final actual outputs: [pytest](evidence/christophe-reviewed-final-pytest-2026-10-18.txt), [live servers and Newman](evidence/christophe-review-delivery-live-http-2026-10-18.txt). Capture the real screenshot evidence, review/adapt the generated code, disclose assistance, complete named report sections, and commit/push under the student's own account before treating the academic submission as complete.
+Final actual outputs: [pytest](evidence/christophe-reviewed-final-pytest-2026-10-18.txt), [live servers and Newman](evidence/christophe-review-delivery-live-http-2026-10-18.txt). Capture the real screenshot evidence, review/adapt the implementation, complete named report sections, and commit/push under the student's own account before treating the academic submission as complete.

@@ -29,14 +29,14 @@
 \joeyevidence{04-Negative/45-Reject-missing-asset.png}{Joey Saade - Missing asset - GET returns 404.}
 \joeyevidence{04-Negative/46-Reject-notification-without-auth.png}{Joey Saade - Notification without authentication - POST returns 401.}
 
-\joeyevidence{05-Database/51-Users-Database.png}{Joey Saade - Users SQLite evidence - Schema and stored account records without password hashes.}
-\joeyevidence{05-Database/52-Assets-Database.png}{Joey Saade - Assets SQLite evidence - Owner relationship, asset record and history.}
-\joeyevidence{05-Database/53-Notifications-Database.png}{Joey Saade - Notifications SQLite evidence - Welcome and assignment records.}
-\joeyevidence{05-Database/54-Outbox-and-User-IDs-Database.png}{Joey Saade - Outbox and issued user IDs SQLite evidence - Retained event keys and allocated IDs.}
+\joeyevidence{05-Database/51-Users-Database.png}{Joey Saade - Users database records - Selected columns show the administrator and sample account without displaying password hashes. This is a record query, not a schema capture.}
+\joeyevidence{05-Database/52-Assets-Database.png}{Joey Saade - Asset records and history - The sample asset belongs to the registered user and has create/update history. This is a record query, not a schema capture.}
+\joeyevidence{05-Database/53-Notifications-Database.png}{Joey Saade - Notification records - The sample user has Welcome and incident-assignment notifications with event IDs.}
+\joeyevidence{05-Database/54-Outbox-and-User-IDs-Database.png}{Joey Saade - Queued events and issued user IDs - The selected outbox rows have blank delivery times, so this image does not prove audit delivery.}
 
 \joeyevidence{06-Cleanup/61-Delete-asset.png}{Joey Saade - Delete asset - DELETE succeeds before user deletion.}
 \joeyevidence{06-Cleanup/62-Delete-created-notification.png}{Joey Saade - Delete created notification - DELETE removes the assignment.}
 \joeyevidence{06-Cleanup/63-Delete-welcome-notification.png}{Joey Saade - Delete welcome notification - DELETE removes the user's remaining reference.}
 \joeyevidence{06-Cleanup/64-Delete-user.png}{Joey Saade - Delete user - DELETE succeeds after dependent records are removed.}
 
-\joeyevidence{05-Database/55-After-Cleanup-Database.png}{Joey Saade - SQLite after Cleanup - User and asset are gone while history and issued IDs remain.}
+\joeyevidence{05-Database/55-After-Cleanup-Database.png}{Joey Saade - Database after Cleanup - Only the administrator remains; asset history and allocated IDs are retained.}

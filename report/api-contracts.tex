@@ -1,0 +1,78 @@
+\subsection{Inputs, outputs and Postman files (Christophe ElChabab, Joey Saade, Karl Khouri)}
+Path parameters such as \code{id}, \code{user_id} and \code{username} identify the target record. List and search GET requests have no JSON body; the filters below are query parameters. DELETE requests identify the record through the path. A successful detail request returns one JSON object, while list/search requests return an array. The returned objects include the stored ID and applicable timestamps.
+
+\subsubsection{Users, Assets and Notifications contracts (Joey Saade)}
+\textbf{Users.} Registration requires \code{full_name}, \code{username}, \code{email}, \code{password} and \code{department}. The \code{role} defaults to Regular Employee; if supplied publicly, it must still be that role. The response excludes the password/hash. Login accepts \code{username_or_email} and \code{password}; its response contains \code{access_token}, \code{token_type} and \code{expires_in}. Profile PUT accepts a nonempty selection of \code{full_name}, \code{email} and \code{department}. The supporting admin PATCH accepts \code{role} and/or \code{status}. GET returns public user fields; DELETE returns a confirmation. Unknown usernames return 404, duplicates 409 and invalid public role requests 403.
+
+\textbf{Assets.} POST requires \code{name}, \code{type}, \code{ip_address}, \code{department}, \code{owner_id}, \code{location} and \code{criticality}; \code{operating_system} and \code{status} are optional. PUT accepts changes to these fields. Search accepts \code{name}, \code{type}, \code{ip_address}, \code{department} and \code{criticality}. Records return these fields with ID and creation/update times. The history route returns create/update/delete snapshots. Missing owners or invalid values return 422; deletion of an asset referenced by an incident/vulnerability returns 409.
+
+\textbf{Notifications.} POST requires \code{user_id}, \code{title}, \code{message}, \code{type} and \code{severity}. A peer-service call also requires \code{event_id} and the \code{X-Service-Key} header. Records return recipient, content, type, severity, status, creation/read times and event ID. The read update needs no JSON body. Search filters are \code{user_id}, \code{type}, \code{severity} and \code{status}. A recipient-specific list may be empty; accessing another user's records without permission returns 403. Repeated event IDs return the previously stored notification.
+
+\subsubsection{Threats, Vulnerabilities and Incidents contracts (Christophe ElChabab)}
+\textbf{Threats.} POST requires \code{type}, \code{value}, \code{description}, \code{severity} and \code{source}. PUT accepts a nonempty subset of \code{description}, \code{severity} and \code{source}, without changing indicator identity. Search filters are \code{type}, \code{value}, \code{severity} and \code{source}, combined with AND. A threat object contains those five fields plus \code{id}, \code{created_at} and \code{updated_at}. Duplicate type/value returns 409; malformed indicators return 422. DELETE returns a message confirming deletion.
+
+\textbf{Vulnerabilities.} POST requires \code{title}, \code{description}, \code{cve_id}, \code{cvss_score}, \code{severity}, \code{asset_id} and \code{source}. PUT accepts \code{description}, \code{severity}, \code{cvss_score}, \code{status} and \code{resolution_date}. A supplied resolution date must be timezone-aware, between creation and the current time, and associated with a Resolved/Closed record. Search accepts \code{cve_id}, \code{severity}, \code{asset_id} and \code{status}. Responses add ID, status and creation/update/resolution times to the submitted fields. Missing assets/invalid CVSS or CVE return 422; skipped transitions return 409. DELETE returns a confirmation message.
+
+\textbf{Incidents.} POST requires \code{title}, \code{description}, \code{category}, \code{severity}, \code{reporter_id} and \code{asset_id}. Assignment PUT takes \code{analyst_id}; status PUT takes \code{status}; adding a note takes \code{content}. An incident object adds \code{id}, \code{assigned_to}, \code{status} and timestamps. Detail/assignment/status responses also include \code{notes}; each note has ID, incident ID, author ID, content and creation time. List GET has no client-controlled ownership filter: the token determines scope. Invalid references/assignees return 422; an unassigned analyst is refused with 403; a lifecycle skip returns 409. No incident DELETE is requested by the handout or added here.
+
+\subsubsection{Audit, Playbooks and Reports contracts (Karl Khouri)}
+\textbf{Audit logs.} Service POST requires \code{event_id}, \code{action} and \code{related_service}. It may include \code{actor_user_id}, \code{actor_label}, \code{description}, \code{occurred_at}, \code{severity} and \code{subject_id}. It sends the separate audit \code{X-Service-Key}. Administrator-created entries take actor/time from the authenticated user and server. Responses include the stored event, original actor identity, recorded time and source. Search accepts \code{actor_user_id}, \code{action}, \code{severity}, \code{related_service}, \code{subject_id}, \code{start_date} and \code{end_date}. A repeated event returns the original object with 200 rather than creating a second entry. Protected deletion records return 409 if deletion is attempted.
+
+\textbf{Playbooks.} POST requires \code{name}, \code{description}, \code{category} and \code{severity}, with an optional \code{steps} array. Adding an action requires \code{description} and \code{step_order}; \code{title} and \code{assigned_to} are optional. The step number must be the next consecutive number. Status PUT accepts \code{status} and/or \code{assigned_to}, with optional \code{note}. A valid \code{completion_date} may accompany a transition to Completed. An action may be created unassigned, but needs an assignee before its status changes. List filters are \code{category} and \code{severity}. Detail responses include \code{actions}, \code{execution_status}, \code{completed_steps} and \code{total_steps}. The supporting history route returns recorded changes. Invalid assignees, gaps and invalid completion dates return 422; duplicate numbers, skipped states, unassigned status transitions and blocked deletions return 409.
+
+\textbf{Reports.} All six GET routes accept optional \code{start_date} and \code{end_date}; no request body is needed. Dates accept a calendar date or ISO-8601 datetime. Incident output groups by severity/status; assets by type, criticality, status and department; threats by type/severity; vulnerabilities by severity/status with mean CVSS; activity by action/severity/service with failed-login and denied-request counts and the five most recent events. Summary combines these sections with user totals grouped by role, status and department, and includes \code{complete} and \code{unavailable}. An unavailable summary section is null, not a fabricated zero. Individual reports use 502/503 for failed sources; invalid dates return 422.
+
+\subsection{Three API examples from the captured run (Christophe ElChabab)}
+The request values and selected response fields below come from the actual screenshots linked beside each example. Response excerpts intentionally show only the fields being discussed; the screenshot contains the full response. They do not replace execution evidence.
+
+\subsubsection{Create a threat indicator (Christophe ElChabab)}
+\code{POST /api/Christophe-ElChabab/threats}, as an administrator. The collection expands its run-tag variable to a unique test domain. In the captured run, the request creates a High-severity Domain indicator from SOC:
+\begin{lstlisting}
+{
+  "type": "Domain",
+  "value": "cc-1792442003645.example",
+  "description": "Phishing indicator investigated by Christophe ElChabab",
+  "severity": "High",
+  "source": "SOC"
+}
+\end{lstlisting}
+The captured response is HTTP 201 with \code{id: 1}, the same type/value, severity High, source SOC and server creation/update timestamps. Repeating the normalized type/value is rejected with 409. See Figure~\ref{evidence:02-Threat-Intelligence/01-Christophe-ElChabab-POST-Create-Domain-Threat-201.png} and the duplicate-indicator capture that follows it.
+
+\subsubsection{Register an asset vulnerability (Christophe ElChabab)}
+\code{POST /api/Christophe-ElChabab/vulnerabilities}, as an administrator. The asset variable resolves to existing asset 1:
+\begin{lstlisting}
+{
+  "title": "Christophe ElChabab gateway finding",
+  "description": "Missing security update",
+  "cve_id": "CVE-2026-12345",
+  "cvss_score": 8.1,
+  "severity": "High",
+  "asset_id": 1,
+  "source": "Scanner"
+}
+\end{lstlisting}
+The captured response is HTTP 201 with \code{id: 1}, \code{status: "Open"}, \code{asset_id: 1}, \code{cvss_score: 8.1} and \code{resolution_date: null}. Later updates change severity/CVSS and follow every remediation state. See Figure~\ref{evidence:03-Vulnerability-Management/01-Christophe-ElChabab-POST-Create-Vulnerability-201.png}. The CVE is a test identifier used to check format, not a claim about a real registered vulnerability.
+
+\subsubsection{Report an incident as an employee (Christophe ElChabab)}
+\code{POST /api/Christophe-ElChabab/incidents} links the new record to the authenticated reporter and an existing asset. In the captured case, employee 4 reports incident 1 at High severity on asset 1. Creation returns 201 and status Open; the administrator later assigns analyst 2. The analyst adds a note and follows the complete lifecycle until Closed.
+\begin{lstlisting}
+{
+  "title": "Christophe ElChabab phishing incident",
+  "description": "Suspicious message received",
+  "category": "Phishing",
+  "severity": "High",
+  "reporter_id": 4,
+  "asset_id": 1
+}
+\end{lstlisting}
+
+The detail response preserves reporter/asset IDs, the assignment, status, resolution date and the note's authenticated author. Employee 4 can retrieve this submission but cannot read the other employee's incident 3. See Figure~\ref{evidence:04-Incident-Management/01-Christophe-ElChabab-POST-Report-incident-as-employee-201.png} and the later assignment, note and scoped-list captures.
+
+\subsection{Importable collections and live documentation (Christophe ElChabab, Joey Saade, Karl Khouri)}
+\begin{small}\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{38mm}XX@{}}
+\toprule\textbf{Owner} & \textbf{Requests} & \textbf{Credential-free environment}\\\midrule
+Christophe ElChabab & \repolink{postman/christophe.collection.json}{Collection JSON} & \repolink{postman/christophe.environment.template.json}{Environment template}\\
+Joey Saade & \repolink{postman/joey.collection.json}{Collection JSON} & \repolink{postman/joey.environment.template.json}{Environment template}\\
+Karl Khouri & \repolink{postman/karl.collection.json}{Collection JSON} & \repolink{postman/karl.environment.template.json}{Environment template}\\\bottomrule
+\end{tabularx}\end{small}
+Import the collection and its own environment template, set private credentials locally, then run the folders in order with Cleanup last. These collections use service-specific URL variables, not the single Lab 5 \code{base_url}. Do not include private environment values or bearer tokens in the submission. With a service running, its \path{/docs} page gives the detailed OpenAPI schema; for example, \href{http://127.0.0.1:8006/docs}{Incident API documentation on port 8006}.

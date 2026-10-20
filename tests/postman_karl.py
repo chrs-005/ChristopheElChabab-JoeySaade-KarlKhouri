@@ -24,7 +24,7 @@ def main():
                    NOTIFICATION_SERVICE_URL=f"http://127.0.0.1:{PORTS['notifications']}", AUDIT_SERVICE_URL=f"http://127.0.0.1:{PORTS['audit_logs']}",
                    BOOTSTRAP_ADMIN_NAME="Karl Khouri", BOOTSTRAP_ADMIN_USERNAME="karl_admin", BOOTSTRAP_ADMIN_EMAIL="karl@example.test",
                    BOOTSTRAP_ADMIN_PASSWORD=PASSWORD, BOOTSTRAP_ADMIN_DEPARTMENT="Security")
-        for name, variable in (("assets", "ASSET_REPORT_SOURCE"), ("threats", "THREAT_REPORT_SOURCE"), ("vulnerabilities", "VULNERABILITY_REPORT_SOURCE"), ("incidents", "INCIDENT_REPORT_SOURCE"), ("audit_logs", "AUDIT_REPORT_SOURCE")):
+        for name, variable in (("users", "USER_REPORT_SOURCE"), ("assets", "ASSET_REPORT_SOURCE"), ("threats", "THREAT_REPORT_SOURCE"), ("vulnerabilities", "VULNERABILITY_REPORT_SOURCE"), ("incidents", "INCIDENT_REPORT_SOURCE"), ("audit_logs", "AUDIT_REPORT_SOURCE")):
             env[variable] = url(name, "/logs" if name == "audit_logs" else "/" + name)
         subprocess.run([sys.executable, "-c", "from christophe.common import init_db; init_db(); from karl.common import init_db; init_db()"], env=env, check=True)
         subprocess.run([sys.executable, "-m", "joey.bootstrap_admin"], env=env, check=True)

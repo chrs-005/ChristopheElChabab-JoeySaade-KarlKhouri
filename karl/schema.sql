@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS playbooks (
 CREATE TABLE IF NOT EXISTS response_actions (
  id INTEGER PRIMARY KEY AUTOINCREMENT, playbook_id INTEGER NOT NULL REFERENCES playbooks(id) ON DELETE CASCADE,
  step_order INTEGER NOT NULL CHECK(step_order >= 1), title TEXT NOT NULL, description TEXT NOT NULL,
- assigned_to INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+ assigned_to INTEGER REFERENCES users(id) ON DELETE RESTRICT,
  status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','In Progress','Completed')),
  created_at TEXT NOT NULL, started_at TEXT, completed_at TEXT, completed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
  UNIQUE(playbook_id, step_order)

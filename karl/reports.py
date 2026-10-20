@@ -12,6 +12,8 @@ from .common import PREFIX, date_range, init_db, parse_time
 
 # Each source is the full list URL of an upstream API. Change the environment value when an owner changes ports or prefix.
 SOURCES = {
+    # The handout lists the Users and Identity service as a report data source ("Total number of users").
+    "users": ("USER_REPORT_SOURCE", "http://127.0.0.1:8001/api/Joey-Saade/users", "created_at"),
     "assets": ("ASSET_REPORT_SOURCE", "http://127.0.0.1:8002/api/Joey-Saade/assets", "created_at"),
     "threats": ("THREAT_REPORT_SOURCE", "http://127.0.0.1:8004/api/Christophe-ElChabab/threats", "created_at"),
     "vulnerabilities": ("VULNERABILITY_REPORT_SOURCE", "http://127.0.0.1:8005/api/Christophe-ElChabab/vulnerabilities", "created_at"),
@@ -87,6 +89,8 @@ def group(records, field):
 
 def build(source, records):
     total = len(records)
+    if source == "users":
+        return {"total": total, "by_role": group(records, "role"), "by_status": group(records, "status"), "by_department": group(records, "department")}
     if source == "assets":
         return {"total": total, "by_type": group(records, "type"), "by_criticality": group(records, "criticality"), "by_status": group(records, "status"), "by_department": group(records, "department"), "active_high_or_critical": sum(r.get("status") == "Active" and r.get("criticality") in ("High", "Critical") for r in records)}
     if source == "threats":
@@ -97,7 +101,8 @@ def build(source, records):
     if source == "incidents":
         return {"total": total, "by_status": group(records, "status"), "by_severity": group(records, "severity"), "open": sum(r.get("status") not in CLOSED_INCIDENT for r in records), "unassigned": sum(r.get("assigned_to") is None for r in records)}
     stamps = sorted(str(r["occurred_at"]) for r in records if r.get("occurred_at"))
-    return {"total_events": total, "by_action": group(records, "action"), "by_severity": group(records, "severity"), "by_service": group(records, "related_service"), "failed_logins": sum(r.get("action") == "login_failed" for r in records), "unauthorized_access": sum(r.get("action") == "unauthorized_access" for r in records), "top_actors": dict(Counter(str(r.get("actor_label") or "Unknown") for r in records).most_common(10)), "first_event_at": stamps[0] if stamps else None, "last_event_at": stamps[-1] if stamps else None}
+    recent = sorted((r for r in records if r.get("occurred_at")), key=lambda r: str(r["occurred_at"]), reverse=True)[:5]
+    return {"total_events": total, "by_action": group(records, "action"), "by_severity": group(records, "severity"), "by_service": group(records, "related_service"), "failed_logins": sum(r.get("action") == "login_failed" for r in records), "unauthorized_access": sum(r.get("action") == "unauthorized_access" for r in records), "top_actors": dict(Counter(str(r.get("actor_label") or "Unknown") for r in records).most_common(10)), "first_event_at": stamps[0] if stamps else None, "last_event_at": stamps[-1] if stamps else None, "recent_events": [{k: r.get(k) for k in ("occurred_at", "action", "actor_label", "related_service", "severity")} for r in recent]}
 
 
 def report(source, actor, authorization, start_date, end_date, background_tasks):

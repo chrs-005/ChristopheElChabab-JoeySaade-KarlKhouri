@@ -30,4 +30,28 @@ Bug found while capturing: deleting a playbook let SQLite reuse its step IDs. Th
 
 Checks: `python -m pytest tests -q` → 71 passed; Newman against nine services → 46 requests, 62 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed; the report compiles with all 43 images.
 
-Remaining: Karl's AI-use statement in the report References, and a final team review of the compiled PDF.
+Remaining: a final team review of the compiled PDF.
+
+## 2026-10-20 — Karl Khouri: permissions aligned with the handout
+
+Changed: analysts may now retrieve and search audit logs (`GET /logs`, `GET /logs/{id}`, `GET /logs/search`, `GET /logs/user/{user_id}`), as the handout allows; deletion and manual entries stay administrator-only. `POST /playbooks` is now administrator-only, as the handout lists creation for administrators only; analysts still add response actions and move their assigned steps. Files: `karl/audit_logs.py`, `karl/playbooks.py`, tests, live smoke, Postman generator/collection, `docs/karl-api.md`, `docs/permissions.md`, report sections.
+
+Checks: `python -m pytest tests -q` → 71 passed (analyst read/search 200, analyst delete 403, analyst/auditor playbook creation 403); Newman against nine services → 48 requests, 65 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); `live_smoke_karl.py` and `live_smoke_christophe.py` passed. Screenshots: replaced the now-incorrect "Reject Analyst Log List 403" with "Search Logs as Analyst 200", and added "Reject Analyst Log Deletion 403" and "Reject Analyst Playbook Creation 403" (45 total).
+
+## 2026-10-20 — Karl Khouri: log read permissions narrowed per route
+
+The earlier fix added analysts to the shared reader list, which also opened `GET /logs` (full listing) and other users' `GET /logs/user/{user_id}` histories. Now analysts get only `GET /logs/{id}` and `GET /logs/search`; `GET /logs` and other users' histories stay Administrator/Auditor-only. Administrator-only playbook creation is unchanged. The pre-existing rule that any user can read their own history was not changed.
+
+Checks: `python -m pytest tests -q` → 71 passed (analyst detail/search 200; analyst full list and another user's history 403; own history 200); Newman → 50 requests, 67 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)); both live checks passed. No screenshot changed: "Search Logs as Analyst 200" and "Reject Analyst Log Deletion 403" remain accurate.
+
+## 2026-10-20 — Karl Khouri: services checked against the handout (Services 5, 6, 9)
+
+Read the supplied handout (`Final Project Fall 2026-2027-Sprint 1.docx`) and aligned Karl's three services with it:
+
+- Audit logs: removed the own-history exception in `logs_for_user()`; `GET /logs/user/{user_id}` is Administrator/Auditor-only, matching the handout. Analysts keep `GET /logs/{id}` and `GET /logs/search`; employees have no audit-log access. A user with no logs now returns `[]` (handout: "demonstrate the response when the user has no available logs").
+- Playbooks: `POST /playbooks/{id}/actions` requires only description and step number (title and assignee optional; schema migrated to a nullable `assigned_to`). `PUT /actions/{id}/status` accepts the handout's possible updates (status, assigned user, completion date) from any Security Analyst or Administrator; an unassigned step cannot change status. Creation and deletion stay administrator-only.
+- Reports: the summary includes the Users and Identity service (total users by role, status, department), a handout data source; the activity report lists recent security activities.
+
+Checks (actual): `python -m pytest tests -q` → 71 passed; `python tests/live_smoke_karl.py` passed; `python tests/live_smoke_christophe.py` passed; `python tests/postman_karl.py` → 57 requests, 77 assertions, 0 failures ([output](../evidence/karl-postman-newman-2026-10-20.txt)). `tests/live_smoke_christophe.py` received one added line setting `USER_REPORT_SOURCE` so its complete-summary check reaches the users service; no Christophe service code changed.
+
+Screenshots: added analyst-own-history 403 and employee-own-history 403 (with the resolved own IDs), logs for a user with no activity (200, `[]`), assign response action (200), analyst playbook deletion 403; retook add action, complete with completion date, execution history, summary and activity reports, and three database views (two stored playbooks). Total: 50.
